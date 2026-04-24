@@ -1285,15 +1285,18 @@ function saveExpense(){
   closeForm();
   render();
 }
-function quickStatus(ev, id, newStatus){
+function quickStatus(ev, id){
   ev.stopPropagation();
-  // Ciclo: pendente → agendado → pago → pendente
   var cycle = {pendente:'agendado', agendado:'pago', pago:'pendente'};
+  var found = false;
   Object.keys(expenses).forEach(function(y){
+    if(found) return;
     var idx = expenses[y].findIndex(function(x){return x.id===id;});
     if(idx>-1){
+      found = true;
       var cur = expenses[y][idx].status || 'pendente';
-      expenses[y][idx].status = cycle[cur] || 'pendente';
+      var next = cycle[cur] || 'pendente';
+      expenses[y][idx].status = next;
     }
   });
   persist();
