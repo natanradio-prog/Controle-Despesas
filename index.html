@@ -836,18 +836,8 @@ var APP_VERSION = 5;
 
 function checkAndMigrate(){
   var savedVersion = parseInt(localStorage.getItem('desp_version')||'0');
-  if(savedVersion < APP_VERSION){
-    // Só limpa chaves de versões muito antigas (1 e 2), preserva dados da v3 em diante
-    if(savedVersion < 3){
-      var oldKeys = ['desp_exp','desp_notes','desp_rec','desp_cats',
-                     'desp_exp2','desp_notes2','desp_rec2','desp_cats2',
-                     'd25_exp','d25_notes','d25_rec','d25_cats',
-                     'despesas_v2','despesas_v3','despesas_v4'];
-      oldKeys.forEach(function(k){ localStorage.removeItem(k); });
-      expenses={};notes={};receitas={};cats=DEFAULT_CATS.slice();
-    }
-    localStorage.setItem('desp_version', APP_VERSION);
-  }
+  // Só atualiza o número da versão — nunca apaga dados existentes
+  localStorage.setItem('desp_version', APP_VERSION);
 }
 
 function load(){
@@ -1034,15 +1024,22 @@ function render(){
     if(e.date) meta.push('<span>'+fmtD(e.date)+'</span>');
     if(e.note) meta.push('<span>'+e.note+'</span>');
 
-    // Botão atalho de status — ciclo pendente→agendado→pago→pendente
-    var nextLabel = st==='pendente' ? '🗓 Agendar' : st==='agendado' ? '✓ Pago' : '↩ Desfazer';
+    // Badge de status atual + seta para próximo
+    var stLabels = {pago:'✓ Pago', agendado:'🗓 Agendado', pendente:'⏳ Pendente'};
+    var nextLabels = {pendente:'→ Agendado', agendado:'→ Pago', pago:'→ Pendente'};
+    var stColors = {
+      pago:     'background:#dcfce7;color:#16a34a;border:1px solid #86efac;',
+      agendado: 'background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;',
+      pendente: 'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;'
+    };
 
     return '<div class="expense-item" style="background:'+bgColor+'" onclick="editExp(\''+e.id+'\')">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
       +'<div class="exp-right">'+amtHtml
-      +'<button class="btn-status-quick btn-sq-'+st+'" onclick="quickStatus(event,\''+e.id+'\')">'+nextLabel+'</button>'
+      +'<button style="'+stColors[st]+'border-radius:20px;cursor:pointer;font-family:\'DM Sans\',sans-serif;font-size:.6rem;font-weight:600;padding:3px 8px;white-space:nowrap;" '
+      +'onclick="quickStatus(event,\''+e.id+'\')">'+stLabels[st]+'</button>'
       +'</div>'
       +'<button class="btn-del" onclick="delExp(event,\''+e.id+'\')">&#x2715;</button>'
       +'</div>';
