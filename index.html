@@ -1301,6 +1301,7 @@ function quickStatus(ev, id, newStatus){
   persist();
   render();
 }
+function delExp(ev,id){
   ev.stopPropagation();
   Object.keys(expenses).forEach(function(y){
     expenses[y]=expenses[y].filter(function(e){return e.id!==id;});
