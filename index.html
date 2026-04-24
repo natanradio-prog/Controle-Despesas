@@ -109,6 +109,15 @@
   .status-label.pendente{background:#f1f5f9;color:#94a3b8;}
   .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;transition:color .2s;flex-shrink:0;}
   .btn-del:hover{color:var(--red);}
+
+  /* Botão atalho de status */
+  .btn-status-quick{border:none;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.6rem;font-weight:600;padding:3px 8px;white-space:nowrap;transition:all .2s;letter-spacing:.03em;}
+  .btn-sq-agendado{background:#dbeafe;color:#1d4ed8;}
+  .btn-sq-agendado:hover{background:#1d4ed8;color:#fff;}
+  .btn-sq-pendente{background:#f1f5f9;color:#64748b;}
+  .btn-sq-pendente:hover{background:#e2e8f0;color:#334155;}
+  .btn-sq-pago{background:#fee2e2;color:#dc2626;}
+  .btn-sq-pago:hover{background:#dc2626;color:#fff;}
   .empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:.85rem;}
 
   /* BOTÃO NOVA DESPESA (agora embaixo da lista) */
@@ -326,6 +335,18 @@
   </div>
 </div>
 
+<!-- Sugestão de sobra -->
+<div id="sobraCard" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+  <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:6px;">💰 Sobra do mês</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <div style="font-size:.83rem;color:#166534;">Transferir <strong id="sobraValor"></strong> como receita extra em <strong id="sobraProxMes"></strong>?</div>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button onclick="transferirSobra()" style="background:#16a34a;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:6px 12px;white-space:nowrap;">Sim</button>
+      <button onclick="descartarSobra()" style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;color:#16a34a;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;">Não</button>
+    </div>
+  </div>
+</div>
+
 <!-- Notes -->
 <div class="notes-bar">
   <em>&#128221;</em>
@@ -339,8 +360,8 @@
 </div>
 
 <div class="section-title">
-  <span>Lancamentos</span>
-  <span id="listCount">0</span>
+  <span>Lancamentos <span id="listCount" style="font-size:.6rem;background:var(--surface2);padding:2px 7px;border-radius:10px;margin-left:4px;">0</span></span>
+  <span id="totalDespesas" style="font-weight:700;font-size:.82rem;color:var(--red);"></span>
 </div>
 
 <div class="expense-list" id="expenseList"></div>
@@ -948,23 +969,30 @@ function render(){
   var known=me.filter(function(e){return e.amount!=null;});
   var total=known.reduce(function(s,e){return s+e.amount;},0);
   var pago=known.filter(function(e){return e.status==='pago';}).reduce(function(s,e){return s+e.amount;},0);
+  var agendado=known.filter(function(e){return e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
+  var pagoAgendado=pago+agendado;
   var resto=total-pago;
   document.getElementById('sumTotal').textContent=known.length?R(total):'-';
   document.getElementById('sumPago').textContent=pago>0?R(pago):'-';
   document.getElementById('sumResto').textContent=total>0?R(Math.max(0,resto)):'-';
   document.getElementById('listCount').textContent=me.length;
-  // Saldo
+  document.getElementById('totalDespesas').textContent=known.length?R(total):'';
+  // Saldo baseado em pago + agendado
+  var recLiquido=(rec.salarioLiquido!=null?rec.salarioLiquido:(rec.salario||0));
+  var totalRecEfetivo=recLiquido+(rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   var saldoEl=document.getElementById('saldoDisp');
   var saldoCard=document.getElementById('saldoCard');
-  if(totalRec>0){
-    var saldo=totalRec-total;
+  if(totalRecEfetivo>0){
+    var saldo=totalRecEfetivo-pagoAgendado;
     saldoEl.textContent=R(saldo)+(saldo<0?' \u26A0':'');
     saldoEl.className='sv '+(saldo>=0?'green':'red');
     saldoCard.className='saldo-card '+(saldo>=0?'positivo':'negativo');
+    checkSobra(saldo);
   }else{
     saldoEl.textContent='Lance as receitas para ver o saldo';
     saldoEl.className='sv muted';
     saldoCard.className='saldo-card neutro';
+    document.getElementById('sobraCard').style.display='none';
   }
 
   // Dízimo
@@ -998,7 +1026,6 @@ function render(){
 
   list.innerHTML=me.map(function(e){
     var st=e.status||'pendente';
-    var isDiz=e.category==='Dizimo';
     var bgColor=catPalette[e.category]||'rgba(99,102,241,.05)';
     var amtHtml=e.amount!=null
       ?'<div class="exp-amount">'+R(e.amount)+'</div>'
@@ -1006,11 +1033,22 @@ function render(){
     var meta=[];
     if(e.date) meta.push('<span>'+fmtD(e.date)+'</span>');
     if(e.note) meta.push('<span>'+e.note+'</span>');
-    return '<div class="expense-item'+(isDiz?' is-dizimo':'')+'" style="background:'+bgColor+'" onclick="editExp(\''+e.id+'\')">'
+
+    // Botão atalho de status
+    var nextSt = st==='pago' ? 'pendente' : st==='agendado' ? 'pago' : 'agendado';
+    var nextLabel = {pago:'✓ Pago', agendado:'↩ Desfazer', pendente:'Agendar'}[st];
+    // Para agendado → pago, label especial
+    if(st==='agendado') nextLabel = '✓ Marcar pago';
+    if(st==='pendente') nextLabel = '🗓 Agendar';
+    if(st==='pago')     nextLabel = '↩ Desfazer';
+
+    return '<div class="expense-item" style="background:'+bgColor+'" onclick="editExp(\''+e.id+'\')">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
-      +'<div class="exp-right">'+amtHtml+'<span class="status-label '+st+'">'+labels[st]+'</span></div>'
+      +'<div class="exp-right">'+amtHtml
+      +'<button class="btn-status-quick btn-sq-'+st+'" onclick="quickStatus(event,\''+e.id+'\',\''+nextSt+'\')">'+nextLabel+'</button>'
+      +'</div>'
       +'<button class="btn-del" onclick="delExp(event,\''+e.id+'\')">&#x2715;</button>'
       +'</div>';
   }).join('');
@@ -1072,22 +1110,75 @@ function updateReceitasUI(rec){
   var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
   var total = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   document.getElementById('receitasTotal').textContent=total>0?R(total):'-';
-  // update saldo inline
   var me=getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
   var known=me.filter(function(e){return e.amount!=null;});
-  var totalExp=known.reduce(function(s,e){return s+e.amount;},0);
+  var pagoAgendado=known.filter(function(e){return e.status==='pago'||e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
   var saldoEl=document.getElementById('saldoDisp');
   var saldoCard=document.getElementById('saldoCard');
   if(total>0){
-    var saldo=total-totalExp;
+    var saldo=total-pagoAgendado;
     saldoEl.textContent=R(saldo)+(saldo<0?' \u26A0':'');
     saldoEl.className='sv '+(saldo>=0?'green':'red');
     saldoCard.className='saldo-card '+(saldo>=0?'positivo':'negativo');
+    // Sugestão de sobra — só mostra se positivo e não foi descartado
+    checkSobra(saldo);
   }else{
     saldoEl.textContent='Lance as receitas para ver o saldo';
     saldoEl.className='sv muted';
     saldoCard.className='saldo-card neutro';
+    document.getElementById('sobraCard').style.display='none';
   }
+}
+
+function checkSobra(saldo){
+  var card = document.getElementById('sobraCard');
+  if(saldo <= 0){ card.style.display='none'; return; }
+
+  // Verifica se já foi descartado ou transferido neste mês
+  var key = 'sobra_'+curY+'_'+curM;
+  if(localStorage.getItem(key)) { card.style.display='none'; return; }
+
+  // Calcula próximo mês
+  var proxM = curM === 12 ? 1 : curM + 1;
+  var proxY = curM === 12 ? curY + 1 : curY;
+  var proxLabel = MONTHS_PT[proxM-1] + (proxY !== curY ? ' '+proxY : '');
+
+  document.getElementById('sobraValor').textContent = R(saldo);
+  document.getElementById('sobraProxMes').textContent = proxLabel;
+  card.style.display='block';
+}
+
+function transferirSobra(){
+  var saldoEl = document.getElementById('saldoDisp');
+  var saldoTxt = saldoEl.textContent.replace(' \u26A0','');
+  // Pega o valor do saldo atual
+  var rec = getRec(curY, curM);
+  var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
+  var totalRec = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
+  var known = me.filter(function(e){return e.amount!=null;});
+  var pagoAgendado = known.filter(function(e){return e.status==='pago'||e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
+  var saldo = totalRec - pagoAgendado;
+
+  if(saldo <= 0) return;
+
+  // Lança no próximo mês como outra receita
+  var proxM = curM === 12 ? 1 : curM + 1;
+  var proxY = curM === 12 ? curY + 1 : curY;
+  var proxRec = getRec(proxY, proxM);
+  if(!proxRec.outras) proxRec.outras = [];
+  proxRec.outras.push({id: String(Date.now()), desc: 'Sobra de '+MONTHS_PT[curM-1], val: Math.round(saldo*100)/100});
+  setRec(proxY, proxM, proxRec);
+
+  // Marca como descartado/transferido
+  localStorage.setItem('sobra_'+curY+'_'+curM, '1');
+  document.getElementById('sobraCard').style.display='none';
+  showToast('Transferido para '+MONTHS_PT[proxM-1]+' \u2713');
+}
+
+function descartarSobra(){
+  localStorage.setItem('sobra_'+curY+'_'+curM, 'skip');
+  document.getElementById('sobraCard').style.display='none';
 }
 
 // ══ FORM ══
@@ -1199,7 +1290,17 @@ function saveExpense(){
   closeForm();
   render();
 }
-function delExp(ev,id){
+function quickStatus(ev, id, newStatus){
+  ev.stopPropagation();
+  Object.keys(expenses).forEach(function(y){
+    var idx = expenses[y].findIndex(function(x){return x.id===id;});
+    if(idx>-1){
+      expenses[y][idx].status = newStatus;
+    }
+  });
+  persist();
+  render();
+}
   ev.stopPropagation();
   Object.keys(expenses).forEach(function(y){
     expenses[y]=expenses[y].filter(function(e){return e.id!==id;});
