@@ -837,15 +837,15 @@ var APP_VERSION = 5;
 function checkAndMigrate(){
   var savedVersion = parseInt(localStorage.getItem('desp_version')||'0');
   if(savedVersion < APP_VERSION){
-    // Limpa todas as chaves antigas de versões anteriores
-    var oldKeys = ['desp_exp','desp_notes','desp_rec','desp_cats',
-                   'desp_exp2','desp_notes2','desp_rec2','desp_cats2',
-                   'desp_exp3','desp_notes3','desp_rec3','desp_cats3',
-                   'd25_exp','d25_notes','d25_rec','d25_cats',
-                   'despesas_v2','despesas_v3','despesas_v4'];
-    oldKeys.forEach(function(k){ localStorage.removeItem(k); });
-    // Reseta estado
-    expenses={};notes={};receitas={};cats=DEFAULT_CATS.slice();
+    // Só limpa chaves de versões muito antigas (1 e 2), preserva dados da v3 em diante
+    if(savedVersion < 3){
+      var oldKeys = ['desp_exp','desp_notes','desp_rec','desp_cats',
+                     'desp_exp2','desp_notes2','desp_rec2','desp_cats2',
+                     'd25_exp','d25_notes','d25_rec','d25_cats',
+                     'despesas_v2','despesas_v3','despesas_v4'];
+      oldKeys.forEach(function(k){ localStorage.removeItem(k); });
+      expenses={};notes={};receitas={};cats=DEFAULT_CATS.slice();
+    }
     localStorage.setItem('desp_version', APP_VERSION);
   }
 }
