@@ -1034,20 +1034,15 @@ function render(){
     if(e.date) meta.push('<span>'+fmtD(e.date)+'</span>');
     if(e.note) meta.push('<span>'+e.note+'</span>');
 
-    // Botão atalho de status
-    var nextSt = st==='pago' ? 'pendente' : st==='agendado' ? 'pago' : 'agendado';
-    var nextLabel = {pago:'✓ Pago', agendado:'↩ Desfazer', pendente:'Agendar'}[st];
-    // Para agendado → pago, label especial
-    if(st==='agendado') nextLabel = '✓ Marcar pago';
-    if(st==='pendente') nextLabel = '🗓 Agendar';
-    if(st==='pago')     nextLabel = '↩ Desfazer';
+    // Botão atalho de status — ciclo pendente→agendado→pago→pendente
+    var nextLabel = st==='pendente' ? '🗓 Agendar' : st==='agendado' ? '✓ Pago' : '↩ Desfazer';
 
     return '<div class="expense-item" style="background:'+bgColor+'" onclick="editExp(\''+e.id+'\')">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
       +'<div class="exp-right">'+amtHtml
-      +'<button class="btn-status-quick btn-sq-'+st+'" onclick="quickStatus(event,\''+e.id+'\',\''+nextSt+'\')">'+nextLabel+'</button>'
+      +'<button class="btn-status-quick btn-sq-'+st+'" onclick="quickStatus(event,\''+e.id+'\')">'+nextLabel+'</button>'
       +'</div>'
       +'<button class="btn-del" onclick="delExp(event,\''+e.id+'\')">&#x2715;</button>'
       +'</div>';
@@ -1292,10 +1287,13 @@ function saveExpense(){
 }
 function quickStatus(ev, id, newStatus){
   ev.stopPropagation();
+  // Ciclo: pendente → agendado → pago → pendente
+  var cycle = {pendente:'agendado', agendado:'pago', pago:'pendente'};
   Object.keys(expenses).forEach(function(y){
     var idx = expenses[y].findIndex(function(x){return x.id===id;});
     if(idx>-1){
-      expenses[y][idx].status = newStatus;
+      var cur = expenses[y][idx].status || 'pendente';
+      expenses[y][idx].status = cycle[cur] || 'pendente';
     }
   });
   persist();
