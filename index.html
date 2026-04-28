@@ -421,6 +421,13 @@
     <div class="fg"><label>Valor (R$)</label><input type="text" id="fVal" placeholder="0,00" inputmode="decimal" oninput="applyMoneyMask(this)"/></div>
     <div class="fg"><label>Vencimento</label><input type="date" id="fDate"/></div>
     <div class="fg full"><label>Categoria</label><select id="fCat"></select></div>
+    <div class="fg full" id="fNovaCatRow" style="display:none;">
+      <label>Nova categoria</label>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;">
+        <input type="text" id="fNovaCatInput" placeholder="Nome da categoria"/>
+        <button onclick="addFCat()" style="background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;padding:9px 12px;white-space:nowrap;">+ Add</button>
+      </div>
+    </div>
     <div class="fg full"><label>Observacao</label><input type="text" id="fNote" placeholder="Ex: parcela 3/6"/></div>
     <div class="fg full">
       <label>Status</label>
@@ -483,9 +490,13 @@
     <button class="btn-close" onclick="closeNubank()">&#x2715;</button>
   </div>
 
+  <!-- Navegação de mês dentro do Nubank -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;">
+    <button onclick="nkNavMes(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;transition:all .2s;">&#8249;</button>
+    <span id="nubankMesLabel" style="font-weight:600;font-size:.95rem;min-width:130px;text-align:center;color:var(--text);"></span>
+    <button onclick="nkNavMes(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;transition:all .2s;">&#8250;</button>
   <!-- Header com totais -->
   <div class="nubank-header">
-    <label>Fatura de <span id="nubankMesLabel"></span></label>
     <div class="nubank-vals">
       <div class="nubank-val-item">
         <label>Total calculado</label>
@@ -1339,8 +1350,26 @@ function descartarSobra(){
 // ══ FORM ══
 function buildCatSelect(){
   var sel=document.getElementById('fCat');
+  var currentVal = sel.value;
   sel.innerHTML=cats.filter(function(c){ return archivedCats.indexOf(c)===-1; })
     .map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
+  sel.innerHTML += '<option value="Nova categoria...">+ Nova categoria...</option>';
+  if(currentVal && sel.querySelector('option[value="'+currentVal+'"]')) sel.value=currentVal;
+  sel.onchange=function(){
+    document.getElementById('fNovaCatRow').style.display=this.value==='Nova categoria...'?'':'none';
+  };
+}
+
+function addFCat(){
+  var inp=document.getElementById('fNovaCatInput');
+  var name=inp.value.trim();
+  if(!name) return;
+  if(cats.indexOf(name)===-1){ cats.push(name); persist(); }
+  buildCatSelect();
+  document.getElementById('fCat').value=name;
+  document.getElementById('fNovaCatRow').style.display='none';
+  inp.value='';
+  showToast('Categoria adicionada');
 }
 function buildFixoOptions(){
   var sel=document.getElementById('rFixoAte');
@@ -1374,7 +1403,7 @@ function openForm(){
   document.getElementById('fDate').value=curY+'-'+String(curM).padStart(2,'0')+'-22';
   document.getElementById('fNote').value='';
   buildCatSelect();
-  setStatus('pendente');
+  document.getElementById('fNovaCatRow').style.display='none';
   setRepeat('nao');
   document.getElementById('repeatSection').style.display='';
   buildFixoOptions();
@@ -1406,6 +1435,7 @@ function saveExpense(){
   var val=valR!==''?parseFloat(valR):null;
   var date=document.getElementById('fDate').value;
   var cat=document.getElementById('fCat').value;
+  if(cat==='Nova categoria...') cat=cats[0]||'Outros';
   var note=document.getElementById('fNote').value.trim();
   if(!desc){document.getElementById('fDesc').focus();return;}
   var m=curM;
@@ -1892,6 +1922,8 @@ var nubankExpId  = null;
 var isParcelado  = false;
 var editCompraId = null;
 var nkRelCatsSel = [];
+var nkCurY = null;  // mês/ano atualmente visualizado no overlay Nubank
+var nkCurM = null;
 
 // compras: { "2026-4": [{id, desc, val, date, parcelas, note}] }
 // fatura real: guardada em receitas como rec.nubankFatura
@@ -1964,6 +1996,8 @@ function getFuturoComprometido(){
 
 function openNubank(expId){
   nubankExpId = expId;
+  nkCurY = curY;
+  nkCurM = curM;
   renderNubank();
   document.getElementById('overlayNubank').classList.add('open');
 }
@@ -1973,14 +2007,26 @@ function closeNubank(){
   nubankExpId = null;
 }
 
+function nkNavMes(delta){
+  nkCurM += delta;
+  if(nkCurM > 12){ nkCurM = 1; nkCurY++; }
+  if(nkCurM < 1) { nkCurM = 12; nkCurY--; }
+  // Atualiza nubankExpId para o item do Nubank do novo mês
+  var arr = expenses[nkCurY]||[];
+  var nk = arr.find(function(e){ return e.category==='Cartao Nubank' && e.month===nkCurM; });
+  nubankExpId = nk ? nk.id : null;
+  renderNubank();
+}
+
 function renderNubank(){
-  document.getElementById('nubankMesLabel').textContent = MONTHS_PT[curM-1]+' '+curY;
+  var y = nkCurY||curY; var m = nkCurM||curM;
+  document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1]+' '+y;
 
   // Coleta TODAS as compras de todos os meses
   var todasCompras = [];
-  for(var y2=2025; y2<=curY; y2++){
+  for(var y2=2025; y2<=y; y2++){
     for(var m2=1; m2<=12; m2++){
-      if(y2===curY && m2>curM) break;
+      if(y2===y && m2>m) break;
       getNubankCompras(y2,m2).forEach(function(c){ todasCompras.push(c); });
     }
   }
@@ -1990,23 +2036,21 @@ function renderNubank(){
     if(!c.date) return false;
     var cd = new Date(c.date+'T00:00:00');
     var cm = cd.getMonth()+1, cy = cd.getFullYear();
-    var offset = (curY-cy)*12+(curM-cm);
+    var offset = (y-cy)*12+(m-cm);
     if(c.parcelas>1) return offset>=0 && offset<c.parcelas;
     return offset===0;
   });
 
-  // Compras novas lançadas diretamente neste mês (à vista)
-  var comprasNativas = getNubankCompras(curY,curM);
+  var comprasNativas = getNubankCompras(y,m);
 
-  var totalCalc = calcNubankTotal(curY,curM);
+  var totalCalc = calcNubankTotal(y,m);
   document.getElementById('nubankTotalCalc').textContent = R(totalCalc);
 
-  var fatReal = getNubankFatura(curY,curM);
+  var fatReal = getNubankFatura(y,m);
   document.getElementById('nubankTotalRealDisplay').textContent = fatReal!=null ? R(fatReal) : '-';
   var fi = document.getElementById('nubankFaturaInput');
   fi.value = fatReal!=null ? fatReal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
 
-  // Atualiza cor se diferença
   var calcEl = document.getElementById('nubankTotalCalc');
   if(fatReal!=null && Math.abs(fatReal-totalCalc)>0.05){
     calcEl.classList.add('alert');
@@ -2066,7 +2110,8 @@ function renderNubank(){
 
 function onNubankFaturaInput(el){
   var v = applyMoneyMask(el);
-  setNubankFatura(curY,curM, v>0?v:null);
+  var y=nkCurY||curY; var m=nkCurM||curM;
+  setNubankFatura(y,m, v>0?v:null);
   // Atualiza despesa principal com valor da fatura ou calculado
   updateNubankExpValue();
   renderNubank();
@@ -2091,7 +2136,8 @@ function openNovaCompra(){
   document.getElementById('ncDesc').value='';
   document.getElementById('ncVal').value='';
   var today=new Date();
-  document.getElementById('ncDate').value=curY+'-'+String(curM).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  var ny=nkCurY||curY; var nm=nkCurM||curM;
+  document.getElementById('ncDate').value=ny+'-'+String(nm).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
   document.getElementById('ncNote').value='';
   document.getElementById('ncParcelas').value='2';
   document.getElementById('ncNovaCatRow').style.display='none';
