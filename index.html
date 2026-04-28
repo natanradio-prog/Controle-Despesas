@@ -1848,14 +1848,20 @@ function mesFaturaNubank(dateStr){
 }
 
 function buildNKCatSelect(){
+  var nkCats = getNKCats();
   var sel = document.getElementById('ncCat');
-  sel.innerHTML = cats.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
-  // Mostrar campo nova categoria quando "Outros" ou última opção
+  var currentVal = sel.value;
+  sel.innerHTML = nkCats.map(function(c){
+    return '<option value="'+c+'">'+c+'</option>';
+  }).join('');
+  sel.innerHTML += '<option value="Nova categoria...">+ Nova categoria...</option>';
+  // Restaura valor selecionado se ainda existe
+  if(currentVal && sel.querySelector('option[value="'+currentVal+'"]')){
+    sel.value = currentVal;
+  }
   sel.onchange = function(){
     document.getElementById('ncNovaCatRow').style.display = this.value==='Nova categoria...' ? '' : 'none';
   };
-  // Adiciona opção de nova categoria ao final
-  sel.innerHTML += '<option value="Nova categoria...">+ Nova categoria...</option>';
 }
 
 function addNKCat(){
