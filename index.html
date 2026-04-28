@@ -1834,8 +1834,20 @@ var NK_CATS_DEFAULT = ['Utilidade Domestica','Roupas','Calcados','Viagem','Hotel
 function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
 
+function mesFaturaNubank(dateStr){
+  // Fechamento dia 19: compra até dia 19 → fatura do mês da compra
+  // compra dia 20 em diante → fatura do mês seguinte
+  if(!dateStr) return {y:curY, m:curM};
+  var p = dateStr.split('-');
+  var y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
+  if(d >= 20){
+    m = m + 1;
+    if(m > 12){ m = 1; y++; }
+  }
+  return {y:y, m:m};
+}
+
 function buildNKCatSelect(){
-  var cats = getNKCats();
   var sel = document.getElementById('ncCat');
   sel.innerHTML = cats.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
   // Mostrar campo nova categoria quando "Outros" ou última opção
@@ -1947,7 +1959,28 @@ function closeNubank(){
 function renderNubank(){
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[curM-1]+' '+curY;
 
-  var compras = getNubankCompras(curY,curM);
+  // Coleta TODAS as compras de todos os meses
+  var todasCompras = [];
+  for(var y2=2025; y2<=curY; y2++){
+    for(var m2=1; m2<=12; m2++){
+      if(y2===curY && m2>curM) break;
+      getNubankCompras(y2,m2).forEach(function(c){ todasCompras.push(c); });
+    }
+  }
+
+  // Filtra as que têm parcela neste mês
+  var comprasDoMes = todasCompras.filter(function(c){
+    if(!c.date) return false;
+    var cd = new Date(c.date+'T00:00:00');
+    var cm = cd.getMonth()+1, cy = cd.getFullYear();
+    var offset = (curY-cy)*12+(curM-cm);
+    if(c.parcelas>1) return offset>=0 && offset<c.parcelas;
+    return offset===0;
+  });
+
+  // Compras novas lançadas diretamente neste mês (à vista)
+  var comprasNativas = getNubankCompras(curY,curM);
+
   var totalCalc = calcNubankTotal(curY,curM);
   document.getElementById('nubankTotalCalc').textContent = R(totalCalc);
 
@@ -1975,27 +2008,41 @@ function renderNubank(){
       +'<div class="futuro-row"><span>Total futuro</span><span>'+R(totalFut)+'</span></div>';
   } else { futCard.style.display='none'; }
 
-  // Lista de compras
-  document.getElementById('nubankComprasCount').textContent = compras.length;
-  if(!compras.length){
-    document.getElementById('nubankComprasList').innerHTML='<div class="empty-state" style="padding:20px;color:var(--muted);text-align:center;font-size:.83rem;">Nenhuma compra lançada</div>';
+  // Lista de compras do mês (inclui parcelas de meses anteriores)
+  document.getElementById('nubankComprasCount').textContent = comprasDoMes.length;
+  if(!comprasDoMes.length){
+    document.getElementById('nubankComprasList').innerHTML='<div class="empty-state" style="padding:20px;color:var(--muted);text-align:center;font-size:.83rem;">Nenhuma compra neste mês</div>';
     return;
   }
-  var sorted = compras.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  var sorted = comprasDoMes.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   document.getElementById('nubankComprasList').innerHTML = sorted.map(function(c){
-    var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+c.parcelas+'x '+R(Math.round(c.val/c.parcelas*100)/100)+'</span>' : '';
+    // Calcula qual parcela é esta no mês atual
+    var cd = new Date((c.date||'2026-01-01')+'T00:00:00');
+    var cm = cd.getMonth()+1, cy = cd.getFullYear();
+    var offset = (curY-cy)*12+(curM-cm);
+    var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
+    var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
+    var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
     var catLabel = c.cat ? '<span style="font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;">'+c.cat+'</span>' : '';
-    return '<div class="compra-item" onclick="editCompra(\''+c.id+'\')" style="cursor:pointer;">'
+    // Só permite editar/excluir compras do mês atual
+    var isNativa = comprasNativas.some(function(x){return x.id===c.id;});
+    var editBtn = isNativa
+      ? 'onclick="editCompra(\''+c.id+'\')" style="cursor:pointer;"'
+      : 'style="cursor:default;"';
+    var delBtn = isNativa
+      ? '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;flex-shrink:0;" onclick="delCompra(event,\''+c.id+'\')">&#x2715;</button>'
+      : '';
+    return '<div class="compra-item" '+editBtn+'>'
       +'<div class="ci-info">'
-      +'<div class="ci-desc">'+c.desc+'</div>'
+      +'<div class="ci-desc">'+c.desc+(isNativa?'':' <span style="font-size:.6rem;color:var(--muted);">◀ parcela</span>')+'</div>'
       +'<div class="ci-meta">'+fmtD(c.date)+(c.note?' · '+c.note:'')+'</div>'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'
-      +'<div class="ci-val">'+R(c.val)+'</div>'
+      +'<div class="ci-val">'+R(valorParcela)+'</div>'
       +catLabel
       +parcLabel
       +'</div>'
-      +'<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;flex-shrink:0;" onclick="delCompra(event,\''+c.id+'\')">&#x2715;</button>'
+      +delBtn
       +'</div>';
   }).join('');
 }
@@ -2061,13 +2108,27 @@ function saveNovaCompra(){
     document.getElementById('ncDesc').focus(); return;
   }
   var compras=getNubankCompras(curY,curM);
+  // Determina o mês correto da fatura pelo fechamento dia 19
+  var fatMes = mesFaturaNubank(date);
+  var fatY = fatMes.y, fatM = fatMes.m;
+  // Se o mês da fatura for diferente do mês atual, salva lá
+  var comprasDest = (fatY===curY && fatM===curM)
+    ? compras
+    : getNubankCompras(fatY, fatM);
+
   if(editCompraId){
-    var idx=compras.findIndex(function(c){return c.id===editCompraId;});
-    if(idx>-1) compras[idx]={id:editCompraId,desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat};
+    var idx=comprasDest.findIndex(function(c){return c.id===editCompraId;});
+    if(idx>-1) comprasDest[idx]={id:editCompraId,desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat};
   } else {
-    compras.push({id:String(Date.now()),desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
+    comprasDest.push({id:String(Date.now()),desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
   }
-  setNubankCompras(curY,curM,compras);
+  setNubankCompras(fatY, fatM, comprasDest);
+
+  // Avisa se salvou em mês diferente
+  if(fatY!==curY || fatM!==curM){
+    showToast('Lançado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
+  }
+
   updateNubankExpValue();
   closeNovaCompra();
   renderNubank();
