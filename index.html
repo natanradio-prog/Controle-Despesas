@@ -1100,6 +1100,9 @@ function render(){
   document.getElementById('monthLabel').textContent=MONTHS_PT[curM-1];
   checkAtrasos();
 
+  // Atualiza valor do Nubank no mês atual com base nas parcelas
+  atualizarNubankNoMes(curY, curM);
+
   // Notes
   document.getElementById('notesField').value=notes[noteKey(curY,curM)]||'';
 
@@ -1804,6 +1807,25 @@ function updateDizimoCard(){
   document.getElementById('dizimoAcum').textContent = da>0 ? R(da) : '-';
 }
 
+function atualizarNubankNoMes(y, m){
+  // Encontra a despesa do Cartão Nubank no mês
+  var arr = expenses[y] || [];
+  var idx = arr.findIndex(function(e){
+    return e.category==='Cartao Nubank' && e.month===m;
+  });
+  if(idx===-1) return;
+
+  var fatReal = getNubankFatura(y,m);
+  var totalCalc = calcNubankTotal(y,m);
+  // Valor manual prevalece; se não há manual usa o calculado
+  var valor = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
+  if(valor !== arr[idx].amount){
+    arr[idx].amount = valor;
+    expenses[y] = arr;
+    persist();
+  }
+}
+
 // ══ CARTÃO NUBANK ══
 var NK_CATS_DEFAULT = ['Utilidade Domestica','Roupas','Calcados','Viagem','Hotel',
   'Restaurante','Medicamentos','Presentes','Festas','Supermercado','Padaria',
@@ -1851,16 +1873,33 @@ function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
 function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
 
 function calcNubankTotal(y,m){
-  return getNubankCompras(y,m).reduce(function(s,c){
-    // valor da parcela deste mês
-    if(!c.parcelas||c.parcelas<=1) return s+c.val;
-    // só conta se a compra foi feita antes ou no mês y/m
+  // Coleta compras de todos os meses já registrados
+  var todasCompras = [];
+  for(var y2=2025; y2<=y; y2++){
+    for(var m2=1; m2<=12; m2++){
+      // Não precisa ir além do mês consultado
+      if(y2===y && m2>m) break;
+      getNubankCompras(y2,m2).forEach(function(c){
+        todasCompras.push(c);
+      });
+    }
+  }
+
+  return todasCompras.reduce(function(s,c){
+    if(!c.date) return s;
     var cd = new Date(c.date+'T00:00:00');
     var compraM = cd.getMonth()+1;
     var compraY = cd.getFullYear();
-    // parcela offset
     var offset = (y - compraY)*12 + (m - compraM);
-    if(offset>=0 && offset<c.parcelas) return s + Math.round(c.val/c.parcelas*100)/100;
+    if(c.parcelas>1){
+      // Parcela entra se offset está dentro do número de parcelas
+      if(offset>=0 && offset<c.parcelas){
+        return s + Math.round(c.val/c.parcelas*100)/100;
+      }
+    } else {
+      // Compra à vista só entra no mês da compra
+      if(offset===0) return s + c.val;
+    }
     return s;
   },0);
 }
@@ -1946,7 +1985,7 @@ function renderNubank(){
   document.getElementById('nubankComprasList').innerHTML = sorted.map(function(c){
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+c.parcelas+'x '+R(Math.round(c.val/c.parcelas*100)/100)+'</span>' : '';
     var catLabel = c.cat ? '<span style="font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;">'+c.cat+'</span>' : '';
-    return '<div class="compra-item">'
+    return '<div class="compra-item" onclick="editCompra(\''+c.id+'\')" style="cursor:pointer;">'
       +'<div class="ci-info">'
       +'<div class="ci-desc">'+c.desc+'</div>'
       +'<div class="ci-meta">'+fmtD(c.date)+(c.note?' · '+c.note:'')+'</div>'
@@ -1956,7 +1995,7 @@ function renderNubank(){
       +catLabel
       +parcLabel
       +'</div>'
-      +'<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;" onclick="delCompra(\''+c.id+'\')">&#x2715;</button>'
+      +'<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;flex-shrink:0;" onclick="delCompra(event,\''+c.id+'\')">&#x2715;</button>'
       +'</div>';
   }).join('');
 }
@@ -1972,6 +2011,7 @@ function onNubankFaturaInput(el){
 function updateNubankExpValue(){
   if(!nubankExpId) return;
   var fatReal = getNubankFatura(curY,curM);
+  // Valor manual sempre prevalece; só usa calculado se não há manual
   var totalCalc = calcNubankTotal(curY,curM);
   var valor = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
   Object.keys(expenses).forEach(function(y){
@@ -2035,7 +2075,26 @@ function saveNovaCompra(){
   showToast('Compra salva');
 }
 
-function delCompra(id){
+function editCompra(id){
+  var compras = getNubankCompras(curY,curM);
+  var c = compras.find(function(x){return x.id===id;});
+  if(!c) return;
+  editCompraId = id;
+  document.getElementById('novaCompraTitle').textContent = 'Editar compra';
+  document.getElementById('ncDesc').value = c.desc;
+  document.getElementById('ncVal').value = c.val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('ncDate').value = c.date||'';
+  document.getElementById('ncNote').value = c.note||'';
+  document.getElementById('ncNovaCatRow').style.display='none';
+  buildNKCatSelect();
+  document.getElementById('ncCat').value = c.cat||'Outros';
+  setParcelado(c.parcelas>1);
+  if(c.parcelas>1) document.getElementById('ncParcelas').value = c.parcelas;
+  document.getElementById('overlayNovaCompra').classList.add('open');
+}
+
+function delCompra(ev,id){
+  if(ev) ev.stopPropagation();
   var compras=getNubankCompras(curY,curM).filter(function(c){return c.id!==id;});
   setNubankCompras(curY,curM,compras);
   updateNubankExpValue();
