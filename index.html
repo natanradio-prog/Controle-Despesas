@@ -179,6 +179,8 @@
   .cat-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px;}
   .cat-item span{flex:1;font-size:.85rem;}
   .cat-badge{font-size:.6rem;padding:2px 7px;border-radius:8px;background:#ede9fe;color:#7c3aed;}
+  .cat-badge.arquivada{background:#f1f5f9;color:#94a3b8;}
+  .cat-item.arquivada{opacity:.6;}
   .btn-cat-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px;transition:color .2s;}
   .btn-cat-del:hover{color:var(--red);}
   .add-cat-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
@@ -219,7 +221,31 @@
   .btn-add-desconto{background:none;border:1px dashed var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;margin-top:4px;width:100%;transition:all .2s;}
   .btn-add-desconto:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* OVERLAY RELATÓRIO */
+  /* CARTÃO NUBANK */
+  .nubank-header{background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:16px;margin-bottom:14px;color:#fff;}
+  .nubank-header label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;display:block;margin-bottom:4px;}
+  .nubank-vals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .nubank-val-item label{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;display:block;margin-bottom:3px;}
+  .nubank-val-item .nv{font-weight:700;font-size:1rem;}
+  .nubank-val-item .nv.alert{color:#fca5a5;}
+  .nubank-manual{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;margin-top:10px;}
+  .nubank-manual label{font-size:.68rem;color:rgba(255,255,255,.85);white-space:nowrap;}
+  .nubank-manual input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.4);color:#fff;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;outline:none;width:100%;text-align:right;}
+  .nubank-manual input::placeholder{color:rgba(255,255,255,.4);}
+
+  .compras-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .compra-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;}
+  .compra-item .ci-info{flex:1;min-width:0;}
+  .compra-item .ci-desc{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .compra-item .ci-meta{font-size:.67rem;color:var(--muted);margin-top:1px;}
+  .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--purple);}
+  .compra-item .ci-parc{font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;white-space:nowrap;}
+
+  .futuro-card{background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #d8b4fe;border-radius:11px;padding:12px 14px;margin-bottom:14px;}
+  .futuro-card label{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:#7c3aed;display:block;margin-bottom:8px;}
+  .futuro-row{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid #e9d5ff;}
+  .futuro-row:last-child{border:none;font-weight:700;}
+  .futuro-row span:last-child{color:#6d28d9;font-weight:600;}
   .rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
   .rel-month-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;padding:8px 6px;text-align:center;transition:all .2s;}
   .rel-month-btn.sel{background:#ede9fe;border-color:#a78bfa;color:var(--accent);font-weight:500;}
@@ -442,6 +468,119 @@
       <button class="btn-add-cat" onclick="addCategory()">+ Adicionar</button>
     </div>
   </div>
+ </div>
+</div>
+
+<!-- Overlay Cartão Nubank -->
+<div class="overlay" id="overlayNubank" onclick="overlayClick(event,'overlayNubank')">
+ <div class="sheet">
+  <div class="sheet-header">
+    <h2 style="color:#8b5cf6;">💜 Cartão Nubank</h2>
+    <button class="btn-close" onclick="closeNubank()">&#x2715;</button>
+  </div>
+
+  <!-- Header com totais -->
+  <div class="nubank-header">
+    <label>Fatura de <span id="nubankMesLabel"></span></label>
+    <div class="nubank-vals">
+      <div class="nubank-val-item">
+        <label>Total calculado</label>
+        <div class="nv" id="nubankTotalCalc">R$ 0,00</div>
+      </div>
+      <div class="nubank-val-item">
+        <label>Fatura real</label>
+        <div class="nv" id="nubankTotalRealDisplay">-</div>
+      </div>
+    </div>
+    <div class="nubank-manual">
+      <label>Informar fatura real:</label>
+      <input type="text" id="nubankFaturaInput" placeholder="0,00" inputmode="decimal" oninput="onNubankFaturaInput(this)" />
+    </div>
+  </div>
+
+  <!-- Comprometido meses futuros -->
+  <div class="futuro-card" id="nubankFuturoCard">
+    <label>&#128197; Comprometido nos próximos meses</label>
+    <div id="nubankFuturoRows"></div>
+  </div>
+
+  <!-- Lista de compras -->
+  <div style="font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;">
+    <span>Compras do mês</span>
+    <span id="nubankComprasCount">0</span>
+  </div>
+  <div class="compras-list" id="nubankComprasList"></div>
+
+  <button class="btn-save" onclick="openRelNubank()" style="background:rgba(139,92,246,.15);color:#8b5cf6;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
+  <button class="btn-save" onclick="openNovaCompra()" style="background:#8b5cf6;box-shadow:0 4px 14px rgba(139,92,246,.3);">+ Nova compra</button>
+ </div>
+</div>
+
+<!-- Overlay Nova Compra Nubank -->
+<div class="overlay" id="overlayNovaCompra" onclick="overlayClick(event,'overlayNovaCompra')">
+ <div class="sheet">
+  <div class="sheet-header">
+    <h2 id="novaCompraTitle" style="color:#8b5cf6;">Nova compra</h2>
+    <button class="btn-close" onclick="closeNovaCompra()">&#x2715;</button>
+  </div>
+  <div class="form-grid">
+    <div class="fg full"><label>Descrição</label><input type="text" id="ncDesc" placeholder="Ex: Supermercado"/></div>
+    <div class="fg"><label>Valor (R$)</label><input type="text" id="ncVal" placeholder="0,00" inputmode="decimal" oninput="applyMoneyMask(this)"/></div>
+    <div class="fg"><label>Data</label><input type="date" id="ncDate"/></div>
+    <div class="fg full">
+      <label>Parcelado?</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button class="status-btn active" id="btnNaoParc" onclick="setParcelado(false)">Não</button>
+        <button class="status-btn" id="btnSimParc" onclick="setParcelado(true)">Sim</button>
+      </div>
+    </div>
+    <div class="fg full">
+      <label>Categoria</label>
+      <select id="ncCat"></select>
+    </div>
+    <div class="fg full" id="ncNovaCatRow" style="display:none;">
+      <label>Nova categoria</label>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;">
+        <input type="text" id="ncNovaCatInput" placeholder="Nome da categoria"/>
+        <button onclick="addNKCat()" style="background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;padding:9px 12px;white-space:nowrap;">+ Add</button>
+      </div>
+    </div>
+    <div class="fg full" id="parcelasRow" style="display:none;">
+      <label>Número de parcelas</label>
+      <select id="ncParcelas">
+        <option>2</option><option>3</option><option>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option><option>9</option>
+        <option>10</option><option>11</option><option>12</option>
+        <option>18</option><option>24</option>
+      </select>
+    </div>
+    <div class="fg full"><label>Observação</label><input type="text" id="ncNote" placeholder="Ex: presente, viagem..."/></div>
+  </div>
+  <button class="btn-save" onclick="saveNovaCompra()" style="background:#8b5cf6;box-shadow:0 4px 14px rgba(139,92,246,.3);">Salvar compra</button>
+ </div>
+</div>
+
+<!-- Overlay Relatório Nubank -->
+<div class="overlay" id="overlayRelNubank" onclick="overlayClick(event,'overlayRelNubank')">
+ <div class="sheet">
+  <div class="sheet-header">
+    <h2 style="color:#8b5cf6;">💜 Relatório Nubank</h2>
+    <button class="btn-close" onclick="document.getElementById(\'overlayRelNubank\').classList.remove(\'open\')">&#x2715;</button>
+  </div>
+  <div class="fg full" style="margin-bottom:12px;">
+    <label style="font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:8px;">Período</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label style="font-size:.6rem;color:var(--muted);">De</label><select id="nkRelDe"></select></div>
+      <div><label style="font-size:.6rem;color:var(--muted);">Até</label><select id="nkRelAte"></select></div>
+    </div>
+  </div>
+  <div style="font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;">Categorias</div>
+  <div style="display:flex;gap:6px;margin-bottom:8px;">
+    <button class="rel-cat-btn sel" id="btnNKTodasCats" onclick="nkSelAllCats()">Todas</button>
+    <button class="rel-cat-btn" id="btnNKNenhumCat" onclick="nkSelNenhumCats()">Nenhuma</button>
+  </div>
+  <div class="rel-cats" id="nkRelCatsGrid"></div>
+  <button class="btn-gerar-pdf" onclick="gerarRelNubank()" style="background:#8b5cf6;">&#128196; Gerar Relatório</button>
  </div>
 </div>
 
@@ -824,6 +963,7 @@ var expenses = {};  // { "2026": [{...}, ...], "2027": [...] }
 var notes    = {};  // { "2026-4": "texto" }
 var receitas = {};  // { "2026-4": {salario, outras:[]} }
 var cats     = [];
+var archivedCats = [];
 var curY     = new Date().getFullYear();
 var curM     = new Date().getMonth() + 1;
 var fStatus  = 'pendente';
@@ -846,10 +986,12 @@ function load(){
     var n=localStorage.getItem('desp_notes3');
     var r=localStorage.getItem('desp_rec3');
     var c=localStorage.getItem('desp_cats3');
+    var a=localStorage.getItem('desp_arch3');
     if(e) expenses=JSON.parse(e);
     if(n) notes=JSON.parse(n);
     if(r) receitas=JSON.parse(r);
     cats=c?JSON.parse(c):DEFAULT_CATS.slice();
+    archivedCats=a?JSON.parse(a):[];
   }catch(x){cats=DEFAULT_CATS.slice();}
 }
 
@@ -858,6 +1000,7 @@ function persist(){
   localStorage.setItem('desp_notes3', JSON.stringify(notes));
   localStorage.setItem('desp_rec3',   JSON.stringify(receitas));
   localStorage.setItem('desp_cats3',  JSON.stringify(cats));
+  localStorage.setItem('desp_arch3',  JSON.stringify(archivedCats));
 }
 
 function getYearExp(y){return expenses[y]||[];}
@@ -916,6 +1059,19 @@ function ensureYearGenerated(y){
 // ══ HELPERS ══
 function R(v){return 'R$\u00a0'+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fmtD(d){if(!d)return'';var p=d.split('-');return p[2]+'/'+p[1];}
+
+// Regra: dia 1-19 pertence ao mês anterior, dia 20-31 pertence ao próprio mês
+function mesDoLancamento(dateStr){
+  if(!dateStr) return {y:curY,m:curM};
+  var p=dateStr.split('-');
+  var y=parseInt(p[0]), m=parseInt(p[1]), d=parseInt(p[2]);
+  if(d<=19){
+    // pertence ao mês anterior
+    m=m-1;
+    if(m<1){m=12;y--;}
+  }
+  return {y:y,m:m};
+}
 
 function getMonthExp(y,m){
   return (expenses[y]||[])
@@ -1033,7 +1189,7 @@ function render(){
       pendente: 'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;'
     };
 
-    return '<div class="expense-item" style="background:'+bgColor+'" onclick="editExp(\''+e.id+'\')">'
+    return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartao Nubank'?'openNubank(\''+e.id+'\')':'editExp(\''+e.id+'\')')+'">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
@@ -1176,7 +1332,8 @@ function descartarSobra(){
 // ══ FORM ══
 function buildCatSelect(){
   var sel=document.getElementById('fCat');
-  sel.innerHTML=cats.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
+  sel.innerHTML=cats.filter(function(c){ return archivedCats.indexOf(c)===-1; })
+    .map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
 }
 function buildFixoOptions(){
   var sel=document.getElementById('rFixoAte');
@@ -1246,7 +1403,10 @@ function saveExpense(){
   if(!desc){document.getElementById('fDesc').focus();return;}
   var m=curM;
   var y=curY;
-  if(date){m=parseInt(date.split('-')[1]);y=parseInt(date.split('-')[0]);}
+  if(date){
+    var ml=mesDoLancamento(date);
+    m=ml.m; y=ml.y;
+  }
   if(!expenses[y])expenses[y]=[];
   if(editId){
     var idx=expenses[y].findIndex(function(x){return x.id===editId;});
@@ -1266,14 +1426,18 @@ function saveExpense(){
       var baseDay=date?date.split('-')[2]:'22';
       for(var rm=m+1;rm<=ate;rm++){
         var nd=y+'-'+String(rm).padStart(2,'0')+'-'+baseDay;
-        expenses[y].push({id:String(Date.now()+rm*100),year:y,month:rm,desc:desc,category:cat,date:nd,amount:val,note:note,status:'pendente'});
+        var ml2=mesDoLancamento(nd);
+        expenses[ml2.y]=expenses[ml2.y]||[];
+        expenses[ml2.y].push({id:String(Date.now()+rm*100),year:ml2.y,month:ml2.m,desc:desc,category:cat,date:nd,amount:val,note:note,status:'pendente'});
       }
     }else if(fRepeat==='var'){
       document.querySelectorAll('.var-val').forEach(function(inp){
         var rm=parseInt(inp.getAttribute('data-m'));
         var rv=inp.value!==''?parseFloat(inp.value):null;
         var nd=y+'-'+String(rm).padStart(2,'0')+'-'+(date?date.split('-')[2]:'22');
-        expenses[y].push({id:String(Date.now()+rm*100),year:y,month:rm,desc:desc,category:cat,date:nd,amount:rv,note:note,status:'pendente'});
+        var ml2=mesDoLancamento(nd);
+        expenses[ml2.y]=expenses[ml2.y]||[];
+        expenses[ml2.y].push({id:String(Date.now()+rm*100),year:ml2.y,month:ml2.m,desc:desc,category:cat,date:nd,amount:rv,note:note,status:'pendente'});
       });
     }
     showToast('Adicionado');
@@ -1323,25 +1487,56 @@ function closeForm(){document.getElementById('overlayForm').classList.remove('op
 function openSettings(){renderCatList();document.getElementById('overlaySettings').classList.add('open');}
 function closeSettings(){document.getElementById('overlaySettings').classList.remove('open');buildCatSelect();render();}
 function renderCatList(){
-  document.getElementById('catList').innerHTML=cats.map(function(c){
-    var isSpecial=c==='Dizimo';
-    return'<div class="cat-item"><span>'+c+'</span>'
-      +(isSpecial?'<span class="cat-badge special">acumulado</span>':'')
-      +'<button class="btn-cat-del" onclick="deleteCat(\''+c+'\')">&#x2715;</button>'
+  var html = cats.map(function(c){
+    return '<div class="cat-item">'
+      +'<span>'+c+'</span>'
+      +'<button title="Arquivar" onclick="archiveCat(\''+c+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px 6px;">&#128190;</button>'
+      +'<button class="btn-cat-del" onclick="deleteCat(\''+c+'\')" title="Excluir">&#x2715;</button>'
       +'</div>';
   }).join('');
+  if(archivedCats.length){
+    html += '<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:12px 0 6px;">Arquivadas</div>';
+    html += archivedCats.map(function(c){
+      return '<div class="cat-item arquivada">'
+        +'<span>'+c+'</span>'
+        +'<span class="cat-badge arquivada">arquivada</span>'
+        +'<button title="Restaurar" onclick="restoreCat(\''+c+'\')" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:.85rem;padding:2px 6px;">&#8617;</button>'
+        +'<button class="btn-cat-del" onclick="deleteCat(\''+c+'\')" title="Excluir">&#x2715;</button>'
+        +'</div>';
+    }).join('');
+  }
+  document.getElementById('catList').innerHTML = html;
 }
+
 function addCategory(){
   var inp=document.getElementById('newCatInput');
   var name=inp.value.trim();
   if(!name)return;
   if(cats.indexOf(name)>-1){showToast('Ja existe');return;}
+  if(archivedCats.indexOf(name)>-1){showToast('Arquivada — restaure primeiro');return;}
   cats.push(name);inp.value='';persist();renderCatList();showToast('Categoria adicionada');
 }
+
+function archiveCat(name){
+  cats=cats.filter(function(c){return c!==name;});
+  archivedCats.push(name);
+  persist();renderCatList();
+  showToast(name+' arquivada');
+}
+
+function restoreCat(name){
+  archivedCats=archivedCats.filter(function(c){return c!==name;});
+  cats.push(name);
+  persist();renderCatList();
+  showToast(name+' restaurada');
+}
+
 function deleteCat(name){
   var inUse=Object.keys(expenses).some(function(y){return (expenses[y]||[]).some(function(e){return e.category===name;});});
-  if(inUse){showToast('Categoria em uso');return;}
-  cats=cats.filter(function(c){return c!==name;});persist();renderCatList();
+  if(inUse){showToast('Em uso — arquive em vez de excluir');return;}
+  cats=cats.filter(function(c){return c!==name;});
+  archivedCats=archivedCats.filter(function(c){return c!==name;});
+  persist();renderCatList();
 }
 
 // ══ NAVIGATION ══
@@ -1364,6 +1559,9 @@ function overlayClick(ev,id){
   if(ev.target===document.getElementById(id)){
     if(id==='overlayForm')closeForm();
     else if(id==='overlayRelatorio')closeRelatorio();
+    else if(id==='overlayNubank')closeNubank();
+    else if(id==='overlayNovaCompra')closeNovaCompra();
+    else if(id==='overlayRelNubank')document.getElementById('overlayRelNubank').classList.remove('open');
     else closeSettings();
   }
 }
@@ -1604,6 +1802,366 @@ function updateDizimoCard(){
   card.style.display = 'flex';
   document.getElementById('dizimoMes').textContent  = dm!=null ? R(dm) : 'preencha o contracheque';
   document.getElementById('dizimoAcum').textContent = da>0 ? R(da) : '-';
+}
+
+// ══ CARTÃO NUBANK ══
+var NK_CATS_DEFAULT = ['Utilidade Domestica','Roupas','Calcados','Viagem','Hotel',
+  'Restaurante','Medicamentos','Presentes','Festas','Supermercado','Padaria',
+  'Combustivel','Manutencao Casa','Assinaturas','Saude','Educacao','Eletronicos','Outros'];
+
+function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
+function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
+
+function buildNKCatSelect(){
+  var cats = getNKCats();
+  var sel = document.getElementById('ncCat');
+  sel.innerHTML = cats.map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
+  // Mostrar campo nova categoria quando "Outros" ou última opção
+  sel.onchange = function(){
+    document.getElementById('ncNovaCatRow').style.display = this.value==='Nova categoria...' ? '' : 'none';
+  };
+  // Adiciona opção de nova categoria ao final
+  sel.innerHTML += '<option value="Nova categoria...">+ Nova categoria...</option>';
+}
+
+function addNKCat(){
+  var inp = document.getElementById('ncNovaCatInput');
+  var name = inp.value.trim();
+  if(!name) return;
+  var cats = getNKCats();
+  if(cats.indexOf(name)===-1){ cats.push(name); setNKCats(cats); }
+  buildNKCatSelect();
+  document.getElementById('ncCat').value = name;
+  document.getElementById('ncNovaCatRow').style.display='none';
+  inp.value='';
+  showToast('Categoria adicionada');
+}
+
+var nubankExpId  = null;
+var isParcelado  = false;
+var editCompraId = null;
+var nkRelCatsSel = [];
+
+// compras: { "2026-4": [{id, desc, val, date, parcelas, note}] }
+// fatura real: guardada em receitas como rec.nubankFatura
+
+function getNubankCompras(y,m){ return JSON.parse(localStorage.getItem('nk_'+y+'_'+m)||'[]'); }
+function setNubankCompras(y,m,arr){ localStorage.setItem('nk_'+y+'_'+m, JSON.stringify(arr)); }
+function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
+function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
+
+function calcNubankTotal(y,m){
+  return getNubankCompras(y,m).reduce(function(s,c){
+    // valor da parcela deste mês
+    if(!c.parcelas||c.parcelas<=1) return s+c.val;
+    // só conta se a compra foi feita antes ou no mês y/m
+    var cd = new Date(c.date+'T00:00:00');
+    var compraM = cd.getMonth()+1;
+    var compraY = cd.getFullYear();
+    // parcela offset
+    var offset = (y - compraY)*12 + (m - compraM);
+    if(offset>=0 && offset<c.parcelas) return s + Math.round(c.val/c.parcelas*100)/100;
+    return s;
+  },0);
+}
+
+function getFuturoComprometido(){
+  // Calcula parcelas futuras mês a mês (próximos 12 meses)
+  var result = [];
+  var hoje = new Date();
+  var baseY = curY, baseM = curM;
+  // Coleta todas as compras parceladas de todos os meses
+  var todasCompras = [];
+  for(var y2=2026; y2<=curY+2; y2++){
+    for(var m2=1; m2<=12; m2++){
+      getNubankCompras(y2,m2).forEach(function(c){
+        if(c.parcelas>1) todasCompras.push(c);
+      });
+    }
+  }
+  for(var i=1; i<=12; i++){
+    var fm = baseM + i; var fy = baseY;
+    if(fm>12){fm-=12;fy++;}
+    var total = 0;
+    todasCompras.forEach(function(c){
+      var cd = new Date(c.date+'T00:00:00');
+      var cm = cd.getMonth()+1, cy = cd.getFullYear();
+      var offset = (fy-cy)*12+(fm-cm);
+      if(offset>=0 && offset<c.parcelas) total += Math.round(c.val/c.parcelas*100)/100;
+    });
+    if(total>0) result.push({y:fy,m:fm,total:total});
+  }
+  return result;
+}
+
+function openNubank(expId){
+  nubankExpId = expId;
+  renderNubank();
+  document.getElementById('overlayNubank').classList.add('open');
+}
+
+function closeNubank(){
+  document.getElementById('overlayNubank').classList.remove('open');
+  nubankExpId = null;
+}
+
+function renderNubank(){
+  document.getElementById('nubankMesLabel').textContent = MONTHS_PT[curM-1]+' '+curY;
+
+  var compras = getNubankCompras(curY,curM);
+  var totalCalc = calcNubankTotal(curY,curM);
+  document.getElementById('nubankTotalCalc').textContent = R(totalCalc);
+
+  var fatReal = getNubankFatura(curY,curM);
+  document.getElementById('nubankTotalRealDisplay').textContent = fatReal!=null ? R(fatReal) : '-';
+  var fi = document.getElementById('nubankFaturaInput');
+  fi.value = fatReal!=null ? fatReal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+
+  // Atualiza cor se diferença
+  var calcEl = document.getElementById('nubankTotalCalc');
+  if(fatReal!=null && Math.abs(fatReal-totalCalc)>0.05){
+    calcEl.classList.add('alert');
+  } else { calcEl.classList.remove('alert'); }
+
+  // Futuro comprometido
+  var futuro = getFuturoComprometido();
+  var futCard = document.getElementById('nubankFuturoCard');
+  if(futuro.length){
+    futCard.style.display='block';
+    var totalFut = futuro.reduce(function(s,f){return s+f.total;},0);
+    document.getElementById('nubankFuturoRows').innerHTML =
+      futuro.map(function(f){
+        return '<div class="futuro-row"><span>'+MONTHS_PT[f.m-1]+' '+f.y+'</span><span>'+R(f.total)+'</span></div>';
+      }).join('')
+      +'<div class="futuro-row"><span>Total futuro</span><span>'+R(totalFut)+'</span></div>';
+  } else { futCard.style.display='none'; }
+
+  // Lista de compras
+  document.getElementById('nubankComprasCount').textContent = compras.length;
+  if(!compras.length){
+    document.getElementById('nubankComprasList').innerHTML='<div class="empty-state" style="padding:20px;color:var(--muted);text-align:center;font-size:.83rem;">Nenhuma compra lançada</div>';
+    return;
+  }
+  var sorted = compras.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  document.getElementById('nubankComprasList').innerHTML = sorted.map(function(c){
+    var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+c.parcelas+'x '+R(Math.round(c.val/c.parcelas*100)/100)+'</span>' : '';
+    var catLabel = c.cat ? '<span style="font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;">'+c.cat+'</span>' : '';
+    return '<div class="compra-item">'
+      +'<div class="ci-info">'
+      +'<div class="ci-desc">'+c.desc+'</div>'
+      +'<div class="ci-meta">'+fmtD(c.date)+(c.note?' · '+c.note:'')+'</div>'
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'
+      +'<div class="ci-val">'+R(c.val)+'</div>'
+      +catLabel
+      +parcLabel
+      +'</div>'
+      +'<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;" onclick="delCompra(\''+c.id+'\')">&#x2715;</button>'
+      +'</div>';
+  }).join('');
+}
+
+function onNubankFaturaInput(el){
+  var v = applyMoneyMask(el);
+  setNubankFatura(curY,curM, v>0?v:null);
+  // Atualiza despesa principal com valor da fatura ou calculado
+  updateNubankExpValue();
+  renderNubank();
+}
+
+function updateNubankExpValue(){
+  if(!nubankExpId) return;
+  var fatReal = getNubankFatura(curY,curM);
+  var totalCalc = calcNubankTotal(curY,curM);
+  var valor = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
+  Object.keys(expenses).forEach(function(y){
+    var idx=expenses[y].findIndex(function(x){return x.id===nubankExpId;});
+    if(idx>-1) expenses[y][idx].amount=valor;
+  });
+  persist();
+}
+
+function openNovaCompra(){
+  editCompraId=null;
+  document.getElementById('novaCompraTitle').textContent='Nova compra';
+  document.getElementById('ncDesc').value='';
+  document.getElementById('ncVal').value='';
+  var today=new Date();
+  document.getElementById('ncDate').value=curY+'-'+String(curM).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+  document.getElementById('ncNote').value='';
+  document.getElementById('ncParcelas').value='2';
+  document.getElementById('ncNovaCatRow').style.display='none';
+  buildNKCatSelect();
+  setParcelado(false);
+  document.getElementById('overlayNovaCompra').classList.add('open');
+  setTimeout(function(){document.getElementById('ncDesc').focus();},300);
+}
+
+function closeNovaCompra(){
+  document.getElementById('overlayNovaCompra').classList.remove('open');
+}
+
+function setParcelado(v){
+  isParcelado=v;
+  document.getElementById('btnNaoParc').classList.toggle('active',!v);
+  document.getElementById('btnSimParc').classList.toggle('active',v);
+  document.getElementById('parcelasRow').style.display=v?'':'none';
+}
+
+function saveNovaCompra(){
+  var desc=document.getElementById('ncDesc').value.trim();
+  var valRaw=document.getElementById('ncVal').value.replace(/\./g,'').replace(',','.');
+  var val=parseFloat(valRaw);
+  var date=document.getElementById('ncDate').value;
+  var cat=document.getElementById('ncCat').value;
+  if(cat==='Nova categoria...') cat='Outros';
+  var note=document.getElementById('ncNote').value.trim();
+  var parcelas=isParcelado?parseInt(document.getElementById('ncParcelas').value):1;
+  if(!desc||isNaN(val)||val<=0||!date){
+    document.getElementById('ncDesc').focus(); return;
+  }
+  var compras=getNubankCompras(curY,curM);
+  if(editCompraId){
+    var idx=compras.findIndex(function(c){return c.id===editCompraId;});
+    if(idx>-1) compras[idx]={id:editCompraId,desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat};
+  } else {
+    compras.push({id:String(Date.now()),desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
+  }
+  setNubankCompras(curY,curM,compras);
+  updateNubankExpValue();
+  closeNovaCompra();
+  renderNubank();
+  render();
+  showToast('Compra salva');
+}
+
+function delCompra(id){
+  var compras=getNubankCompras(curY,curM).filter(function(c){return c.id!==id;});
+  setNubankCompras(curY,curM,compras);
+  updateNubankExpValue();
+  renderNubank();
+  render();
+}
+
+function openRelNubank(){
+  // Popula períodos (todos os meses com compras)
+  var meses = [];
+  for(var y2=2026; y2<=curY+1; y2++){
+    for(var m2=1; m2<=12; m2++){
+      if(getNubankCompras(y2,m2).length>0) meses.push({y:y2,m:m2});
+    }
+  }
+  // Se não há compras, mostra mês atual
+  if(!meses.length) meses.push({y:curY,m:curM});
+
+  var opts = meses.map(function(x){
+    return '<option value="'+x.y+'_'+x.m+'">'+MONTHS_PT[x.m-1]+' '+x.y+'</option>';
+  }).join('');
+  document.getElementById('nkRelDe').innerHTML=opts;
+  document.getElementById('nkRelAte').innerHTML=opts;
+  document.getElementById('nkRelAte').selectedIndex=meses.length-1;
+
+  // Categorias
+  var cats=getNKCats();
+  nkRelCatsSel=cats.slice();
+  document.getElementById('nkRelCatsGrid').innerHTML=cats.map(function(c,i){
+    return '<button class="rel-cat-btn sel" id="nkrc'+i+'" onclick="nkToggleCat(\''+c+'\','+i+')">'+c+'</button>';
+  }).join('');
+
+  document.getElementById('overlayRelNubank').classList.add('open');
+}
+
+function nkSelAllCats(){
+  nkRelCatsSel=getNKCats().slice();
+  document.querySelectorAll('[id^="nkrc"]').forEach(function(b){b.classList.add('sel');});
+}
+function nkSelNenhumCats(){
+  nkRelCatsSel=[];
+  document.querySelectorAll('[id^="nkrc"]').forEach(function(b){b.classList.remove('sel');});
+}
+function nkToggleCat(c,i){
+  var idx=nkRelCatsSel.indexOf(c);
+  if(idx>-1) nkRelCatsSel.splice(idx,1); else nkRelCatsSel.push(c);
+  var btn=document.getElementById('nkrc'+i);
+  if(btn) btn.classList.toggle('sel',nkRelCatsSel.indexOf(c)>-1);
+}
+
+function gerarRelNubank(){
+  var de=document.getElementById('nkRelDe').value.split('_');
+  var ate=document.getElementById('nkRelAte').value.split('_');
+  var deY=parseInt(de[0]),deM=parseInt(de[1]);
+  var ateY=parseInt(ate[0]),ateM=parseInt(ate[1]);
+
+  var todasCompras=[];
+  var y2=deY,m2=deM;
+  while(y2<ateY||(y2===ateY&&m2<=ateM)){
+    getNubankCompras(y2,m2).forEach(function(c){
+      if(nkRelCatsSel.indexOf(c.cat||'Outros')>-1){
+        todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
+      }
+    });
+    m2++; if(m2>12){m2=1;y2++;}
+  }
+
+  // Totais por categoria
+  var catTotals={};
+  todasCompras.forEach(function(c){
+    var cat=c.cat||'Outros';
+    catTotals[cat]=(catTotals[cat]||0)+c.val;
+  });
+  var total=todasCompras.reduce(function(s,c){return s+c.val;},0);
+  var catNames=Object.keys(catTotals).sort(function(a,b){return catTotals[b]-catTotals[a];});
+  var maxCat=catNames.length?catTotals[catNames[0]]:1;
+  var palette=['#8b5cf6','#6d28d9','#a78bfa','#7c3aed','#c4b5fd','#5b21b6','#ddd6fe','#4c1d95','#ede9fe','#f5f3ff'];
+
+  // Totais por mês
+  var mesTotals={};
+  todasCompras.forEach(function(c){
+    var key=MONTHS_PT[c._m-1]+' '+c._y;
+    mesTotals[key]=(mesTotals[key]||0)+c.val;
+  });
+
+  var body=document.getElementById('reportBody');
+  body.innerHTML=''
+    +'<div style="font-size:.75rem;color:#666;margin-bottom:6px;">💜 Nubank &bull; '
+    +MONTHS_PT[deM-1]+'/'+deY+' a '+MONTHS_PT[ateM-1]+'/'+ateY
+    +' &bull; '+todasCompras.length+' compras</div>'
+    +'<div style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:14px;margin-bottom:18px;color:#fff;">'
+    +'<div style="font-size:.65rem;opacity:.8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Total do período</div>'
+    +'<div style="font-size:1.6rem;font-weight:700;">'+R(total)+'</div></div>'
+    // Barras por categoria
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:12px;">Por categoria</div>'
+    +catNames.map(function(c,i){
+      var pct=maxCat>0?(catTotals[c]/maxCat*100):0;
+      var color=palette[i%palette.length];
+      return '<div style="margin-bottom:10px;">'
+        +'<div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px;">'
+        +'<span style="color:#333;">'+c+'</span><span style="font-weight:700;color:'+color+'">'+R(catTotals[c])+'</span></div>'
+        +'<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden;">'
+        +'<div style="width:'+pct.toFixed(1)+'%;height:100%;background:'+color+';border-radius:4px;"></div></div></div>';
+    }).join('')
+    // Por mês
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin:18px 0 12px;">Por mês</div>'
+    +Object.keys(mesTotals).map(function(mes){
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:.78rem;">'
+        +'<span>'+mes+'</span><span style="font-weight:700;color:#6d28d9;">'+R(mesTotals[mes])+'</span></div>';
+    }).join('')
+    // Lista detalhada
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin:18px 0 12px;">Compras detalhadas</div>'
+    +todasCompras.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).map(function(c){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f5f5f5;">'
+        +'<div>'
+        +'<div style="font-size:.82rem;font-weight:500;">'+c.desc+'</div>'
+        +'<div style="font-size:.68rem;color:#aaa;">'+fmtD(c.date)+' &bull; '+(c.cat||'Outros')+(c.parcelas>1?' &bull; '+c.parcelas+'x':'')+(c.note?' &bull; '+c.note:'')+'</div>'
+        +'</div>'
+        +'<div style="font-weight:700;color:#6d28d9;font-size:.85rem;white-space:nowrap;margin-left:8px;">'+R(c.val)+'</div>'
+        +'</div>';
+    }).join('');
+
+  document.getElementById('overlayRelNubank').classList.remove('open');
+  document.getElementById('overlayNubank').classList.remove('open');
+  document.getElementById('overlayReport').style.display='block';
+  document.body.style.overflow='hidden';
 }
 
 // ══ RELATÓRIO ══
