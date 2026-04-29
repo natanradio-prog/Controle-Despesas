@@ -2120,15 +2120,16 @@ function onNubankFaturaInput(el){
 }
 
 function updateNubankExpValue(){
-  if(!nubankExpId) return;
-  var fatReal = getNubankFatura(curY,curM);
-  // Valor manual sempre prevalece; só usa calculado se não há manual
-  var totalCalc = calcNubankTotal(curY,curM);
+  var y = nkCurY||curY; var m = nkCurM||curM;
+  // Encontra a despesa do Nubank no mês visualizado
+  var arr = expenses[y]||[];
+  var idx = arr.findIndex(function(e){ return e.category==='Cartao Nubank' && e.month===m; });
+  if(idx===-1) return;
+  var fatReal = getNubankFatura(y,m);
+  var totalCalc = calcNubankTotal(y,m);
   var valor = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
-  Object.keys(expenses).forEach(function(y){
-    var idx=expenses[y].findIndex(function(x){return x.id===nubankExpId;});
-    if(idx>-1) expenses[y][idx].amount=valor;
-  });
+  arr[idx].amount = valor;
+  expenses[y] = arr;
   persist();
 }
 
@@ -2172,38 +2173,51 @@ function saveNovaCompra(){
   if(!desc||isNaN(val)||val<=0||!date){
     document.getElementById('ncDesc').focus(); return;
   }
-  var compras=getNubankCompras(curY,curM);
+
   // Determina o mês correto da fatura pelo fechamento dia 19
   var fatMes = mesFaturaNubank(date);
   var fatY = fatMes.y, fatM = fatMes.m;
-  // Se o mês da fatura for diferente do mês atual, salva lá
-  var comprasDest = (fatY===curY && fatM===curM)
-    ? compras
-    : getNubankCompras(fatY, fatM);
+  var comprasDest = getNubankCompras(fatY, fatM);
 
   if(editCompraId){
-    var idx=comprasDest.findIndex(function(c){return c.id===editCompraId;});
-    if(idx>-1) comprasDest[idx]={id:editCompraId,desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat};
+    // Ao editar, remove do mês original e salva no novo mês calculado
+    var todosMs = [];
+    for(var sy=2025;sy<=fatY+1;sy++) for(var sm=1;sm<=12;sm++){
+      var arr=getNubankCompras(sy,sm);
+      var fi=arr.findIndex(function(c){return c.id===editCompraId;});
+      if(fi>-1){ arr.splice(fi,1); setNubankCompras(sy,sm,arr); break; }
+    }
+    comprasDest = getNubankCompras(fatY,fatM);
+    comprasDest.push({id:editCompraId,desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
   } else {
     comprasDest.push({id:String(Date.now()),desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
   }
   setNubankCompras(fatY, fatM, comprasDest);
 
-  // Avisa se salvou em mês diferente
-  if(fatY!==curY || fatM!==curM){
-    showToast('Lançado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
+  // Atualiza valor na despesa do mês de fatura
+  atualizarNubankNoMes(fatY, fatM);
+
+  if(fatY!==(nkCurY||curY) || fatM!==(nkCurM||curM)){
+    showToast('Lancado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
+  } else {
+    showToast('Compra salva');
   }
 
   updateNubankExpValue();
   closeNovaCompra();
   renderNubank();
-  render();
-  showToast('Compra salva');
+  if(fatY===curY && fatM===curM) render();
 }
 
 function editCompra(id){
-  var compras = getNubankCompras(curY,curM);
-  var c = compras.find(function(x){return x.id===id;});
+  // Busca a compra em todos os meses
+  var c = null;
+  for(var sy=2025; sy<=curY+1 && !c; sy++){
+    for(var sm=1; sm<=12 && !c; sm++){
+      var arr=getNubankCompras(sy,sm);
+      c = arr.find(function(x){return x.id===id;}) || null;
+    }
+  }
   if(!c) return;
   editCompraId = id;
   document.getElementById('novaCompraTitle').textContent = 'Editar compra';
@@ -2221,8 +2235,14 @@ function editCompra(id){
 
 function delCompra(ev,id){
   if(ev) ev.stopPropagation();
-  var compras=getNubankCompras(curY,curM).filter(function(c){return c.id!==id;});
-  setNubankCompras(curY,curM,compras);
+  // Remove de qualquer mês onde estiver salva
+  for(var sy=2025; sy<=curY+1; sy++){
+    for(var sm=1; sm<=12; sm++){
+      var arr=getNubankCompras(sy,sm);
+      var fi=arr.findIndex(function(c){return c.id===id;});
+      if(fi>-1){ arr.splice(fi,1); setNubankCompras(sy,sm,arr); break; }
+    }
+  }
   updateNubankExpValue();
   renderNubank();
   render();
