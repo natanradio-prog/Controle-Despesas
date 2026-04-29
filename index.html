@@ -544,7 +544,7 @@
   <div class="form-grid">
     <div class="fg full"><label>Descrição</label><input type="text" id="ncDesc" placeholder="Ex: Supermercado"/></div>
     <div class="fg"><label>Valor (R$)</label><input type="text" id="ncVal" placeholder="0,00" inputmode="decimal" oninput="applyMoneyMask(this)"/></div>
-    <div class="fg"><label>Data</label><input type="date" id="ncDate"/></div>
+    <div class="fg"><label>Data</label><input type="date" id="ncDate" onchange="atualizarFaturaInfo()"/></div>
     <div class="fg full">
       <label>Parcelado?</label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -573,6 +573,9 @@
       </select>
     </div>
     <div class="fg full"><label>Observação</label><input type="text" id="ncNote" placeholder="Ex: presente, viagem..."/></div>
+  <div class="fg full" id="ncFaturaInfo" style="background:#ede9fe;border-radius:8px;padding:8px 12px;font-size:.75rem;color:#6d28d9;display:none;">
+    📅 Fatura de <strong id="ncFaturaLabel"></strong>
+  </div>
   </div>
   <button class="btn-save" onclick="saveNovaCompra()" style="background:#8b5cf6;box-shadow:0 4px 14px rgba(139,92,246,.3);">Salvar compra</button>
  </div>
@@ -1904,6 +1907,14 @@ var NK_CATS_DEFAULT = ['Utilidade Domestica','Roupas','Calcados','Viagem','Hotel
 function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
 
+function atualizarFaturaInfo(){
+  var date = document.getElementById('ncDate').value;
+  if(!date){ document.getElementById('ncFaturaInfo').style.display='none'; return; }
+  var fm = mesFaturaNubank(date);
+  document.getElementById('ncFaturaLabel').textContent = MONTHS_PT[fm.m-1]+'/'+fm.y;
+  document.getElementById('ncFaturaInfo').style.display='';
+}
+
 function mesFaturaNubank(dateStr){
   // Fechamento dia 19: compra até dia 19 → fatura do mês da compra
   // compra dia 20 em diante → fatura do mês seguinte
@@ -2195,6 +2206,7 @@ function openNovaCompra(){
   document.getElementById('ncNovaCatRow').style.display='none';
   buildNKCatSelect();
   setParcelado(false);
+  atualizarFaturaInfo();
   document.getElementById('overlayNovaCompra').classList.add('open');
   setTimeout(function(){document.getElementById('ncDesc').focus();},300);
 }
