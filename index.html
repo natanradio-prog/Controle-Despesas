@@ -1845,32 +1845,6 @@ function updateDizimoCard(){
   document.getElementById('dizimoAcum').textContent = da>0 ? R(da) : '-';
 }
 
-function diagNubank(){
-  var resultado = 'Chaves nk_ no localStorage:\n';
-  var chaves = [];
-  for(var i=0; i<localStorage.length; i++){
-    var k = localStorage.key(i);
-    if(k && k.indexOf('nk_')===0) chaves.push(k);
-  }
-  if(!chaves.length){
-    resultado += '(nenhuma encontrada)\n';
-  } else {
-    chaves.forEach(function(k){
-      var dados = localStorage.getItem(k);
-      try {
-        var arr = JSON.parse(dados);
-        resultado += k+': '+arr.length+' item(s)\n';
-        if(arr.length>0) resultado += '  ex: '+arr[0].desc+' '+arr[0].date+'\n';
-      } catch(e) {
-        resultado += k+': erro ao parsear\n';
-      }
-    });
-  }
-  resultado += '\nnkCurY='+nkCurY+' nkCurM='+nkCurM;
-  resultado += '\ncurY='+curY+' curM='+curM;
-  alert(resultado);
-}
-
 function abrirNubankDoMes(){
   var arr = expenses[curY]||[];
   var nk = arr.find(function(e){ return e.category==='Cartao Nubank' && e.month===curM; });
