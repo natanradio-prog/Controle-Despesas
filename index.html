@@ -1932,36 +1932,53 @@ var nkCurM = null;
 
 function getNubankCompras(y,m){ return JSON.parse(localStorage.getItem('nk_'+y+'_'+m)||'[]'); }
 function setNubankCompras(y,m,arr){ localStorage.setItem('nk_'+y+'_'+m, JSON.stringify(arr)); }
+
+function migrarComprasNubank(){
+  // Varre todas as chaves do localStorage procurando compras Nubank em formatos antigos
+  var keys = [];
+  for(var i=0; i<localStorage.length; i++) keys.push(localStorage.key(i));
+  keys.forEach(function(k){
+    // Formato antigo: nk_compras_YYYY_M ou nk_YYYY-M etc
+    if(k && k.indexOf('nk_')===0 && k!=='nk_cats'){
+      // Tenta extrair y e m da chave
+      var parts = k.replace('nk_','').split('_');
+      if(parts.length===2){
+        var y2=parseInt(parts[0]), m2=parseInt(parts[1]);
+        if(!isNaN(y2) && !isNaN(m2)){
+          // Já no formato correto — não precisa migrar
+          return;
+        }
+      }
+    }
+  });
+}
 function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
 function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
 
 function calcNubankTotal(y,m){
-  // Coleta compras de todos os meses já registrados
+  // Coleta compras armazenadas em todos os meses
   var todasCompras = [];
-  for(var y2=2025; y2<=y; y2++){
+  for(var y2=2025; y2<=y+1; y2++){
     for(var m2=1; m2<=12; m2++){
-      // Não precisa ir além do mês consultado
-      if(y2===y && m2>m) break;
       getNubankCompras(y2,m2).forEach(function(c){
-        todasCompras.push(c);
+        // Guarda o mês de armazenamento junto com a compra
+        todasCompras.push({c:c, storY:y2, storM:m2});
       });
     }
   }
 
-  return todasCompras.reduce(function(s,c){
+  return todasCompras.reduce(function(s,item){
+    var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return s;
-    var cd = new Date(c.date+'T00:00:00');
-    var compraM = cd.getMonth()+1;
-    var compraY = cd.getFullYear();
-    var offset = (y - compraY)*12 + (m - compraM);
     if(c.parcelas>1){
-      // Parcela entra se offset está dentro do número de parcelas
-      if(offset>=0 && offset<c.parcelas){
-        return s + Math.round(c.val/c.parcelas*100)/100;
-      }
+      // Parcelado: usa data da compra para calcular offset
+      var cd = new Date(c.date+'T00:00:00');
+      var compraM = cd.getMonth()+1, compraY = cd.getFullYear();
+      var offset = (y - compraY)*12 + (m - compraM);
+      if(offset>=0 && offset<c.parcelas) return s + Math.round(c.val/c.parcelas*100)/100;
     } else {
-      // Compra à vista só entra no mês da compra
-      if(offset===0) return s + c.val;
+      // À vista: pertence ao mês onde foi armazenada (mês da fatura)
+      if(storY===y && storM===m) return s + c.val;
     }
     return s;
   },0);
@@ -2024,24 +2041,29 @@ function renderNubank(){
   var y = nkCurY||curY; var m = nkCurM||curM;
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1]+' '+y;
 
-  // Coleta TODAS as compras de todos os meses
+  // Coleta TODAS as compras com mês de armazenamento
   var todasCompras = [];
-  for(var y2=2025; y2<=y; y2++){
+  for(var y2=2025; y2<=y+1; y2++){
     for(var m2=1; m2<=12; m2++){
-      if(y2===y && m2>m) break;
-      getNubankCompras(y2,m2).forEach(function(c){ todasCompras.push(c); });
+      getNubankCompras(y2,m2).forEach(function(c){
+        todasCompras.push({c:c, storY:y2, storM:m2});
+      });
     }
   }
 
-  // Filtra as que têm parcela neste mês
-  var comprasDoMes = todasCompras.filter(function(c){
+  // Filtra as que aparecem neste mês
+  var comprasDoMes = todasCompras.filter(function(item){
+    var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return false;
-    var cd = new Date(c.date+'T00:00:00');
-    var cm = cd.getMonth()+1, cy = cd.getFullYear();
-    var offset = (y-cy)*12+(m-cm);
-    if(c.parcelas>1) return offset>=0 && offset<c.parcelas;
-    return offset===0;
-  });
+    if(c.parcelas>1){
+      var cd = new Date(c.date+'T00:00:00');
+      var cm = cd.getMonth()+1, cy = cd.getFullYear();
+      var offset = (y-cy)*12+(m-cm);
+      return offset>=0 && offset<c.parcelas;
+    }
+    // À vista: aparece no mês onde foi armazenada
+    return storY===y && storM===m;
+  }).map(function(item){ return item.c; });
 
   var comprasNativas = getNubankCompras(y,m);
 
