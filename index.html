@@ -528,7 +528,6 @@
   </div>
   <div class="compras-list" id="nubankComprasList"></div>
 
-  <button class="btn-save" onclick="diagNubank()" style="background:#e2e8f0;color:#334155;box-shadow:none;margin-top:4px;font-size:.75rem;">🔍 Diagnóstico</button>
   <button class="btn-save" onclick="openRelNubank()" style="background:rgba(139,92,246,.15);color:#8b5cf6;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
   <button class="btn-save" onclick="openNovaCompra()" style="background:#8b5cf6;box-shadow:0 4px 14px rgba(139,92,246,.3);">+ Nova compra</button>
  </div>
@@ -2660,17 +2659,32 @@ function setSyncStatus(type, msg){
 }
 
 function getAllData(){
-  return JSON.stringify({expenses:expenses, notes:notes, receitas:receitas, cats:cats, v:2});
+  // Coleta todas as chaves nk_ do localStorage
+  var nkData = {};
+  for(var i=0; i<localStorage.length; i++){
+    var k = localStorage.key(i);
+    if(k && k.indexOf('nk_')===0){
+      nkData[k] = JSON.parse(localStorage.getItem(k)||'[]');
+    }
+  }
+  return JSON.stringify({expenses:expenses, notes:notes, receitas:receitas, cats:cats, archivedCats:archivedCats, nk:nkData, v:3});
 }
 
 function applyAllData(json){
   try{
     var d = JSON.parse(json);
-    if(d.expenses) expenses = d.expenses;
-    if(d.notes)    notes    = d.notes;
-    if(d.receitas) receitas = d.receitas;
-    if(d.cats)     cats     = d.cats;
-    persist(); // also save locally
+    if(d.expenses)     expenses     = d.expenses;
+    if(d.notes)        notes        = d.notes;
+    if(d.receitas)     receitas     = d.receitas;
+    if(d.cats)         cats         = d.cats;
+    if(d.archivedCats) archivedCats = d.archivedCats;
+    // Restaura chaves do Nubank
+    if(d.nk){
+      Object.keys(d.nk).forEach(function(k){
+        localStorage.setItem(k, JSON.stringify(d.nk[k]));
+      });
+    }
+    persist();
     render();
   }catch(e){ console.error('Drive parse error', e); }
 }
