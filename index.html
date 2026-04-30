@@ -222,7 +222,7 @@
   .btn-add-desconto:hover{border-color:var(--accent);color:var(--accent);}
 
   /* CARTÃO NUBANK */
-  .nubank-header{background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:16px;margin-bottom:14px;color:#fff;}
+  .nubank-header{background:linear-gradient(135deg,#78909c,#546e7a);border-radius:12px;padding:16px;margin-bottom:14px;color:#fff;}
   .nubank-header label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;display:block;margin-bottom:4px;}
   .nubank-vals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
   .nubank-val-item label{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;display:block;margin-bottom:3px;}
@@ -241,11 +241,11 @@
   .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--purple);}
   .compra-item .ci-parc{font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;white-space:nowrap;}
 
-  .futuro-card{background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #d8b4fe;border-radius:11px;padding:12px 14px;margin-bottom:14px;}
-  .futuro-card label{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:#7c3aed;display:block;margin-bottom:8px;}
-  .futuro-row{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid #e9d5ff;}
+  .futuro-card{background:linear-gradient(135deg,#eceff1,#cfd8dc);border:1px solid #b0bec5;border-radius:11px;padding:12px 14px;margin-bottom:14px;}
+  .futuro-card label{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:#546e7a;display:block;margin-bottom:8px;}
+  .futuro-row{display:flex;justify-content:space-between;font-size:.78rem;padding:4px 0;border-bottom:1px solid #b0bec5;}
   .futuro-row:last-child{border:none;font-weight:700;}
-  .futuro-row span:last-child{color:#6d28d9;font-weight:600;}
+  .futuro-row span:last-child{color:#37474f;font-weight:600;}
   .rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
   .rel-month-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;padding:8px 6px;text-align:center;transition:all .2s;}
   .rel-month-btn.sel{background:#ede9fe;border-color:#a78bfa;color:var(--accent);font-weight:500;}
@@ -382,13 +382,12 @@
 <!-- Actions -->
 <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:13px;">
   <button class="btn-cfg" onclick="openRelatorio()" title="Relatorio">&#128196;</button>
-  <button class="btn-cfg" onclick="openSettings()" title="Configuracoes">&#9881;</button>
 </div>
 
 <!-- Botões de ação principais -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
   <button class="btn-new" onclick="openForm()" style="margin-top:0;">+ Nova despesa</button>
-  <button class="btn-new" onclick="abrirNubankDoMes()" style="margin-top:0;background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 4px 14px rgba(139,92,246,.3);">💜 Cartão Nubank</button>
+  <button class="btn-new" onclick="abrirNubankDoMes()" style="margin-top:0;background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);">💳 Cartão de Crédito</button>
 </div>
 
 <div class="section-title">
@@ -482,15 +481,15 @@
  </div>
 </div>
 
-<!-- Overlay Cartão Nubank -->
+<!-- Overlay Cartão de Crédito -->
 <div class="overlay" id="overlayNubank" onclick="overlayClick(event,'overlayNubank')">
  <div class="sheet">
   <div class="sheet-header">
-    <h2 style="color:#8b5cf6;">💜 Cartão Nubank</h2>
+    <h2 style="color:#546e7a;">💳 Cartão de Crédito</h2>
     <button class="btn-close" onclick="closeNubank()">&#x2715;</button>
   </div>
 
-  <!-- Navegação de mês dentro do Nubank -->
+  <!-- Navegação de mês -->
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;">
     <button onclick="nkNavMes(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;">&#8249;</button>
     <span id="nubankMesLabel" style="font-weight:600;font-size:.95rem;min-width:130px;text-align:center;color:var(--text);"></span>
@@ -528,8 +527,8 @@
   </div>
   <div class="compras-list" id="nubankComprasList"></div>
 
-  <button class="btn-save" onclick="openRelNubank()" style="background:rgba(139,92,246,.15);color:#8b5cf6;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
-  <button class="btn-save" onclick="openNovaCompra()" style="background:#8b5cf6;box-shadow:0 4px 14px rgba(139,92,246,.3);">+ Nova compra</button>
+  <button class="btn-save" onclick="openRelNubank()" style="background:rgba(84,110,122,.15);color:#546e7a;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
+  <button class="btn-save" onclick="openNovaCompra()" style="background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);">+ Nova compra</button>
  </div>
 </div>
 
@@ -1995,29 +1994,14 @@ function calcNubankTotal(y,m){
 }
 
 function getFuturoComprometido(){
-  // Calcula parcelas futuras mês a mês (próximos 12 meses)
   var result = [];
-  var hoje = new Date();
-  var baseY = curY, baseM = curM;
-  // Coleta todas as compras parceladas de todos os meses
-  var todasCompras = [];
-  for(var y2=2026; y2<=curY+2; y2++){
-    for(var m2=1; m2<=12; m2++){
-      getNubankCompras(y2,m2).forEach(function(c){
-        if(c.parcelas>1) todasCompras.push(c);
-      });
-    }
-  }
+  // Para cada um dos próximos 12 meses, calcula o total do cartão
   for(var i=1; i<=12; i++){
-    var fm = baseM + i; var fy = baseY;
-    if(fm>12){fm-=12;fy++;}
-    var total = 0;
-    todasCompras.forEach(function(c){
-      var cd = new Date(c.date+'T00:00:00');
-      var cm = cd.getMonth()+1, cy = cd.getFullYear();
-      var offset = (fy-cy)*12+(fm-cm);
-      if(offset>=0 && offset<c.parcelas) total += Math.round(c.val/c.parcelas*100)/100;
-    });
+    var fm = nkCurM ? nkCurM+i : curM+i;
+    var fy = nkCurY || curY;
+    while(fm>12){fm-=12;fy++;}
+    // Usa calcNubankTotal que já inclui parcelas + compras à vista armazenadas nesse mês
+    var total = calcNubankTotal(fy,fm);
     if(total>0) result.push({y:fy,m:fm,total:total});
   }
   return result;
@@ -2547,17 +2531,34 @@ function fecharRelatorio(){
 }
 
 function compartilharRelatorio(){
-  var y = document.getElementById('relAno') ? document.getElementById('relAno').value : curY;
-  var texto = 'Relatório de Despesas '+y+'\n';
-  texto += 'Gerado em '+new Date().toLocaleDateString('pt-BR')+'\n\n';
-  texto += document.getElementById('reportBody').innerText;
-  if(navigator.share){
-    navigator.share({title:'Relatório de Despesas', text:texto}).catch(function(){});
-  } else if(navigator.clipboard){
-    navigator.clipboard.writeText(texto).then(function(){ showToast('Copiado para área de transferência'); });
-  } else {
-    showToast('Compartilhamento não suportado');
-  }
+  // Abre janela de impressão — no celular gera PDF
+  var body = document.getElementById('reportBody');
+  var conteudo = body.innerHTML;
+  var janela = window.open('','_blank','width=800,height=600');
+  janela.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>Relatório Seu Nonô</title>'
+    +'<style>'
+    +'body{font-family:Arial,sans-serif;padding:20px;color:#222;max-width:600px;margin:0 auto;}'
+    +'@media print{.no-print{display:none!important;}}'
+    +'</style></head><body>'
+    +'<div class="no-print" style="text-align:center;margin-bottom:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">'
+    +'<button onclick="window.print()" style="background:#546e7a;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:.9rem;cursor:pointer;">📄 Salvar PDF</button>'
+    +'<button onclick="compartilharWhats()" style="background:#25d366;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:.9rem;cursor:pointer;">💬 WhatsApp</button>'
+    +'<button onclick="window.close()" style="background:#eee;color:#333;border:none;border-radius:8px;padding:10px 20px;font-size:.9rem;cursor:pointer;">✕ Fechar</button>'
+    +'</div>'
+    +conteudo
+    +'<script>'
+    +'function compartilharWhats(){'
+    +'  var texto = document.body.innerText.replace(/[\\t]+/g," ");'
+    +'  var url = "https://wa.me/?text="+encodeURIComponent(texto.substring(0,2000));'
+    +'  window.open(url,"_blank");'
+    +'}'
+    +'<\/script>'
+    +'</body></html>'
+  );
+  janela.document.close();
 }
 
 // ══ GOOGLE DRIVE SYNC ══
