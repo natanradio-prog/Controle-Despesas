@@ -235,9 +235,9 @@
 
   .compras-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
   .compra-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;}
-  .compra-item .ci-info{flex:1;min-width:0;}
+  .compra-item .ci-info{flex:1;min-width:0;overflow:hidden;}
   .compra-item .ci-desc{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .compra-item .ci-meta{font-size:.67rem;color:var(--muted);margin-top:1px;}
+  .compra-item .ci-meta{font-size:.67rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--purple);}
   .compra-item .ci-parc{font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;white-space:nowrap;}
 
@@ -2102,7 +2102,7 @@ function renderNubank(){
     var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
     var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
-    var catLabel = c.cat ? '<span style="font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;">'+c.cat+'</span>' : '';
+    var catLabel = c.cat ? '<span style="font-size:.58rem;background:#eceff1;color:#546e7a;padding:2px 6px;border-radius:8px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:block;text-align:right;">'+c.cat+'</span>' : '';
     // Só permite editar/excluir compras do mês atual
     var isNativa = comprasNativas.some(function(x){return x.id===c.id;});
     var editBtn = isNativa
@@ -2116,7 +2116,7 @@ function renderNubank(){
       +'<div class="ci-desc">'+c.desc+(isNativa?'':' <span style="font-size:.6rem;color:var(--muted);">◀ parcela</span>')+'</div>'
       +'<div class="ci-meta">'+fmtD(c.date)+(c.note?' · '+c.note:'')+'</div>'
       +'</div>'
-      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:100px;max-width:130px;flex-shrink:0;">'
       +'<div class="ci-val">'+R(valorParcela)+'</div>'
       +catLabel
       +parcLabel
