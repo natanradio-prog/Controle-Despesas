@@ -1887,8 +1887,8 @@ function atualizarFaturaInfo(){
 }
 
 function mesFaturaNubank(dateStr){
-  // Fechamento dia 19: compra até dia 19 → fatura do mês da compra
-  // compra dia 20 em diante → fatura do mês seguinte
+  // Fechamento dia 19: compras até dia 19 ficam no mês atual
+  // A partir do dia 20 vão para o mês seguinte
   if(!dateStr) return {y:curY, m:curM};
   var p = dateStr.split('-');
   var y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
