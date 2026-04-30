@@ -1887,12 +1887,12 @@ function atualizarFaturaInfo(){
 }
 
 function mesFaturaNubank(dateStr){
-  // Fechamento dia 19: compras até dia 19 ficam no mês atual
-  // A partir do dia 20 vão para o mês seguinte
+  // Fechamento dia 18: compras até dia 18 ficam no mês atual
+  // A partir do dia 19 vão para o mês seguinte
   if(!dateStr) return {y:curY, m:curM};
   var p = dateStr.split('-');
   var y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
-  if(d >= 20){
+  if(d >= 19){
     m = m + 1;
     if(m > 12){ m = 1; y++; }
   }
