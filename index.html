@@ -586,6 +586,21 @@
  </div>
 </div>
 
+<!-- Overlay exclusão parcela -->
+<div class="overlay" id="overlayDelParcela" onclick="overlayClick(event,'overlayDelParcela')">
+ <div class="sheet" style="padding-bottom:28px;">
+  <div class="sheet-header">
+    <h2 style="font-size:.95rem;">Excluir parcela</h2>
+    <button class="btn-close" onclick="document.getElementById('overlayDelParcela').classList.remove('open')">&#x2715;</button>
+  </div>
+  <p id="delParcelaDesc" style="font-size:.85rem;color:var(--muted);margin-bottom:18px;"></p>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <button onclick="delParcelaConfirm('uma')" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;padding:12px;text-align:left;">🗓 Excluir apenas esta parcela do mês</button>
+    <button onclick="delParcelaConfirm('todas')" style="background:#2a1520;border:1px solid var(--red);border-radius:10px;color:var(--red);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;padding:12px;text-align:left;">🗑 Excluir todas as parcelas</button>
+  </div>
+ </div>
+</div>
+
 <!-- Overlay Relatório Nubank -->
 <div class="overlay" id="overlayRelNubank" onclick="overlayClick(event,'overlayRelNubank')">
  <div class="sheet">
@@ -1609,7 +1624,7 @@ function overlayClick(ev,id){
     else if(id==='overlayRelatorio')closeRelatorio();
     else if(id==='overlayNubank')closeNubank();
     else if(id==='overlayNovaCompra')closeNovaCompra();
-    else if(id==='overlayRelNubank')document.getElementById('overlayRelNubank').classList.remove('open');
+    else if(id==='overlayDelParcela')document.getElementById('overlayDelParcela').classList.remove('open');
     else closeSettings();
   }
 }
@@ -2100,28 +2115,32 @@ function renderNubank(){
     document.getElementById('nubankComprasList').innerHTML='<div class="empty-state" style="padding:20px;color:var(--muted);text-align:center;font-size:.83rem;">Nenhuma compra neste mês</div>';
     return;
   }
-  var sorted = comprasDoMes.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-  document.getElementById('nubankComprasList').innerHTML = sorted.map(function(c){
-    // Calcula qual parcela é esta no mês atual
-    // Offset a partir do mês da FATURA (storY/storM) que é passado junto com c
+
+  // Separa à vista/mensais das parceladas
+  var avista   = comprasDoMes.filter(function(c){ return !(c.parcelas>1); })
+                   .sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  var parceladas = comprasDoMes.filter(function(c){ return c.parcelas>1; })
+                   .sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+
+  function renderItem(c){
     var storY2 = c._storY || (nkCurY||curY);
     var storM2 = c._storM || (nkCurM||curM);
     var offset = ((nkCurY||curY)-storY2)*12+((nkCurM||curM)-storM2);
     var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
     var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
-    var catLabel = c.cat ? '<span style="font-size:.58rem;background:#eceff1;color:#546e7a;padding:2px 6px;border-radius:8px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:block;text-align:right;">'+c.cat+'</span>' : '';
-    // Só permite editar/excluir compras do mês atual
+    var catLabel = c.cat ? '<span style="font-size:.58rem;background:rgba(84,110,122,.2);color:#90a4ae;padding:2px 6px;border-radius:8px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:block;text-align:right;">'+c.cat+'</span>' : '';
     var isNativa = comprasNativas.some(function(x){return x.id===c.id;});
-    var editBtn = isNativa
-      ? 'onclick="editCompra(\''+c.id+'\')" style="cursor:pointer;"'
-      : 'style="cursor:default;"';
-    var delBtn = isNativa
-      ? '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;flex-shrink:0;" onclick="delCompra(event,\''+c.id+'\')">&#x2715;</button>'
-      : '';
+    var editBtn = 'onclick="editCompra(\''+c.id+'\')" style="cursor:pointer;"';
+    // Parceladas sempre podem ser excluídas (com opção de excluir todas ou só esta)
+    var delFn = c.parcelas>1
+      ? 'delCompraOpcoes(event,\''+c.id+'\',\''+c.desc.replace(/'/g,"\\'")+'\')'
+      : 'delCompra(event,\''+c.id+'\')';
+    var delBtn = '<button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;flex-shrink:0;" onclick="'+delFn+'">&#x2715;</button>';
+    var isParc = c.parcelas>1;
     return '<div class="compra-item" '+editBtn+'>'
       +'<div class="ci-info">'
-      +'<div class="ci-desc">'+c.desc+(isNativa?'':' <span style="font-size:.6rem;color:var(--muted);">◀ parcela</span>')+'</div>'
+      +'<div class="ci-desc">'+c.desc+((!isNativa&&isParc)?' <span style="font-size:.6rem;color:var(--muted);">◀</span>':'')+'</div>'
       +'<div class="ci-meta">'+fmtD(c.date)+(c.note?' · '+c.note:'')+'</div>'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:100px;max-width:130px;flex-shrink:0;">'
@@ -2131,7 +2150,21 @@ function renderNubank(){
       +'</div>'
       +delBtn
       +'</div>';
-  }).join('');
+  }
+
+  var html = '';
+  if(avista.length){
+    html += avista.map(renderItem).join('');
+  }
+  if(parceladas.length){
+    html += '<div style="display:flex;align-items:center;gap:8px;margin:12px 0 8px;">'
+      +'<div style="flex:1;height:1px;background:var(--border);"></div>'
+      +'<span style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);">Parceladas</span>'
+      +'<div style="flex:1;height:1px;background:var(--border);"></div>'
+      +'</div>';
+    html += parceladas.map(renderItem).join('');
+  }
+  document.getElementById('nubankComprasList').innerHTML = html;
 }
 
 function onNubankFaturaInput(el){
@@ -2256,6 +2289,64 @@ function editCompra(id){
   setParcelado(c.parcelas>1);
   if(c.parcelas>1) document.getElementById('ncParcelas').value = c.parcelas;
   document.getElementById('overlayNovaCompra').classList.add('open');
+}
+
+var _delParcelaId = null;
+var _delParcelaMes = null; // {y, m} do mês atual visualizado
+
+function delCompraOpcoes(ev, id, desc){
+  if(ev) ev.stopPropagation();
+  _delParcelaId = id;
+  _delParcelaMes = {y: nkCurY||curY, m: nkCurM||curM};
+  document.getElementById('delParcelaDesc').textContent = '"'+desc+'" — o que deseja fazer?';
+  document.getElementById('overlayDelParcela').classList.add('open');
+}
+
+function delParcelaConfirm(opcao){
+  document.getElementById('overlayDelParcela').classList.remove('open');
+  if(!_delParcelaId) return;
+
+  if(opcao==='todas'){
+    // Remove de todos os meses
+    for(var sy=2025; sy<=curY+2; sy++){
+      for(var sm=1; sm<=12; sm++){
+        var arr=getNubankCompras(sy,sm);
+        var fi=arr.findIndex(function(c){return c.id===_delParcelaId;});
+        if(fi>-1){ arr.splice(fi,1); setNubankCompras(sy,sm,arr); }
+      }
+    }
+    showToast('Todas as parcelas removidas');
+  } else {
+    // Exclui só do mês visualizado: reduz número de parcelas
+    // A compra original fica mas com parcelas reduzidas
+    var found = false;
+    for(var sy2=2025; sy2<=curY+2 && !found; sy2++){
+      for(var sm2=1; sm2<=12 && !found; sm2++){
+        var arr2=getNubankCompras(sy2,sm2);
+        var fi2=arr2.findIndex(function(c){return c.id===_delParcelaId;});
+        if(fi2>-1){
+          found = true;
+          var compra = arr2[fi2];
+          var offset = (_delParcelaMes.y - sy2)*12 + (_delParcelaMes.m - sm2);
+          // Reduz para offset parcelas (elimina esta e as seguintes)
+          if(offset <= 0){
+            // É a primeira parcela — remove tudo
+            arr2.splice(fi2,1);
+          } else {
+            // Mantém apenas as parcelas até antes desta
+            compra.parcelas = offset;
+          }
+          setNubankCompras(sy2,sm2,arr2);
+        }
+      }
+    }
+    showToast('Parcela do mês removida');
+  }
+
+  _delParcelaId = null;
+  updateNubankExpValue();
+  renderNubank();
+  render();
 }
 
 function delCompra(ev,id){
