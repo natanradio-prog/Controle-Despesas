@@ -13,11 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f4f6f9;--surface:#ffffff;--surface2:#f0f3f7;--border:#e2e8f0;
-    --text:#1e293b;--muted:#94a3b8;--accent:#6366f1;--accent2:#4f46e5;
-    --red:#ef4444;--green:#22c55e;--blue:#3b82f6;--orange:#f97316;--purple:#8b5cf6;
-    --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-    --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.04);
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;
+    --text:#e8eaf6;--muted:#7986cb;--accent:#7c83ff;--accent2:#5c6bc0;
+    --red:#ef5350;--green:#66bb6a;--blue:#42a5f5;--orange:#ffa726;--purple:#ab47bc;
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+    --shadow-md:0 4px 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.3);
+    --card-receitas:#1e2235;--card-saldo:#1a2a1a;--card-despesas:#1e1a2a;
+    --card-notes:#1a2228;--card-summary1:#2a1a1e;--card-summary2:#1a2a1e;--card-summary3:#1a1e2a;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 120px;max-width:520px;margin:0 auto;}
@@ -40,13 +42,13 @@
 
   /* SUMMARY */
   .summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
-  .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 10px;box-shadow:var(--shadow);}
+  .summary-card{border:1px solid var(--border);border-radius:12px;padding:12px 10px;box-shadow:var(--shadow);}
   .summary-card label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:5px;}
   .summary-card .value{font-weight:700;font-size:.88rem;}
   .value.red{color:var(--red);}.value.green{color:var(--green);}.value.orange{color:var(--orange);}
 
   /* RECEITAS */
-  .receitas-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .receitas-section{background:var(--card-receitas);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
   .receitas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .receitas-header em{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-style:normal;}
   .receitas-total{font-weight:700;font-size:.95rem;color:var(--green);}
@@ -65,7 +67,7 @@
   .saldo-card{border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);box-shadow:var(--shadow);}
   .saldo-card.positivo{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;}
   .saldo-card.negativo{background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-color:#fca5a5;}
-  .saldo-card.neutro{background:var(--surface);}
+  .saldo-card.neutro{background:var(--card-saldo);}
   .saldo-item label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:3px;}
   .saldo-item .sv{font-weight:700;font-size:.95rem;}
   .sv.green{color:var(--green);}.sv.red{color:var(--red);}.sv.muted{color:var(--muted);font-size:.8rem;}
@@ -74,7 +76,7 @@
   .saldo-full .sv{font-weight:700;font-size:1.1rem;}
 
   /* NOTES */
-  .notes-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);}
+  .notes-bar{background:var(--card-notes);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);}
   .notes-bar em{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap;font-style:normal;}
   .notes-bar input{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.83rem;width:100%;outline:none;}
   .notes-bar input::placeholder{color:var(--muted);}
@@ -137,7 +139,7 @@
   /* OVERLAYS */
   .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
   .overlay.open{display:flex;}
-  .sheet{background:#fff;border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-width:520px;animation:slideUp .26s ease;max-height:92vh;overflow-y:auto;}
+  .sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-width:520px;animation:slideUp .26s ease;max-height:92vh;overflow-y:auto;}
   @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
   .sheet-header h2{font-size:1.05rem;font-weight:600;color:var(--text);}
@@ -148,7 +150,7 @@
   .fg{display:flex;flex-direction:column;gap:4px;}
   .fg.full{grid-column:span 2;}
   .fg label{font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
-  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:9px 11px;width:100%;-webkit-appearance:none;transition:border-color .2s;}
+  input,select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:9px 11px;width:100%;-webkit-appearance:none;transition:border-color .2s;}
   input:focus,select:focus{outline:none;border-color:var(--accent);}
   select option{background:#fff;}
 
@@ -310,9 +312,9 @@
 
 <!-- Summary -->
 <div class="summary">
-  <div class="summary-card"><label>Total previsto</label><div class="value red" id="sumTotal">-</div></div>
-  <div class="summary-card"><label>Pago</label><div class="value green" id="sumPago">-</div></div>
-  <div class="summary-card"><label>A pagar</label><div class="value orange" id="sumResto">-</div></div>
+  <div class="summary-card" style="background:#2a1520;border-color:#5a2030;"><label>Total previsto</label><div class="value red" id="sumTotal">-</div></div>
+  <div class="summary-card" style="background:#152a1a;border-color:#205a30;"><label>Pago</label><div class="value green" id="sumPago">-</div></div>
+  <div class="summary-card" style="background:#1a1a2a;border-color:#303060;"><label>A pagar</label><div class="value orange" id="sumResto">-</div></div>
 </div>
 
 <!-- Receitas -->
@@ -492,7 +494,10 @@
   <!-- Navegação de mês -->
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:14px;">
     <button onclick="nkNavMes(-1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;">&#8249;</button>
-    <span id="nubankMesLabel" style="font-weight:600;font-size:.95rem;min-width:130px;text-align:center;color:var(--text);"></span>
+    <div style="text-align:center;min-width:130px;">
+      <div id="nubankMesLabel" style="font-weight:600;font-size:.95rem;color:var(--text);"></div>
+      <div id="nubankAnoLabel" style="font-size:.7rem;color:var(--muted);margin-top:1px;"></div>
+    </div>
     <button onclick="nkNavMes(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;">&#8250;</button>
   </div>
 
@@ -530,6 +535,7 @@
   <div class="compras-list" id="nubankComprasList"></div>
 
   <button class="btn-save" onclick="openRelNubank()" style="background:rgba(84,110,122,.15);color:#546e7a;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
+  <button class="btn-save" onclick="openNovaCompra()" style="background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);margin-top:8px;">+ Nova compra</button>
  </div>
 </div>
 
@@ -1356,6 +1362,7 @@ function buildCatSelect(){
   var sel=document.getElementById('fCat');
   var currentVal = sel.value;
   sel.innerHTML=cats.filter(function(c){ return archivedCats.indexOf(c)===-1; })
+    .slice().sort(function(a,b){return a.localeCompare(b,'pt-BR');})
     .map(function(c){return'<option value="'+c+'">'+c+'</option>';}).join('');
   sel.innerHTML += '<option value="Nova categoria...">+ Nova categoria...</option>';
   if(currentVal && sel.querySelector('option[value="'+currentVal+'"]')) sel.value=currentVal;
@@ -1528,7 +1535,7 @@ function closeForm(){document.getElementById('overlayForm').classList.remove('op
 function openSettings(){renderCatList();document.getElementById('overlaySettings').classList.add('open');}
 function closeSettings(){document.getElementById('overlaySettings').classList.remove('open');buildCatSelect();render();}
 function renderCatList(){
-  var html = cats.map(function(c){
+  var html = cats.slice().sort(function(a,b){return a.localeCompare(b,'pt-BR');}).map(function(c){
     return '<div class="cat-item">'
       +'<span>'+c+'</span>'
       +'<button title="Arquivar" onclick="archiveCat(\''+c+'\')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px 6px;">&#128190;</button>'
@@ -1981,10 +1988,9 @@ function calcNubankTotal(y,m){
     var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return s;
     if(c.parcelas>1){
-      // Parcelado: usa data da compra para calcular offset
-      var cd = new Date(c.date+'T00:00:00');
-      var compraM = cd.getMonth()+1, compraY = cd.getFullYear();
-      var offset = (y - compraY)*12 + (m - compraM);
+      // Parcelado: offset calculado a partir do mês da FATURA (storY/storM)
+      // pois a compra pode ter sido feita em mês diferente do fechamento
+      var offset = (y - storY)*12 + (m - storM);
       if(offset>=0 && offset<c.parcelas) return s + Math.round(c.val/c.parcelas*100)/100;
     } else {
       // À vista: pertence ao mês onde foi armazenada (mês da fatura)
@@ -2034,7 +2040,8 @@ function nkNavMes(delta){
 
 function renderNubank(){
   var y = nkCurY||curY; var m = nkCurM||curM;
-  document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1]+' '+y;
+  document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
+  document.getElementById('nubankAnoLabel').textContent = y;
 
   // Coleta TODAS as compras com mês de armazenamento
   var todasCompras = [];
@@ -2051,14 +2058,13 @@ function renderNubank(){
     var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return false;
     if(c.parcelas>1){
-      var cd = new Date(c.date+'T00:00:00');
-      var cm = cd.getMonth()+1, cy = cd.getFullYear();
-      var offset = (y-cy)*12+(m-cm);
+      // Offset a partir do mês da FATURA (storY/storM)
+      var offset = (y-storY)*12+(m-storM);
       return offset>=0 && offset<c.parcelas;
     }
     // À vista: aparece no mês onde foi armazenada
     return storY===y && storM===m;
-  }).map(function(item){ return item.c; });
+  }).map(function(item){ var cc=Object.assign({},item.c); cc._storY=item.storY; cc._storM=item.storM; return cc; });
 
   var comprasNativas = getNubankCompras(y,m);
 
@@ -2097,9 +2103,10 @@ function renderNubank(){
   var sorted = comprasDoMes.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
   document.getElementById('nubankComprasList').innerHTML = sorted.map(function(c){
     // Calcula qual parcela é esta no mês atual
-    var cd = new Date((c.date||'2026-01-01')+'T00:00:00');
-    var cm = cd.getMonth()+1, cy = cd.getFullYear();
-    var offset = (curY-cy)*12+(curM-cm);
+    // Offset a partir do mês da FATURA (storY/storM) que é passado junto com c
+    var storY2 = c._storY || (nkCurY||curY);
+    var storM2 = c._storM || (nkCurM||curM);
+    var offset = ((nkCurY||curY)-storY2)*12+((nkCurM||curM)-storM2);
     var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
     var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
