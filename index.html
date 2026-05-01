@@ -13,19 +13,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;
-    --text:#e8eaf6;--muted:#7986cb;--accent:#7c83ff;--accent2:#5c6bc0;
-    --red:#ef5350;--green:#66bb6a;--blue:#42a5f5;--orange:#ffa726;--purple:#ab47bc;
+    --bg:#0d1b2a;--surface:#1b2838;--surface2:#1f3248;--border:#2a3f5a;
+    --text:#e8f4f8;--muted:#5a8a9f;--accent:#f5c400;--accent2:#c9a000;
+    --red:#ef6060;--green:#26c6a0;--blue:#42a5f5;--orange:#ffa060;--purple:#820ad1;
     --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
     --shadow-md:0 4px 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.3);
-    --card-receitas:#1e2235;--card-saldo:#1a2a1a;--card-despesas:#1e1a2a;
-    --card-notes:#1a2228;--card-summary1:#2a1a1e;--card-summary2:#1a2a1e;--card-summary3:#1a1e2a;
+    --card-receitas:#1a2030;--card-saldo:#0d2520;--card-despesas:#162030;
+    --card-notes:#162028;--item-a:#1b2838;--item-b:#1f3248;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 120px;max-width:520px;margin:0 auto;}
 
   header{text-align:center;padding:8px 0 18px;}
-  header h1{font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:var(--text);letter-spacing:-.02em;}
+  header h1{font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:var(--accent);letter-spacing:-.02em;}
   header p{font-size:.68rem;color:var(--muted);margin-top:3px;letter-spacing:.1em;text-transform:uppercase;}
 
   /* YEAR NAV */
@@ -42,13 +42,15 @@
 
   /* SUMMARY */
   .summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+  .gastos-card{display:block!important;}
+  .gastos-card .summary-card{grid-column:span 3!important;}
   .summary-card{border:1px solid var(--border);border-radius:12px;padding:12px 10px;box-shadow:var(--shadow);}
   .summary-card label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:5px;}
   .summary-card .value{font-weight:700;font-size:.88rem;}
   .value.red{color:var(--red);}.value.green{color:var(--green);}.value.orange{color:var(--orange);}
 
   /* RECEITAS */
-  .receitas-section{background:var(--card-receitas);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .receitas-section{background:var(--card-receitas);border-left:3px solid var(--accent);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
   .receitas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .receitas-header em{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-style:normal;}
   .receitas-total{font-weight:700;font-size:.95rem;color:var(--green);}
@@ -67,7 +69,7 @@
   .saldo-card{border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);box-shadow:var(--shadow);}
   .saldo-card.positivo{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;}
   .saldo-card.negativo{background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-color:#fca5a5;}
-  .saldo-card.neutro{background:var(--card-saldo);}
+  .saldo-card.neutro{background:var(--card-saldo);border-left:3px solid var(--green);}
   .saldo-item label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:3px;}
   .saldo-item .sv{font-weight:700;font-size:.95rem;}
   .sv.green{color:var(--green);}.sv.red{color:var(--red);}.sv.muted{color:var(--muted);font-size:.8rem;}
@@ -76,7 +78,7 @@
   .saldo-full .sv{font-weight:700;font-size:1.1rem;}
 
   /* NOTES */
-  .notes-bar{background:var(--card-notes);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);}
+  .notes-bar{background:#162028;border-left:3px solid var(--muted);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);}
   .notes-bar em{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap;font-style:normal;}
   .notes-bar input{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.83rem;width:100%;outline:none;}
   .notes-bar input::placeholder{color:var(--muted);}
@@ -364,13 +366,13 @@
 </div>
 
 <!-- Sugestão de sobra -->
-<div id="sobraCard" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-  <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:6px;">💰 Sobra do mês</div>
+<div id="sobraCard" style="display:none;background:#0d2a1a;border:1px solid #1a6040;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+  <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#26c6a0;margin-bottom:6px;">💰 Sobra do mês</div>
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-    <div style="font-size:.83rem;color:#166534;">Transferir <strong id="sobraValor"></strong> como receita extra em <strong id="sobraProxMes"></strong>?</div>
+    <div style="font-size:.83rem;color:#a0d8c0;">Transferir <strong id="sobraValor"></strong> como receita extra em <strong id="sobraProxMes"></strong>?</div>
     <div style="display:flex;gap:6px;flex-shrink:0;">
-      <button onclick="transferirSobra()" style="background:#16a34a;border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:6px 12px;white-space:nowrap;">Sim</button>
-      <button onclick="descartarSobra()" style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;color:#16a34a;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;">Não</button>
+      <button onclick="transferirSobra()" style="background:#1a6040;border:1px solid #26c6a0;border-radius:8px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:6px 12px;white-space:nowrap;">Sim</button>
+      <button onclick="descartarSobra()" style="background:#0d2a1a;border:1px solid #1a6040;border-radius:8px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;">Não</button>
     </div>
   </div>
 </div>
@@ -388,8 +390,8 @@
 
 <!-- Botões de ação principais -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-  <button class="btn-new" onclick="openForm()" style="margin-top:0;">+ Nova despesa</button>
-  <button class="btn-new" onclick="abrirNubankDoMes()" style="margin-top:0;background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);">💳 Cartão de Crédito</button>
+  <button class="btn-new" onclick="openForm()" style="margin-top:0;background:#2255aa;box-shadow:0 4px 14px rgba(34,85,170,.4);">+ Nova despesa</button>
+  <button class="btn-new" onclick="abrirNubankDoMes()" style="margin-top:0;background:#820ad1;box-shadow:0 4px 14px rgba(130,10,209,.4);">💳 Cartão de Crédito</button>
 </div>
 
 <div class="section-title">
@@ -1215,7 +1217,7 @@ function render(){
 
   list.innerHTML=me.map(function(e){
     var st=e.status||'pendente';
-    var bgColor=catPalette[e.category]||'rgba(99,102,241,.05)';
+    var _idx=me.indexOf(e); var bgColor=_idx%2===0?'#1b2838':'#1f3248';
     var amtHtml=e.amount!=null
       ?'<div class="exp-amount">'+R(e.amount)+'</div>'
       :'<div class="exp-amount empty">a definir</div>';
