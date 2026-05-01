@@ -50,7 +50,7 @@
   .value.red{color:var(--red);}.value.green{color:var(--green);}.value.orange{color:var(--orange);}
 
   /* RECEITAS */
-  .receitas-section{background:var(--card-receitas);border-left:3px solid var(--accent);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+  .receitas-section{background:var(--card-receitas);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
   .receitas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .receitas-header em{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-style:normal;}
   .receitas-total{font-weight:700;font-size:.95rem;color:var(--green);}
@@ -312,13 +312,6 @@
   <button onclick="changeMonth(1)">&#8250;</button>
 </div>
 
-<!-- Summary -->
-<div class="summary">
-  <div class="summary-card" style="background:#2a1520;border-color:#5a2030;"><label>Total previsto</label><div class="value red" id="sumTotal">-</div></div>
-  <div class="summary-card" style="background:#152a1a;border-color:#205a30;"><label>Pago</label><div class="value green" id="sumPago">-</div></div>
-  <div class="summary-card" style="background:#1a1a2a;border-color:#303060;"><label>A pagar</label><div class="value orange" id="sumResto">-</div></div>
-</div>
-
 <!-- Receitas -->
 <div class="receitas-section">
   <div class="receitas-header">
@@ -362,6 +355,25 @@
   <div class="saldo-full" style="grid-column:span 2;border-top:none;padding-top:0;margin-top:0;">
     <label>Saldo disponível</label>
     <div class="sv muted" id="saldoDisp">Lance as receitas para ver o saldo</div>
+  </div>
+</div>
+
+<!-- Gastos -->
+<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;">Gastos</div>
+<div style="background:#1a2030;border:1px solid var(--border);border-left:3px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:var(--shadow);">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+    <label style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Previsto</label>
+    <div class="value red" id="sumTotal" style="font-size:.92rem;">-</div>
+  </div>
+  <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+    <label style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Pago</label>
+    <div class="value green" id="sumPago" style="font-size:.92rem;">-</div>
+  </div>
+  <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
+    <label style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">A pagar</label>
+    <div class="value orange" id="sumResto" style="font-size:.92rem;">-</div>
   </div>
 </div>
 
