@@ -398,7 +398,7 @@
 <!-- Notes -->
 <div class="notes-bar">
   <em>&#128221;</em>
-  <input type="text" id="notesField" placeholder="Observacoes e lembretes do mes..." />
+  <input type="text" id="notesField" placeholder="Observações e lembretes do mês..." />
 </div>
 
 <!-- Actions -->
@@ -461,7 +461,7 @@
     <div class="repeat-section" id="repeatSection">
       <label class="section-lbl">Repetir em outros meses?</label>
       <div class="repeat-opts">
-        <button class="repeat-opt active" data-r="nao"  onclick="setRepeat('nao')">Nao</button>
+        <button class="repeat-opt active" data-r="nao"  onclick="setRepeat('nao')">Não</button>
         <button class="repeat-opt"        data-r="fixo" onclick="setRepeat('fixo')">Valor fixo</button>
         <button class="repeat-opt"        data-r="var"  onclick="setRepeat('var')">Valores diferentes</button>
       </div>
@@ -489,7 +489,7 @@
 <div class="overlay" id="overlaySettings" onclick="overlayClick(event,'overlaySettings')">
  <div class="sheet">
   <div class="sheet-header">
-    <h2>Configuracoes</h2>
+    <h2>Configurações</h2>
     <button class="btn-close" onclick="closeSettings()">&#x2715;</button>
   </div>
   <div class="settings-section">
@@ -693,166 +693,166 @@
 <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
 <script>
 // ══ CONSTANTS ══
-var MONTHS_PT = ['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-var DEFAULT_CATS = ['Mae','Filhas','SIS','Consignado BB','Consignado Funpresp','IPVA','IPTU','Licenciamento','Internet','Cartao BB','Cartao Nubank','Financiamento Imovel','Energia','Celular','Condominio','Outros'];
+var DEFAULT_CATS = ['Mãe','Filhas','SIS','Consignado BB','Consignado Funpresp','IPVA','IPTU','Licenciamento','Internet','Cartão BB','Cartão Nubank','Financiamento Imóvel','Energia','Celular','Condomínio','Outros'];
 
 // Template de despesas recorrentes por mês (dia, desc, cat, note)
 // Usado para gerar qualquer ano automaticamente
 var RECURRING = [
   // mês 1 (janeiro) — sem novas 4 despesas pois começam em abril
   {m:1, entries:[
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:26,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:26,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:2, entries:[
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:3, entries:[
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:4, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:28,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:28,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next06',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:5, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:6, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:23,desc:'Mae',cat:'Mae',note:''},
+    {d:23,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:27,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:27,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:7, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:28,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:28,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:8, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:27,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:27,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:9, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:10, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:27,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:27,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:11, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
     {d:'next05',desc:'Celular',cat:'Celular',note:''},
-    {d:'next10',desc:'Condominio',cat:'Condominio',note:''},
+    {d:'next10',desc:'Condomínio',cat:'Condomínio',note:''},
   ]},
   {m:12, entries:[
     {d:20,desc:'Filhas',cat:'Filhas',note:''},
     {d:20,desc:'SIS',cat:'SIS',note:''},
     {d:20,desc:'Consignado BB',cat:'Consignado BB',note:'',amt:3743.26},
     {d:20,desc:'Consignado Funpresp',cat:'Consignado Funpresp',note:'',amt:1928.22},
-    {d:22,desc:'Mae',cat:'Mae',note:''},
+    {d:22,desc:'Mãe',cat:'Mãe',note:''},
     {d:25,desc:'Internet',cat:'Internet',note:''},
-    {d:25,desc:'Cartao BB',cat:'Cartao BB',note:''},
-    {d:25,desc:'Financiamento Imovel',cat:'Financiamento Imovel',note:''},
-    {d:26,desc:'Cartao Nubank',cat:'Cartao Nubank',note:''},
+    {d:25,desc:'Cartão BB',cat:'Cartão BB',note:''},
+    {d:25,desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',note:''},
+    {d:26,desc:'Cartão Nubank',cat:'Cartão Nubank',note:''},
     {d:28,desc:'Energia',cat:'Energia',note:''},
   ]},
 ];
@@ -860,162 +860,162 @@ var RECURRING = [
 // Dados históricos específicos de 2026 (com valores e status reais)
 var SEED_2026 = [
   // JANEIRO — tudo pago
-  {m:1,d:'2026-01-22',desc:'Mae',cat:'Mae',amt:1000.00,note:'',st:'pago'},
+  {m:1,d:'2026-01-22',desc:'Mãe',cat:'Mãe',amt:1000.00,note:'',st:'pago'},
   {m:1,d:'2026-01-25',desc:'Internet',cat:'Internet',amt:99.90,note:'',st:'pago'},
-  {m:1,d:'2026-01-26',desc:'Cartao BB',cat:'Cartao BB',amt:10604.54,note:'',st:'pago'},
-  {m:1,d:'2026-01-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:2916.48,note:'atraso',st:'pago'},
-  {m:1,d:'2026-01-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:5577.82,note:'',st:'pago'},
+  {m:1,d:'2026-01-26',desc:'Cartão BB',cat:'Cartão BB',amt:10604.54,note:'',st:'pago'},
+  {m:1,d:'2026-01-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:2916.48,note:'atraso',st:'pago'},
+  {m:1,d:'2026-01-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:5577.82,note:'',st:'pago'},
   {m:1,d:'2026-01-28',desc:'Energia',cat:'Energia',amt:124.55,note:'',st:'pago'},
   {m:1,d:'2026-02-05',desc:'Celular',cat:'Celular',amt:133.29,note:'',st:'pago'},
-  {m:1,d:'2026-02-10',desc:'Condominio',cat:'Condominio',amt:568.50,note:'',st:'pago'},
+  {m:1,d:'2026-02-10',desc:'Condomínio',cat:'Condomínio',amt:568.50,note:'',st:'pago'},
   // FEVEREIRO — tudo pago
-  {m:2,d:'2026-02-22',desc:'Mae',cat:'Mae',amt:1000.00,note:'',st:'pago'},
+  {m:2,d:'2026-02-22',desc:'Mãe',cat:'Mãe',amt:1000.00,note:'',st:'pago'},
   {m:2,d:'2026-02-23',desc:'Licenciamento',cat:'Licenciamento',amt:106.26,note:'',st:'pago'},
   {m:2,d:'2026-02-23',desc:'IPVA 1/6',cat:'IPVA',amt:310.56,note:'parcela 1/6',st:'pago'},
   {m:2,d:'2026-02-25',desc:'Internet',cat:'Internet',amt:99.90,note:'',st:'pago'},
-  {m:2,d:'2026-02-25',desc:'Cartao BB',cat:'Cartao BB',amt:6882.38,note:'',st:'pago'},
-  {m:2,d:'2026-02-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:2912.67,note:'',st:'pago'},
-  {m:2,d:'2026-02-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:2800.88,note:'',st:'pago'},
+  {m:2,d:'2026-02-25',desc:'Cartão BB',cat:'Cartão BB',amt:6882.38,note:'',st:'pago'},
+  {m:2,d:'2026-02-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:2912.67,note:'',st:'pago'},
+  {m:2,d:'2026-02-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:2800.88,note:'',st:'pago'},
   {m:2,d:'2026-02-28',desc:'Energia',cat:'Energia',amt:185.63,note:'',st:'pago'},
   {m:2,d:'2026-03-05',desc:'Celular',cat:'Celular',amt:133.29,note:'',st:'pago'},
-  {m:2,d:'2026-03-10',desc:'Condominio',cat:'Condominio',amt:591.50,note:'',st:'pago'},
+  {m:2,d:'2026-03-10',desc:'Condomínio',cat:'Condomínio',amt:591.50,note:'',st:'pago'},
   // MARÇO — tudo pago
-  {m:3,d:'2026-03-22',desc:'Mae',cat:'Mae',amt:1000.00,note:'',st:'pago'},
+  {m:3,d:'2026-03-22',desc:'Mãe',cat:'Mãe',amt:1000.00,note:'',st:'pago'},
   {m:3,d:'2026-03-23',desc:'IPVA 2/6',cat:'IPVA',amt:310.56,note:'parcela 2/6',st:'pago'},
   {m:3,d:'2026-03-25',desc:'Internet',cat:'Internet',amt:99.90,note:'',st:'pago'},
-  {m:3,d:'2026-03-25',desc:'Cartao BB',cat:'Cartao BB',amt:9903.88,note:'',st:'pago'},
-  {m:3,d:'2026-03-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:2848.20,note:'',st:'pago'},
-  {m:3,d:'2026-03-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:3907.55,note:'',st:'pago'},
+  {m:3,d:'2026-03-25',desc:'Cartão BB',cat:'Cartão BB',amt:9903.88,note:'',st:'pago'},
+  {m:3,d:'2026-03-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:2848.20,note:'',st:'pago'},
+  {m:3,d:'2026-03-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:3907.55,note:'',st:'pago'},
   {m:3,d:'2026-03-28',desc:'Energia',cat:'Energia',amt:274.33,note:'',st:'pago'},
   {m:3,d:'2026-04-05',desc:'Celular',cat:'Celular',amt:133.29,note:'',st:'pago'},
-  {m:3,d:'2026-04-10',desc:'Condominio',cat:'Condominio',amt:599.62,note:'',st:'pago'},
+  {m:3,d:'2026-04-10',desc:'Condomínio',cat:'Condomínio',amt:599.62,note:'',st:'pago'},
   // ABRIL
   {m:4,d:'2026-04-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:4,d:'2026-04-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:4,d:'2026-04-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:4,d:'2026-04-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:4,d:'2026-04-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:4,d:'2026-04-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:4,d:'2026-04-22',desc:'IPVA 3/6',cat:'IPVA',amt:310.56,note:'parcela 3/6',st:'agendado'},
   {m:4,d:'2026-04-25',desc:'Internet',cat:'Internet',amt:99.90,note:'',st:'agendado'},
-  {m:4,d:'2026-04-25',desc:'Cartao BB',cat:'Cartao BB',amt:1955.30,note:'',st:'agendado'},
-  {m:4,d:'2026-04-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:3521.95,note:'',st:'agendado'},
-  {m:4,d:'2026-04-27',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:8819.80,note:'',st:'agendado'},
+  {m:4,d:'2026-04-25',desc:'Cartão BB',cat:'Cartão BB',amt:1955.30,note:'',st:'agendado'},
+  {m:4,d:'2026-04-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:3521.95,note:'',st:'agendado'},
+  {m:4,d:'2026-04-27',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:8819.80,note:'',st:'agendado'},
   {m:4,d:'2026-04-28',desc:'Energia',cat:'Energia',amt:274.12,note:'',st:'agendado'},
   {m:4,d:'2026-05-06',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:4,d:'2026-05-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:4,d:'2026-05-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:4,d:'2026-05-15',desc:'IPTU 1/6',cat:'IPTU',amt:349.50,note:'parcela 1/6',st:'agendado'},
   // MAIO
   {m:5,d:'2026-05-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:5,d:'2026-05-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:5,d:'2026-05-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:5,d:'2026-05-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:5,d:'2026-05-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:5,d:'2026-05-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:5,d:'2026-05-25',desc:'IPVA 4/6',cat:'IPVA',amt:310.56,note:'parcela 4/6',st:'agendado'},
   {m:5,d:'2026-05-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:5,d:'2026-05-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:5,d:'2026-05-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:5,d:'2026-05-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:5,d:'2026-05-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:5,d:'2026-05-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:5,d:'2026-05-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:5,d:'2026-05-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:5,d:'2026-06-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:5,d:'2026-06-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:5,d:'2026-06-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:5,d:'2026-06-19',desc:'IPTU 2/6',cat:'IPTU',amt:349.50,note:'parcela 2/6',st:'agendado'},
   // JUNHO
   {m:6,d:'2026-06-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:6,d:'2026-06-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:6,d:'2026-06-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:6,d:'2026-06-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:6,d:'2026-06-23',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:6,d:'2026-06-23',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:6,d:'2026-06-22',desc:'IPVA 5/6',cat:'IPVA',amt:310.56,note:'parcela 5/6',st:'pendente'},
   {m:6,d:'2026-06-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:6,d:'2026-06-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:6,d:'2026-06-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:6,d:'2026-06-27',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:6,d:'2026-06-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:6,d:'2026-06-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:6,d:'2026-06-27',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:6,d:'2026-06-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:6,d:'2026-07-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:6,d:'2026-07-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:6,d:'2026-07-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:6,d:'2026-07-17',desc:'IPTU 3/6',cat:'IPTU',amt:349.50,note:'parcela 3/6',st:'pendente'},
   // JULHO
   {m:7,d:'2026-07-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:7,d:'2026-07-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:7,d:'2026-07-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:7,d:'2026-07-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:7,d:'2026-07-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:7,d:'2026-07-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:7,d:'2026-07-20',desc:'IPVA 6/6',cat:'IPVA',amt:310.57,note:'parcela 6/6',st:'pendente'},
   {m:7,d:'2026-07-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:7,d:'2026-07-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:7,d:'2026-07-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:7,d:'2026-07-28',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:7,d:'2026-07-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:7,d:'2026-07-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:7,d:'2026-07-28',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:7,d:'2026-07-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:7,d:'2026-08-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:7,d:'2026-08-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:7,d:'2026-08-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:7,d:'2026-08-14',desc:'IPTU 4/6',cat:'IPTU',amt:349.50,note:'parcela 4/6',st:'agendado'},
   // AGOSTO
   {m:8,d:'2026-08-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:8,d:'2026-08-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:8,d:'2026-08-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:8,d:'2026-08-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:8,d:'2026-08-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:8,d:'2026-08-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:8,d:'2026-08-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:8,d:'2026-08-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:8,d:'2026-08-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:8,d:'2026-08-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:8,d:'2026-08-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:8,d:'2026-08-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:8,d:'2026-08-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:8,d:'2026-08-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:8,d:'2026-09-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:8,d:'2026-09-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:8,d:'2026-09-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:8,d:'2026-09-18',desc:'IPTU 5/6',cat:'IPTU',amt:349.50,note:'parcela 5/6',st:'pendente'},
   // SETEMBRO
   {m:9,d:'2026-09-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:9,d:'2026-09-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:9,d:'2026-09-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:9,d:'2026-09-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:9,d:'2026-09-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:9,d:'2026-09-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:9,d:'2026-09-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:9,d:'2026-09-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:9,d:'2026-09-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:9,d:'2026-09-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:9,d:'2026-09-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:9,d:'2026-09-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:9,d:'2026-09-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:9,d:'2026-09-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:9,d:'2026-10-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:9,d:'2026-10-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:9,d:'2026-10-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   {m:9,d:'2026-10-19',desc:'IPTU 6/6',cat:'IPTU',amt:349.54,note:'parcela 6/6',st:'agendado'},
   // OUTUBRO
   {m:10,d:'2026-10-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:10,d:'2026-10-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:10,d:'2026-10-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:10,d:'2026-10-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:10,d:'2026-10-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:10,d:'2026-10-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:10,d:'2026-10-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:10,d:'2026-10-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:10,d:'2026-10-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:10,d:'2026-10-27',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:10,d:'2026-10-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:10,d:'2026-10-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:10,d:'2026-10-27',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:10,d:'2026-10-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:10,d:'2026-11-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:10,d:'2026-11-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:10,d:'2026-11-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   // NOVEMBRO
   {m:11,d:'2026-11-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:11,d:'2026-11-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:11,d:'2026-11-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:11,d:'2026-11-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:11,d:'2026-11-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:11,d:'2026-11-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:11,d:'2026-11-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:11,d:'2026-11-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:11,d:'2026-11-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:11,d:'2026-11-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:11,d:'2026-11-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:11,d:'2026-11-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:11,d:'2026-11-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:11,d:'2026-11-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:11,d:'2026-12-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:11,d:'2026-12-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:11,d:'2026-12-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
   // DEZEMBRO
   {m:12,d:'2026-12-20',desc:'Filhas',cat:'Filhas',amt:null,note:'',st:'pendente'},
   {m:12,d:'2026-12-20',desc:'SIS',cat:'SIS',amt:null,note:'',st:'pendente'},
   {m:12,d:'2026-12-20',desc:'Consignado BB',cat:'Consignado BB',amt:3743.26,note:'',st:'pendente'},
   {m:12,d:'2026-12-20',desc:'Consignado Funpresp',cat:'Consignado Funpresp',amt:1928.22,note:'',st:'pendente'},
-  {m:12,d:'2026-12-22',desc:'Mae',cat:'Mae',amt:1300.00,note:'',st:'pendente'},
+  {m:12,d:'2026-12-22',desc:'Mãe',cat:'Mãe',amt:1300.00,note:'',st:'pendente'},
   {m:12,d:'2026-12-25',desc:'Internet',cat:'Internet',amt:null,note:'',st:'pendente'},
-  {m:12,d:'2026-12-25',desc:'Cartao BB',cat:'Cartao BB',amt:null,note:'',st:'pendente'},
-  {m:12,d:'2026-12-25',desc:'Financiamento Imovel',cat:'Financiamento Imovel',amt:null,note:'',st:'pendente'},
-  {m:12,d:'2026-12-26',desc:'Cartao Nubank',cat:'Cartao Nubank',amt:null,note:'',st:'pendente'},
+  {m:12,d:'2026-12-25',desc:'Cartão BB',cat:'Cartão BB',amt:null,note:'',st:'pendente'},
+  {m:12,d:'2026-12-25',desc:'Financiamento Imóvel',cat:'Financiamento Imóvel',amt:null,note:'',st:'pendente'},
+  {m:12,d:'2026-12-26',desc:'Cartão Nubank',cat:'Cartão Nubank',amt:null,note:'',st:'pendente'},
   {m:12,d:'2026-12-28',desc:'Energia',cat:'Energia',amt:null,note:'',st:'pendente'},
   {m:12,d:'2027-01-05',desc:'Celular',cat:'Celular',amt:null,note:'',st:'pendente'},
-  {m:12,d:'2027-01-10',desc:'Condominio',cat:'Condominio',amt:null,note:'',st:'pendente'},
+  {m:12,d:'2027-01-10',desc:'Condomínio',cat:'Condomínio',amt:null,note:'',st:'pendente'},
 ];
 
 // ══ STATE ══
@@ -1209,12 +1209,12 @@ function render(){
 
   // List
   var list=document.getElementById('expenseList');
-  if(!me.length){list.innerHTML='<div class="empty-state">Nenhuma despesa neste mes</div>';return;}
+  if(!me.length){list.innerHTML='<div class="empty-state">Nenhuma despesa neste mês</div>';return;}
   var labels={pago:'Pago',agendado:'Agendado',pendente:'Pendente'};
 
   // Paleta de gradação azul por categoria
   var catPalette={
-    'Mae':          'rgba(99,102,241,.06)',
+    'Mãe':          'rgba(99,102,241,.06)',
     'Filhas':       'rgba(139,92,246,.06)',
     'SIS':          'rgba(59,130,246,.07)',
     'Consignado BB':'rgba(37,99,235,.07)',
@@ -1224,12 +1224,12 @@ function render(){
     'IPTU':         'rgba(67,56,202,.07)',
     'Licenciamento':'rgba(55,48,163,.06)',
     'Internet':     'rgba(96,165,250,.07)',
-    'Cartao BB':    'rgba(59,130,246,.08)',
-    'Cartao Nubank':'rgba(139,92,246,.08)',
-    'Financiamento Imovel':'rgba(37,99,235,.08)',
+    'Cartão BB':    'rgba(59,130,246,.08)',
+    'Cartão Nubank':'rgba(139,92,246,.08)',
+    'Financiamento Imóvel':'rgba(37,99,235,.08)',
     'Energia':      'rgba(251,146,60,.06)',
     'Celular':      'rgba(52,211,153,.06)',
-    'Condominio':   'rgba(99,102,241,.07)',
+    'Condomínio':   'rgba(99,102,241,.07)',
     'Outros':       'rgba(148,163,184,.05)',
   };
 
@@ -1252,7 +1252,7 @@ function render(){
       pendente: 'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;'
     };
 
-    return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartao Nubank'?'openNubank(\''+e.id+'\')':'editExp(\''+e.id+'\')')+'">'
+    return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartão Nubank'?'openNubank(\''+e.id+'\')':'editExp(\''+e.id+'\')')+'">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
@@ -1595,7 +1595,7 @@ function addCategory(){
   var inp=document.getElementById('newCatInput');
   var name=inp.value.trim();
   if(!name)return;
-  if(cats.indexOf(name)>-1){showToast('Ja existe');return;}
+  if(cats.indexOf(name)>-1){showToast('Já existe');return;}
   if(archivedCats.indexOf(name)>-1){showToast('Arquivada — restaure primeiro');return;}
   cats.push(name);inp.value='';persist();renderCatList();showToast('Categoria adicionada');
 }
@@ -1896,16 +1896,16 @@ function updateDizimoCard(){
 
 function abrirNubankDoMes(){
   var arr = expenses[curY]||[];
-  var nk = arr.find(function(e){ return e.category==='Cartao Nubank' && e.month===curM; });
+  var nk = arr.find(function(e){ return e.category==='Cartão Nubank' && e.month===curM; });
   if(nk){ openNubank(nk.id); }
-  else { showToast('Nenhum lancamento do Nubank neste mes'); }
+  else { showToast('Nenhum lançamento do cartão neste mês'); }
 }
 
 function atualizarNubankNoMes(y, m){
   // Encontra a despesa do Cartão Nubank no mês
   var arr = expenses[y] || [];
   var idx = arr.findIndex(function(e){
-    return e.category==='Cartao Nubank' && e.month===m;
+    return e.category==='Cartão Nubank' && e.month===m;
   });
   if(idx===-1) return;
 
@@ -1921,9 +1921,9 @@ function atualizarNubankNoMes(y, m){
 }
 
 // ══ CARTÃO NUBANK ══
-var NK_CATS_DEFAULT = ['Utilidade Domestica','Roupas','Calcados','Viagem','Hotel',
+var NK_CATS_DEFAULT = ['Utilidade Doméstica','Roupas','Calçados','Viagem','Hotel',
   'Restaurante','Medicamentos','Presentes','Festas','Supermercado','Padaria',
-  'Combustivel','Manutencao Casa','Assinaturas','Saude','Educacao','Eletronicos','Outros'];
+  'Combustível','Manutenção Casa','Assinaturas','Saúde','Educação','Eletrônicos','Outros'];
 
 function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
@@ -2075,7 +2075,7 @@ function nkNavMes(delta){
   if(nkCurM < 1) { nkCurM = 12; nkCurY--; }
   // Atualiza nubankExpId para o item do Nubank do novo mês
   var arr = expenses[nkCurY]||[];
-  var nk = arr.find(function(e){ return e.category==='Cartao Nubank' && e.month===nkCurM; });
+  var nk = arr.find(function(e){ return e.category==='Cartão Nubank' && e.month===nkCurM; });
   nubankExpId = nk ? nk.id : null;
   renderNubank();
 }
@@ -2207,7 +2207,7 @@ function updateNubankExpValue(){
   var y = nkCurY||curY; var m = nkCurM||curM;
   // Encontra a despesa do Nubank no mês visualizado
   var arr = expenses[y]||[];
-  var idx = arr.findIndex(function(e){ return e.category==='Cartao Nubank' && e.month===m; });
+  var idx = arr.findIndex(function(e){ return e.category==='Cartão Nubank' && e.month===m; });
   if(idx===-1) return;
   var fatReal = getNubankFatura(y,m);
   var totalCalc = calcNubankTotal(y,m);
@@ -2283,7 +2283,7 @@ function saveNovaCompra(){
   atualizarNubankNoMes(fatY, fatM);
 
   if(fatY!==(nkCurY||curY) || fatM!==(nkCurM||curM)){
-    showToast('Lancado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
+    showToast('Lançado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
   } else {
     showToast('Compra salva');
   }
