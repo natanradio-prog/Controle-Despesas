@@ -1252,7 +1252,7 @@ function render(){
       pendente: 'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;'
     };
 
-    return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartão Nubank'?'openNubank(\''+e.id+'\')':'editExp(\''+e.id+'\')')+'">'
+    return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartão Nubank'||e.category==='Cartao Nubank'?'abrirNubankDoMes()':'editExp(\''+e.id+'\')')+'">'
       +'<div class="status-dot '+st+'"></div>'
       +'<div class="exp-info"><div class="exp-name">'+e.desc+'</div>'
       +'<div class="exp-meta">'+meta.join('')+'</div></div>'
@@ -1897,8 +1897,13 @@ function updateDizimoCard(){
 function abrirNubankDoMes(){
   var arr = expenses[curY]||[];
   var nk = arr.find(function(e){ return e.category==='Cartão Nubank' && e.month===curM; });
-  if(nk){ openNubank(nk.id); }
-  else { showToast('Nenhum lançamento do cartão neste mês'); }
+  // Se não encontrar com acento, tenta sem
+  if(!nk) nk = arr.find(function(e){ return (e.category==='Cartao Nubank'||e.category==='Cartão Nubank') && e.month===curM; });
+  nubankExpId = nk ? nk.id : null;
+  nkCurY = curY;
+  nkCurM = curM;
+  renderNubank();
+  document.getElementById('overlayNubank').classList.add('open');
 }
 
 function atualizarNubankNoMes(y, m){
