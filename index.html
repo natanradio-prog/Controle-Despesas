@@ -107,10 +107,10 @@
   .exp-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
   .exp-amount{font-weight:700;font-size:.92rem;white-space:nowrap;}
   .exp-amount.empty{color:var(--muted);font-size:.7rem;font-weight:400;font-style:italic;}
-  .status-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.06em;padding:2px 7px;border-radius:20px;white-space:nowrap;font-weight:500;}
-  .status-label.pago{background:#dcfce7;color:#16a34a;}
-  .status-label.agendado{background:#dbeafe;color:#1d4ed8;}
-  .status-label.pendente{background:#f1f5f9;color:#94a3b8;}
+  .status-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:6px;white-space:nowrap;font-weight:700;}
+  .status-label.pago{background:#1a6040;color:#4fffb0;border:1px solid #26c6a0;}
+  .status-label.agendado{background:#0d3060;color:#7dd3fc;border:1px solid #3b82f6;}
+  .status-label.pendente{background:#6b3a00;color:#fbbf24;border:1px solid #f97316;}
   .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;transition:color .2s;flex-shrink:0;}
   .btn-del:hover{color:var(--red);}
 
@@ -242,7 +242,7 @@
   .compra-item .ci-info{flex:1;min-width:0;overflow:hidden;}
   .compra-item .ci-desc{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .compra-item .ci-meta{font-size:.67rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--purple);}
+  .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--red);text-align:right;}
   .compra-item .ci-parc{font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;white-space:nowrap;}
 
   .futuro-card{background:linear-gradient(135deg,#1a2a3a,#162030);border:1px solid #2a4a6a;border-left:3px solid #f5c400;border-radius:11px;padding:12px 14px;margin-bottom:14px;}
@@ -324,6 +324,11 @@
       <div class="receita-label">Salário bruto <span class="salario-chevron" id="salarioChevron">&#9660;</span></div>
       <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" />
       <span style="width:20px"></span>
+    </div>
+    <!-- Salário líquido sempre visível -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 4px;border-top:1px solid var(--border);margin-top:6px;">
+      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Salário líquido</span>
+      <span id="salarioLiquidoVis" style="font-weight:700;font-size:.92rem;color:var(--green);">-</span>
     </div>
     <!-- Contracheque -->
     <div class="contracheque-panel" id="contrachequePanel">
@@ -1764,6 +1769,10 @@ function renderContracheque(y,m){
 
   renderDescontosEventuais(cc);
   calcLiquido(y,m);
+  // Sincroniza display visível
+  var elVis = document.getElementById('salarioLiquidoVis');
+  var elIn = document.getElementById('salarioLiquido');
+  if(elVis && elIn){ elVis.textContent = elIn.textContent; elVis.style.color = elIn.style.color || 'var(--green)'; }
 }
 
 function renderDescontosEventuais(cc){
@@ -1829,12 +1838,15 @@ function calcLiquido(y,m){
   var dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
 
   var el = document.getElementById('salarioLiquido');
+  var elVis = document.getElementById('salarioLiquidoVis');
   if(bruto > 0){
     el.textContent = R(liquido);
     el.style.color = liquido >= 0 ? 'var(--green)' : 'var(--red)';
+    if(elVis){ elVis.textContent = R(liquido); elVis.style.color = liquido>=0?'var(--green)':'var(--red)'; }
     rec.salarioLiquido = liquido;
   } else {
     el.textContent = '-';
+    if(elVis){ elVis.textContent = '-'; elVis.style.color = 'var(--muted)'; }
     rec.salarioLiquido = null;
   }
 
