@@ -539,7 +539,7 @@
     </div>
   </div>
 
-  <button class="btn-save" onclick="openNovaCompra()" style="background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);">+ Nova compra</button>
+  <button class="btn-save" onclick="openNovaCompra()" style="background:#c0392b;box-shadow:0 4px 14px rgba(192,57,43,.4);">+ Nova compra</button>
 
   <!-- Comprometido meses futuros -->
   <div class="futuro-card" id="nubankFuturoCard">
@@ -555,7 +555,7 @@
   <div class="compras-list" id="nubankComprasList"></div>
 
   <button class="btn-save" onclick="openRelNubank()" style="background:rgba(84,110,122,.15);color:#546e7a;box-shadow:none;margin-top:8px;">&#128196; Relatório do cartão</button>
-  <button class="btn-save" onclick="openNovaCompra()" style="background:linear-gradient(135deg,#78909c,#546e7a);box-shadow:0 4px 14px rgba(84,110,122,.3);margin-top:8px;">+ Nova compra</button>
+  <button class="btn-save" onclick="openNovaCompra()" style="background:#c0392b;box-shadow:0 4px 14px rgba(192,57,43,.4);margin-top:8px;">+ Nova compra</button>
  </div>
 </div>
 
@@ -1160,8 +1160,9 @@ function render(){
   document.getElementById('monthLabel').textContent=MONTHS_PT[curM-1];
   checkAtrasos();
 
-  // Atualiza valor do Nubank no mês atual com base nas parcelas
+  // Atualiza valor do Nubank no mês atual e persiste
   atualizarNubankNoMes(curY, curM);
+  updateNubankExpValue();
 
   // Notes
   document.getElementById('notesField').value=notes[noteKey(curY,curM)]||'';
@@ -2209,16 +2210,28 @@ function onNubankFaturaInput(el){
 }
 
 function updateNubankExpValue(){
-  var y = nkCurY||curY; var m = nkCurM||curM;
-  // Encontra a despesa do Nubank no mês visualizado
-  var arr = expenses[y]||[];
-  var idx = arr.findIndex(function(e){ return e.category==='Cartão Nubank' && e.month===m; });
-  if(idx===-1) return;
-  var fatReal = getNubankFatura(y,m);
-  var totalCalc = calcNubankTotal(y,m);
-  var valor = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
-  arr[idx].amount = valor;
-  expenses[y] = arr;
+  // Atualiza o valor da despesa Cartão Nubank em todos os meses que têm compras
+  var mesesComCompras = {};
+  for(var sy=2025; sy<=curY+2; sy++){
+    for(var sm=1; sm<=12; sm++){
+      if(getNubankCompras(sy,sm).length>0) mesesComCompras[sy+'_'+sm]=1;
+    }
+  }
+  // Também inclui meses com fatura real informada
+  Object.keys(receitas).forEach(function(k){
+    var r = receitas[k];
+    if(r && r.nubankFatura!=null) mesesComCompras[k.replace('-','_')]=1;
+  });
+  // Atualiza todos os anos no expenses
+  Object.keys(expenses).forEach(function(y){
+    (expenses[y]||[]).forEach(function(e,i){
+      if(e.category==='Cartão Nubank'||e.category==='Cartao Nubank'){
+        var fatReal = getNubankFatura(parseInt(y), e.month);
+        var totalCalc = calcNubankTotal(parseInt(y), e.month);
+        expenses[y][i].amount = fatReal!=null ? fatReal : (totalCalc>0 ? totalCalc : null);
+      }
+    });
+  });
   persist();
 }
 
