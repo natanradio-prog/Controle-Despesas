@@ -673,12 +673,12 @@
 </div>
 
 <!-- Tela de relatório (fullscreen) -->
-<div id="overlayReport" style="display:none;position:fixed;inset:0;background:#fff;z-index:200;overflow-y:auto;padding:0;">
-  <div style="background:#1a1a1a;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;">
-    <span style="font-family:'Playfair Display',serif;color:#d4a853;font-size:1rem;">Relatório</span>
+<div id="overlayReport" style="display:none;position:fixed;inset:0;background:#0d1b2a;z-index:200;overflow-y:auto;padding:0;">
+  <div style="background:#1b2838;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid #2a3f5a;">
+    <span style="font-family:'DM Sans',sans-serif;color:#f5c400;font-size:1rem;font-weight:600;">Relatório</span>
     <div style="display:flex;gap:8px;">
-      <button onclick="compartilharRelatorio()" style="background:#d4a853;border:none;border-radius:8px;color:#0f0f0f;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;padding:7px 12px;cursor:pointer;">&#128504; Compartilhar</button>
-      <button onclick="fecharRelatorio()" style="background:#2e2e2e;border:none;border-radius:8px;color:#f0ece4;font-family:'DM Sans',sans-serif;font-size:.78rem;padding:7px 12px;cursor:pointer;">&#x2715; Fechar</button>
+      <button onclick="compartilharRelatorio()" style="background:#f5c400;border:none;border-radius:8px;color:#0d1b2a;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;padding:7px 12px;cursor:pointer;">&#128504; Compartilhar</button>
+      <button onclick="fecharRelatorio()" style="background:#2a3f5a;border:none;border-radius:8px;color:#e8f4f8;font-family:'DM Sans',sans-serif;font-size:.78rem;padding:7px 12px;cursor:pointer;">&#x2715; Fechar</button>
     </div>
   </div>
   <div id="reportBody" style="padding:16px;"></div>
@@ -2545,39 +2545,38 @@ function gerarRelNubank(){
   });
 
   var body=document.getElementById('reportBody');
+  var bg='#0d1b2a'; var surface='#1b2838'; var border='#2a3f5a';
+  var textCol='#e8f4f8'; var mutedCol='#5a8a9f'; var accentCol='#f5c400';
   body.innerHTML=''
-    +'<div style="font-size:.75rem;color:#666;margin-bottom:6px;">💜 Nubank &bull; '
+    +'<div style="font-size:.75rem;color:'+mutedCol+';margin-bottom:6px;">💳 Cartão &bull; '
     +MONTHS_PT[deM-1]+'/'+deY+' a '+MONTHS_PT[ateM-1]+'/'+ateY
     +' &bull; '+todasCompras.length+' compras</div>'
-    +'<div style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:12px;padding:14px;margin-bottom:18px;color:#fff;">'
-    +'<div style="font-size:.65rem;opacity:.8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Total do período</div>'
-    +'<div style="font-size:1.6rem;font-weight:700;">'+R(total)+'</div></div>'
-    // Barras por categoria
-    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:12px;">Por categoria</div>'
+    +'<div style="background:linear-gradient(135deg,#1a2a3a,#0d1b2a);border:1px solid '+border+';border-left:3px solid '+accentCol+';border-radius:12px;padding:14px;margin-bottom:18px;">'
+    +'<div style="font-size:.65rem;color:'+mutedCol+';text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Total do período</div>'
+    +'<div style="font-size:1.6rem;font-weight:700;color:'+accentCol+';">'+R(total)+'</div></div>'
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:'+mutedCol+';border-bottom:1px solid '+border+';padding-bottom:6px;margin-bottom:12px;">Por categoria</div>'
     +catNames.map(function(c,i){
       var pct=maxCat>0?(catTotals[c]/maxCat*100):0;
       var color=palette[i%palette.length];
       return '<div style="margin-bottom:10px;">'
         +'<div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px;">'
-        +'<span style="color:#333;">'+c+'</span><span style="font-weight:700;color:'+color+'">'+R(catTotals[c])+'</span></div>'
-        +'<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden;">'
+        +'<span style="color:'+textCol+';">'+c+'</span><span style="font-weight:700;color:'+color+'">'+R(catTotals[c])+'</span></div>'
+        +'<div style="background:#1b2838;border-radius:4px;height:10px;overflow:hidden;">'
         +'<div style="width:'+pct.toFixed(1)+'%;height:100%;background:'+color+';border-radius:4px;"></div></div></div>';
     }).join('')
-    // Por mês
-    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin:18px 0 12px;">Por mês</div>'
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:'+mutedCol+';border-bottom:1px solid '+border+';padding-bottom:6px;margin:18px 0 12px;">Por mês</div>'
     +Object.keys(mesTotals).map(function(mes){
-      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:.78rem;">'
-        +'<span>'+mes+'</span><span style="font-weight:700;color:#6d28d9;">'+R(mesTotals[mes])+'</span></div>';
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid '+border+';font-size:.78rem;">'
+        +'<span style="color:'+textCol+';">'+mes+'</span><span style="font-weight:700;color:'+accentCol+';">'+R(mesTotals[mes])+'</span></div>';
     }).join('')
-    // Lista detalhada
-    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin:18px 0 12px;">Compras detalhadas</div>'
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:'+mutedCol+';border-bottom:1px solid '+border+';padding-bottom:6px;margin:18px 0 12px;">Compras detalhadas</div>'
     +todasCompras.sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).map(function(c){
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f5f5f5;">'
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid '+border+';">'
         +'<div>'
-        +'<div style="font-size:.82rem;font-weight:500;">'+c.desc+'</div>'
-        +'<div style="font-size:.68rem;color:#aaa;">'+fmtD(c.date)+' &bull; '+(c.cat||'Outros')+(c.parcelas>1?' &bull; '+c.parcelas+'x':'')+(c.note?' &bull; '+c.note:'')+'</div>'
+        +'<div style="font-size:.82rem;font-weight:500;color:'+textCol+';">'+c.desc+'</div>'
+        +'<div style="font-size:.68rem;color:'+mutedCol+';">'+fmtD(c.date)+' &bull; '+(c.cat||'Outros')+(c.parcelas>1?' &bull; '+c.parcelas+'x':'')+(c.note?' &bull; '+c.note:'')+'</div>'
         +'</div>'
-        +'<div style="font-weight:700;color:#6d28d9;font-size:.85rem;white-space:nowrap;margin-left:8px;">'+R(c.val)+'</div>'
+        +'<div style="font-weight:700;color:#ef6060;font-size:.85rem;white-space:nowrap;margin-left:8px;">'+R(c.val)+'</div>'
         +'</div>';
     }).join('');
 
@@ -2678,45 +2677,44 @@ function gerarRelatorio(){
   var maxCat = catNames.length ? catTotals[catNames[0]] : 1;
 
   var body = document.getElementById('reportBody');
+  var bg='#0d1b2a'; var surface='#1b2838'; var border='#2a3f5a';
+  var textCol='#e8f4f8'; var mutedCol='#5a8a9f'; var accentCol='#f5c400';
   body.innerHTML = ''
-    +'<div style="margin-bottom:6px;font-size:.75rem;color:#666;">'+new Date().toLocaleDateString('pt-BR')+' &bull; '+y+' &bull; '+mesesOrdenados.map(function(m){return MONTHS_PT[m-1];}).join(', ')+'</div>'
-    // Summary
+    +'<div style="margin-bottom:6px;font-size:.75rem;color:'+mutedCol+';">'+new Date().toLocaleDateString('pt-BR')+' &bull; '+y+' &bull; '+mesesOrdenados.map(function(m){return MONTHS_PT[m-1];}).join(', ')+'</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;">'
-    +'<div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:#aaa;margin-bottom:3px;">Previsto</div><div style="font-size:.95rem;font-weight:bold;color:#e05c5c;">'+R(totalGeral)+'</div></div>'
-    +'<div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:#aaa;margin-bottom:3px;">Pago</div><div style="font-size:.95rem;font-weight:bold;color:#388e3c;">'+R(totalPago)+'</div></div>'
-    +'<div style="border:1px solid #e0e0e0;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:#aaa;margin-bottom:3px;">A pagar</div><div style="font-size:.95rem;font-weight:bold;color:#e0935c;">'+R(Math.max(0,totalGeral-totalPago))+'</div></div>'
+    +'<div style="background:#2a1520;border:1px solid #6a2030;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:'+mutedCol+';margin-bottom:3px;">Previsto</div><div style="font-size:.95rem;font-weight:bold;color:#ef6060;">'+R(totalGeral)+'</div></div>'
+    +'<div style="background:#152a1a;border:1px solid #206040;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:'+mutedCol+';margin-bottom:3px;">Pago</div><div style="font-size:.95rem;font-weight:bold;color:#26c6a0;">'+R(totalPago)+'</div></div>'
+    +'<div style="background:#1a1a2a;border:1px solid #404060;border-radius:8px;padding:10px;"><div style="font-size:.6rem;text-transform:uppercase;color:'+mutedCol+';margin-bottom:3px;">A pagar</div><div style="font-size:.95rem;font-weight:bold;color:#ffa060;">'+R(Math.max(0,totalGeral-totalPago))+'</div></div>'
     +'</div>'
-    // Barras por categoria
-    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:12px;">Gastos por categoria</div>'
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:'+mutedCol+';border-bottom:1px solid '+border+';padding-bottom:6px;margin-bottom:12px;">Gastos por categoria</div>'
     +catNames.map(function(c,i){
       var pct = maxCat>0?(catTotals[c]/maxCat*100):0;
       var color = palette[i%palette.length];
       return '<div style="margin-bottom:10px;">'
         +'<div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px;">'
-        +'<span style="color:#333;">'+c+'</span><span style="font-weight:bold;color:'+color+'">'+R(catTotals[c])+'</span></div>'
-        +'<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden;">'
+        +'<span style="color:'+textCol+';">'+c+'</span><span style="font-weight:bold;color:'+color+'">'+R(catTotals[c])+'</span></div>'
+        +'<div style="background:#1b2838;border-radius:4px;height:10px;overflow:hidden;">'
         +'<div style="width:'+pct.toFixed(1)+'%;height:100%;background:'+color+';border-radius:4px;"></div></div></div>';
     }).join('')
-    // Tabelas por mês
-    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#aaa;border-bottom:1px solid #eee;padding-bottom:6px;margin:20px 0 12px;">Detalhe por mês</div>'
+    +'<div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:'+mutedCol+';border-bottom:1px solid '+border+';padding-bottom:6px;margin:20px 0 12px;">Detalhe por mês</div>'
     +mesesData.filter(function(md){return md.items.length>0;}).map(function(md){
-      return '<div style="font-size:.95rem;font-weight:bold;color:#333;margin:14px 0 6px;">'+MONTHS_PT[md.m-1]+'</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:.73rem;color:#666;margin-bottom:8px;">'
-        +(md.receitas>0?'<span>Receitas: <strong>'+R(md.receitas)+'</strong></span>':'')
-        +'<span>Despesas: <strong>'+R(md.total)+'</strong></span>'
-        +'<span>Pago: <strong style="color:#388e3c">'+R(md.pago)+'</strong></span>'
-        +(md.receitas>0?'<span>Saldo: <strong style="color:'+(md.receitas-md.total>=0?'#388e3c':'#e05c5c')+'">'+R(md.receitas-md.total)+'</strong></span>':'')
+      return '<div style="font-size:.95rem;font-weight:bold;color:'+accentCol+';margin:14px 0 6px;">'+MONTHS_PT[md.m-1]+'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:.73rem;color:'+mutedCol+';margin-bottom:8px;">'
+        +(md.receitas>0?'<span>Receitas: <strong style="color:#26c6a0;">'+R(md.receitas)+'</strong></span>':'')
+        +'<span>Despesas: <strong style="color:'+textCol+';">'+R(md.total)+'</strong></span>'
+        +'<span>Pago: <strong style="color:#26c6a0;">'+R(md.pago)+'</strong></span>'
+        +(md.receitas>0?'<span>Saldo: <strong style="color:'+(md.receitas-md.total>=0?'#26c6a0':'#ef6060')+'">'+R(md.receitas-md.total)+'</strong></span>':'')
         +'</div>'
         +'<table style="width:100%;border-collapse:collapse;font-size:.73rem;margin-bottom:12px;">'
-        +'<thead><tr style="background:#f7f7f7;"><th style="padding:6px;text-align:left;color:#aaa;border-bottom:1px solid #eee;">Data</th><th style="padding:6px;text-align:left;color:#aaa;border-bottom:1px solid #eee;">Descrição</th><th style="padding:6px;text-align:left;color:#aaa;border-bottom:1px solid #eee;">Status</th><th style="padding:6px;text-align:right;color:#aaa;border-bottom:1px solid #eee;">Valor</th></tr></thead>'
+        +'<thead><tr style="background:#1b2838;"><th style="padding:6px;text-align:left;color:'+mutedCol+';border-bottom:1px solid '+border+';">Data</th><th style="padding:6px;text-align:left;color:'+mutedCol+';border-bottom:1px solid '+border+';">Descrição</th><th style="padding:6px;text-align:left;color:'+mutedCol+';border-bottom:1px solid '+border+';">Status</th><th style="padding:6px;text-align:right;color:'+mutedCol+';border-bottom:1px solid '+border+';">Valor</th></tr></thead>'
         +'<tbody>'+md.items.map(function(e){
-          var stColor = e.status==='pago'?'#388e3c':e.status==='agendado'?'#1976d2':'#999';
+          var stColor = e.status==='pago'?'#26c6a0':e.status==='agendado'?'#42a5f5':'#ffa060';
           var stLabel = {pago:'Pago',agendado:'Agendado',pendente:'Pendente'}[e.status];
-          return '<tr style="border-bottom:1px solid #f5f5f5;">'
-            +'<td style="padding:6px;color:#666;">'+fmtD(e.date)+'</td>'
-            +'<td style="padding:6px;">'+e.desc+(e.note?' <span style="color:#aaa;font-size:.68rem;">'+e.note+'</span>':'')+'</td>'
+          return '<tr style="border-bottom:1px solid '+border+';">'
+            +'<td style="padding:6px;color:'+mutedCol+';">'+fmtD(e.date)+'</td>'
+            +'<td style="padding:6px;color:'+textCol+';">'+e.desc+(e.note?' <span style="color:'+mutedCol+';font-size:.68rem;">'+e.note+'</span>':'')+'</td>'
             +'<td style="padding:6px;"><span style="font-size:.65rem;color:'+stColor+'">'+stLabel+'</span></td>'
-            +'<td style="padding:6px;text-align:right;font-weight:bold;">'+R(e.amount)+'</td>'
+            +'<td style="padding:6px;text-align:right;font-weight:bold;color:'+textCol+';">'+R(e.amount)+'</td>'
             +'</tr>';
         }).join('')+'</tbody></table>';
     }).join('');
