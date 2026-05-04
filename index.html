@@ -1053,7 +1053,10 @@ function checkAndMigrate(){
     var arr = JSON.parse(savedCats);
     var changed = false;
     arr = arr.map(function(c){ if(catFixes[c]){changed=true;return catFixes[c];} return c; });
-    if(changed) localStorage.setItem('desp_cats3', JSON.stringify(arr));
+    if(changed){
+      arr.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+      localStorage.setItem('desp_cats3', JSON.stringify(arr));
+    }
   }
 
   // Corrige categorias nos lançamentos
@@ -1076,7 +1079,10 @@ function checkAndMigrate(){
     var nkArr = JSON.parse(savedNK);
     var nkChanged = false;
     nkArr = nkArr.map(function(c){ if(catFixes[c]){nkChanged=true;return catFixes[c];} return c; });
-    if(nkChanged) localStorage.setItem('nk_cats', JSON.stringify(nkArr));
+    if(nkChanged){
+      nkArr.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+      localStorage.setItem('nk_cats', JSON.stringify(nkArr));
+    }
   }
 }
 
@@ -1975,7 +1981,10 @@ function atualizarNubankNoMes(y, m){
 // ══ CARTÃO NUBANK ══
 var NK_CATS_DEFAULT = ['Assinaturas','Calçados','Combustível','Educação','Eletrônicos','Festas','Hotel','Manutenção Casa','Medicamentos','Outros','Padaria','Presentes','Restaurante','Roupas','Saúde','Supermercado','Utilidade Doméstica','Viagem'];
 
-function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
+function getNKCats(){ 
+  var cats = JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT));
+  return cats.slice().sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+}
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
 
 function atualizarFaturaInfo(){
