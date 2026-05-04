@@ -154,7 +154,7 @@
   .fg label{font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
   input,select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:9px 11px;width:100%;-webkit-appearance:none;transition:border-color .2s;}
   input:focus,select:focus{outline:none;border-color:var(--accent);}
-  select option{background:#fff;}
+  select option{background:#1b2838;color:#e8f4f8;}
 
   .status-toggle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
   .status-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.7rem;padding:8px 4px;text-align:center;transition:all .2s;}
@@ -1036,8 +1036,48 @@ var APP_VERSION = 5;
 
 function checkAndMigrate(){
   var savedVersion = parseInt(localStorage.getItem('desp_version')||'0');
-  // Só atualiza o número da versão — nunca apaga dados existentes
   localStorage.setItem('desp_version', APP_VERSION);
+
+  // Migra categorias sem acento para com acento
+  var catFixes = {
+    'Mae':'Mãe','Cartao BB':'Cartão BB','Cartao Nubank':'Cartão Nubank',
+    'Financiamento Imovel':'Financiamento Imóvel','Condominio':'Condomínio',
+    'Utilidade Domestica':'Utilidade Doméstica','Calcados':'Calçados',
+    'Combustivel':'Combustível','Manutencao Casa':'Manutenção Casa',
+    'Saude':'Saúde','Educacao':'Educação','Eletronicos':'Eletrônicos'
+  };
+
+  // Corrige cats
+  var savedCats = localStorage.getItem('desp_cats3');
+  if(savedCats){
+    var arr = JSON.parse(savedCats);
+    var changed = false;
+    arr = arr.map(function(c){ if(catFixes[c]){changed=true;return catFixes[c];} return c; });
+    if(changed) localStorage.setItem('desp_cats3', JSON.stringify(arr));
+  }
+
+  // Corrige categorias nos lançamentos
+  var savedExp = localStorage.getItem('desp_exp3');
+  if(savedExp){
+    var exps = JSON.parse(savedExp);
+    var expChanged = false;
+    Object.keys(exps).forEach(function(y){
+      exps[y] = (exps[y]||[]).map(function(e){
+        if(catFixes[e.category]){expChanged=true;e.category=catFixes[e.category];}
+        return e;
+      });
+    });
+    if(expChanged) localStorage.setItem('desp_exp3', JSON.stringify(exps));
+  }
+
+  // Corrige nk_cats
+  var savedNK = localStorage.getItem('nk_cats');
+  if(savedNK){
+    var nkArr = JSON.parse(savedNK);
+    var nkChanged = false;
+    nkArr = nkArr.map(function(c){ if(catFixes[c]){nkChanged=true;return catFixes[c];} return c; });
+    if(nkChanged) localStorage.setItem('nk_cats', JSON.stringify(nkArr));
+  }
 }
 
 function load(){
