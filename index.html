@@ -695,7 +695,7 @@
 // ══ CONSTANTS ══
 var MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-var DEFAULT_CATS = ['Mãe','Filhas','SIS','Consignado BB','Consignado Funpresp','IPVA','IPTU','Licenciamento','Internet','Cartão BB','Cartão Nubank','Financiamento Imóvel','Energia','Celular','Condomínio','Outros'];
+var DEFAULT_CATS = ['Cartão BB','Cartão Nubank','Celular','Condomínio','Consignado BB','Consignado Funpresp','Energia','Financiamento Imóvel','Filhas','Internet','IPTU','IPVA','Licenciamento','Mãe','Outros','SIS'];
 
 // Template de despesas recorrentes por mês (dia, desc, cat, note)
 // Usado para gerar qualquer ano automaticamente
@@ -1411,7 +1411,11 @@ function addFCat(){
   var inp=document.getElementById('fNovaCatInput');
   var name=inp.value.trim();
   if(!name) return;
-  if(cats.indexOf(name)===-1){ cats.push(name); persist(); }
+  if(cats.indexOf(name)===-1){
+    cats.push(name);
+    cats.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+    persist();
+  }
   buildCatSelect();
   document.getElementById('fCat').value=name;
   document.getElementById('fNovaCatRow').style.display='none';
@@ -1598,7 +1602,9 @@ function addCategory(){
   if(!name)return;
   if(cats.indexOf(name)>-1){showToast('Já existe');return;}
   if(archivedCats.indexOf(name)>-1){showToast('Arquivada — restaure primeiro');return;}
-  cats.push(name);inp.value='';persist();renderCatList();showToast('Categoria adicionada');
+  cats.push(name);
+  cats.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+  inp.value='';persist();renderCatList();showToast('Categoria adicionada');
 }
 
 function archiveCat(name){
@@ -1927,9 +1933,7 @@ function atualizarNubankNoMes(y, m){
 }
 
 // ══ CARTÃO NUBANK ══
-var NK_CATS_DEFAULT = ['Utilidade Doméstica','Roupas','Calçados','Viagem','Hotel',
-  'Restaurante','Medicamentos','Presentes','Festas','Supermercado','Padaria',
-  'Combustível','Manutenção Casa','Assinaturas','Saúde','Educação','Eletrônicos','Outros'];
+var NK_CATS_DEFAULT = ['Assinaturas','Calçados','Combustível','Educação','Eletrônicos','Festas','Hotel','Manutenção Casa','Medicamentos','Outros','Padaria','Presentes','Restaurante','Roupas','Saúde','Supermercado','Utilidade Doméstica','Viagem'];
 
 function getNKCats(){ return JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); }
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
@@ -1976,8 +1980,12 @@ function addNKCat(){
   var inp = document.getElementById('ncNovaCatInput');
   var name = inp.value.trim();
   if(!name) return;
-  var cats = getNKCats();
-  if(cats.indexOf(name)===-1){ cats.push(name); setNKCats(cats); }
+  var nkCats = getNKCats();
+  if(nkCats.indexOf(name)===-1){
+    nkCats.push(name);
+    nkCats.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+    setNKCats(nkCats);
+  }
   buildNKCatSelect();
   document.getElementById('ncCat').value = name;
   document.getElementById('ncNovaCatRow').style.display='none';
