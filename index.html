@@ -2079,21 +2079,21 @@ function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m
 
 function calcNubankTotal(y,m){
   var todasCompras = [];
-  for(var y2=2025; y2<=y+1; y2++){
-    for(var m2=1; m2<=12; m2++){
-      (function(sy,sm){
-        getNubankCompras(sy,sm).forEach(function(c){
-          todasCompras.push({c:c, storY:sy, storM:sm});
-        });
-      })(y2,m2);
-    }
-  }
+  var anos = [];
+  for(var y2=2025; y2<=y+1; y2++) anos.push(y2);
+  anos.forEach(function(sy){
+    [1,2,3,4,5,6,7,8,9,10,11,12].forEach(function(sm){
+      getNubankCompras(sy,sm).forEach(function(c){
+        todasCompras.push({c:c, storY:sy, storM:sm});
+      });
+    });
+  });
   var vistos = {};
   return todasCompras.reduce(function(s,item){
     var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date||vistos[c.id]) return s;
     if(c.parcelas>1){
-      var offset = (y - storY)*12 + (m - storM);
+      var offset = (y-storY)*12+(m-storM);
       if(offset>=0 && offset<c.parcelas){
         vistos[c.id]=true;
         return s + Math.round(c.val/c.parcelas*100)/100;
@@ -2153,22 +2153,23 @@ function renderNubank(){
 
   // Coleta TODAS as compras com mês de armazenamento
   var todasCompras = [];
-  for(var y2=2025; y2<=y+1; y2++){
-    for(var m2=1; m2<=12; m2++){
-      (function(sy,sm){
-        getNubankCompras(sy,sm).forEach(function(c){
-          todasCompras.push({c:c, storY:sy, storM:sm});
-        });
-      })(y2,m2);
-    }
-  }
+  var anos = [];
+  for(var y2=2025; y2<=y+1; y2++) anos.push(y2);
+  anos.forEach(function(sy){
+    var meses = [1,2,3,4,5,6,7,8,9,10,11,12];
+    meses.forEach(function(sm){
+      getNubankCompras(sy,sm).forEach(function(c){
+        todasCompras.push({c:c, storY:sy, storM:sm});
+      });
+    });
+  });
 
   // Filtra as que aparecem neste mês (sem duplicatas por id)
   var vistos = {};
   var comprasDoMes = todasCompras.filter(function(item){
     var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return false;
-    if(vistos[c.id]) return false;  // evita duplicata
+    if(vistos[c.id]) return false;
     var aparece = false;
     if(c.parcelas>1){
       var offset = (y-storY)*12+(m-storM);
@@ -2178,7 +2179,12 @@ function renderNubank(){
     }
     if(aparece) vistos[c.id]=true;
     return aparece;
-  }).map(function(item){ var cc=Object.assign({},item.c); cc._storY=item.storY; cc._storM=item.storM; return cc; });
+  }).map(function(item){
+    var cc=Object.assign({},item.c);
+    cc._storY=item.storY;
+    cc._storM=item.storM;
+    return cc;
+  });
 
   var comprasNativas = getNubankCompras(y,m);
 
