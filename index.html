@@ -2164,6 +2164,16 @@ function renderNubank(){
     });
   });
 
+  // DEBUG temporário
+  var dbg = 'renderNubank: y='+y+' m='+m+'\nTodasCompras:\n';
+  todasCompras.forEach(function(item){
+    dbg += item.c.desc+' storY='+item.storY+' storM='+item.storM+' parc='+item.c.parcelas+'\n';
+    var off = (y-item.storY)*12+(m-item.storM);
+    dbg += '  offset='+off+'\n';
+  });
+  console.log(dbg);
+  if(todasCompras.length>0) alert(dbg);
+
   // Filtra as que aparecem neste mês (sem duplicatas por id)
   var vistos = {};
   var comprasDoMes = todasCompras.filter(function(item){
