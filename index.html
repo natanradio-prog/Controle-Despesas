@@ -2078,28 +2078,31 @@ function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
 function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
 
 function calcNubankTotal(y,m){
-  // Coleta compras armazenadas em todos os meses
   var todasCompras = [];
   for(var y2=2025; y2<=y+1; y2++){
     for(var m2=1; m2<=12; m2++){
-      getNubankCompras(y2,m2).forEach(function(c){
-        // Guarda o mês de armazenamento junto com a compra
-        todasCompras.push({c:c, storY:y2, storM:m2});
-      });
+      (function(sy,sm){
+        getNubankCompras(sy,sm).forEach(function(c){
+          todasCompras.push({c:c, storY:sy, storM:sm});
+        });
+      })(y2,m2);
     }
   }
-
+  var vistos = {};
   return todasCompras.reduce(function(s,item){
     var c=item.c, storY=item.storY, storM=item.storM;
-    if(!c.date) return s;
+    if(!c.date||vistos[c.id]) return s;
     if(c.parcelas>1){
-      // Parcelado: offset calculado a partir do mês da FATURA (storY/storM)
-      // pois a compra pode ter sido feita em mês diferente do fechamento
       var offset = (y - storY)*12 + (m - storM);
-      if(offset>=0 && offset<c.parcelas) return s + Math.round(c.val/c.parcelas*100)/100;
+      if(offset>=0 && offset<c.parcelas){
+        vistos[c.id]=true;
+        return s + Math.round(c.val/c.parcelas*100)/100;
+      }
     } else {
-      // À vista: pertence ao mês onde foi armazenada (mês da fatura)
-      if(storY===y && storM===m) return s + c.val;
+      if(storY===y && storM===m){
+        vistos[c.id]=true;
+        return s + c.val;
+      }
     }
     return s;
   },0);
@@ -2152,23 +2155,29 @@ function renderNubank(){
   var todasCompras = [];
   for(var y2=2025; y2<=y+1; y2++){
     for(var m2=1; m2<=12; m2++){
-      getNubankCompras(y2,m2).forEach(function(c){
-        todasCompras.push({c:c, storY:y2, storM:m2});
-      });
+      (function(sy,sm){
+        getNubankCompras(sy,sm).forEach(function(c){
+          todasCompras.push({c:c, storY:sy, storM:sm});
+        });
+      })(y2,m2);
     }
   }
 
-  // Filtra as que aparecem neste mês
+  // Filtra as que aparecem neste mês (sem duplicatas por id)
+  var vistos = {};
   var comprasDoMes = todasCompras.filter(function(item){
     var c=item.c, storY=item.storY, storM=item.storM;
     if(!c.date) return false;
+    if(vistos[c.id]) return false;  // evita duplicata
+    var aparece = false;
     if(c.parcelas>1){
-      // Offset a partir do mês da FATURA (storY/storM)
       var offset = (y-storY)*12+(m-storM);
-      return offset>=0 && offset<c.parcelas;
+      aparece = offset>=0 && offset<c.parcelas;
+    } else {
+      aparece = storY===y && storM===m;
     }
-    // À vista: aparece no mês onde foi armazenada
-    return storY===y && storM===m;
+    if(aparece) vistos[c.id]=true;
+    return aparece;
   }).map(function(item){ var cc=Object.assign({},item.c); cc._storY=item.storY; cc._storM=item.storM; return cc; });
 
   var comprasNativas = getNubankCompras(y,m);
