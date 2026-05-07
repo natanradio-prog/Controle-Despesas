@@ -2369,8 +2369,10 @@ function saveNovaCompra(){
   }
   setNubankCompras(fatY, fatM, comprasDest);
 
-  // Atualiza valor na despesa do mês de fatura
-  atualizarNubankNoMes(fatY, fatM);
+  // DEBUG: mostra onde foi salvo
+  var debugMsg = 'Salvo em: '+MONTHS_PT[fatM-1]+'/'+fatY+' (storM='+fatM+') | parcelas='+parcelas+' | data='+date;
+  console.log(debugMsg);
+  alert(debugMsg);
 
   if(fatY!==(nkCurY||curY) || fatM!==(nkCurM||curM)){
     showToast('Lançado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
