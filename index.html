@@ -2148,6 +2148,10 @@ function nkNavMes(delta){
 
 function renderNubank(){
   var y = nkCurY||curY; var m = nkCurM||curM;
+  
+  // DEBUG
+  var nk5 = getNubankCompras(2026,5);
+  alert('renderNubank: y='+y+' m='+m+'\nnkCurY='+nkCurY+' nkCurM='+nkCurM+'\ncurY='+curY+' curM='+curM+'\nnk_2026_5 tem '+nk5.length+' compra(s)'+(nk5.length>0?' | '+nk5[0].desc+' parc='+nk5[0].parcelas:''));
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
   document.getElementById('nubankAnoLabel').textContent = y;
 
