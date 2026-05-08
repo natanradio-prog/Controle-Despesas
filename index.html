@@ -2078,34 +2078,30 @@ function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
 function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
 
 function calcNubankTotal(y,m){
-  var todasCompras = [];
-  var anos = [];
-  for(var y2=2025; y2<=y+1; y2++) anos.push(y2);
-  anos.forEach(function(sy){
-    [1,2,3,4,5,6,7,8,9,10,11,12].forEach(function(sm){
-      getNubankCompras(sy,sm).forEach(function(c){
-        todasCompras.push({c:c, storY:sy, storM:sm});
-      });
-    });
-  });
+  var total = 0;
   var vistos = {};
-  return todasCompras.reduce(function(s,item){
-    var c=item.c, storY=item.storY, storM=item.storM;
-    if(!c.date||vistos[c.id]) return s;
-    if(c.parcelas>1){
-      var offset = (y-storY)*12+(m-storM);
-      if(offset>=0 && offset<c.parcelas){
-        vistos[c.id]=true;
-        return s + Math.round(c.val/c.parcelas*100)/100;
-      }
-    } else {
-      if(storY===y && storM===m){
-        vistos[c.id]=true;
-        return s + c.val;
+  for(var cy2=2025; cy2<=y+1; cy2++){
+    for(var cm2=1; cm2<=12; cm2++){
+      var lista = getNubankCompras(cy2,cm2);
+      for(var ci=0; ci<lista.length; ci++){
+        var cc = lista[ci];
+        if(!cc.date || vistos[cc.id]) continue;
+        if(cc.parcelas>1){
+          var off = (y-cy2)*12+(m-cm2);
+          if(off>=0 && off<cc.parcelas){
+            vistos[cc.id]=true;
+            total += Math.round(cc.val/cc.parcelas*100)/100;
+          }
+        } else {
+          if(cy2===y && cm2===m){
+            vistos[cc.id]=true;
+            total += cc.val;
+          }
+        }
       }
     }
-    return s;
-  },0);
+  }
+  return total;
 }
 
 function getFuturoComprometido(){
@@ -2148,10 +2144,6 @@ function nkNavMes(delta){
 
 function renderNubank(){
   var y = nkCurY||curY; var m = nkCurM||curM;
-  
-  // DEBUG
-  var nk5 = getNubankCompras(2026,5);
-  alert('renderNubank: y='+y+' m='+m+'\nnkCurY='+nkCurY+' nkCurM='+nkCurM+'\ncurY='+curY+' curM='+curM+'\nnk_2026_5 tem '+nk5.length+' compra(s)'+(nk5.length>0?' | '+nk5[0].desc+' parc='+nk5[0].parcelas:''));
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
   document.getElementById('nubankAnoLabel').textContent = y;
 
