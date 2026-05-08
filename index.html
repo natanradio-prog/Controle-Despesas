@@ -2164,15 +2164,7 @@ function renderNubank(){
     });
   });
 
-  // DEBUG temporário
-  var dbg = 'renderNubank: y='+y+' m='+m+'\nTodasCompras:\n';
-  todasCompras.forEach(function(item){
-    dbg += item.c.desc+' storY='+item.storY+' storM='+item.storM+' parc='+item.c.parcelas+'\n';
-    var off = (y-item.storY)*12+(m-item.storM);
-    dbg += '  offset='+off+'\n';
-  });
-  console.log(dbg);
-  if(todasCompras.length>0) alert(dbg);
+
 
   // Filtra as que aparecem neste mês (sem duplicatas por id)
   var vistos = {};
@@ -2378,11 +2370,7 @@ function saveNovaCompra(){
     comprasDest.push({id:String(Date.now()),desc:desc,val:val,date:date,parcelas:parcelas,note:note,cat:cat});
   }
   setNubankCompras(fatY, fatM, comprasDest);
-
-  // DEBUG: mostra onde foi salvo
-  var debugMsg = 'Salvo em: '+MONTHS_PT[fatM-1]+'/'+fatY+' (storM='+fatM+') | parcelas='+parcelas+' | data='+date;
-  console.log(debugMsg);
-  alert(debugMsg);
+  atualizarNubankNoMes(fatY, fatM);
 
   if(fatY!==(nkCurY||curY) || fatM!==(nkCurM||curM)){
     showToast('Lançado em '+MONTHS_PT[fatM-1]+'/'+fatY+' (fechamento dia 19)');
@@ -2392,6 +2380,9 @@ function saveNovaCompra(){
 
   updateNubankExpValue();
   closeNovaCompra();
+  // Garante que nkCurY/nkCurM apontam para o mês da fatura
+  nkCurY = fatY;
+  nkCurM = fatM;
   renderNubank();
   if(fatY===curY && fatM===curM) render();
 }
