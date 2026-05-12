@@ -364,6 +364,19 @@
   </div>
 </div>
 
+<!-- Pendências mês anterior -->
+<div id="cardPendAnt" style="display:none;background:#2a1a10;border:1px solid #8b4510;border-left:3px solid #ffa060;border-radius:12px;padding:14px;margin-bottom:12px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span id="cardPendAntTitulo" style="font-size:.82rem;font-weight:600;color:#ffa060;"></span>
+    <span id="cardPendAntTotal" style="font-size:.78rem;font-weight:700;color:#ef6060;"></span>
+  </div>
+  <div id="cardPendAntLista" style="display:flex;flex-direction:column;gap:5px;"></div>
+  <div style="border-top:1px solid rgba(255,160,96,.2);margin-top:10px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+    <span id="cardPendAntCount" style="font-size:.7rem;color:#5a8a9f;"></span>
+    <span id="cardPendAntTotalRod" style="font-size:.82rem;font-weight:700;color:#ef6060;"></span>
+  </div>
+</div>
+
 <!-- Gastos -->
 <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;">Gastos</div>
 <div style="background:#1a2030;border:1px solid var(--border);border-left:3px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:var(--shadow);">
@@ -1232,6 +1245,9 @@ function render(){
   atualizarNubankNoMes(curY, curM);
   updateNubankExpValue();
 
+  // Card pendências mês anterior
+  renderPendentesAnteriores();
+
   // Notes
   document.getElementById('notesField').value=notes[noteKey(curY,curM)]||'';
 
@@ -1462,6 +1478,61 @@ function descartarSobra(){
 }
 
 // ══ FORM ══
+function renderPendentesAnteriores(){
+  var card = document.getElementById('cardPendAnt');
+
+  // Só mostra se estiver visualizando o mês atual real
+  var hoje = new Date();
+  var hojeY = hoje.getFullYear(), hojeM = hoje.getMonth()+1;
+  if(curY !== hojeY || curM !== hojeM){ card.style.display='none'; return; }
+
+  // Calcula mês anterior
+  var antM = curM - 1, antY = curY;
+  if(antM < 1){ antM = 12; antY--; }
+
+  // Pendências do mês anterior vencidas até dia 19 (fim do ciclo)
+  var limitStr = antY+'-'+String(antM).padStart(2,'0')+'-19';
+
+  var pendentes = (expenses[antY]||[]).filter(function(e){
+    return e.month === antM
+      && e.category !== 'Dizimo'
+      && e.status === 'pendente'
+      && e.amount != null
+      && (!e.date || e.date <= limitStr);
+  });
+
+  if(!pendentes.length){ card.style.display='none'; return; }
+
+  var total = pendentes.reduce(function(s,e){ return s+(e.amount||0); },0);
+
+  document.getElementById('cardPendAntTitulo').textContent =
+    'Pendentes de ' + MONTHS_PT[antM-1];
+  document.getElementById('cardPendAntTotal').textContent = R(total);
+  document.getElementById('cardPendAntCount').textContent =
+    pendentes.length + ' pendência' + (pendentes.length>1?'s':'') + ' · total';
+  document.getElementById('cardPendAntTotalRod').textContent = R(total);
+
+  var lista = pendentes.slice().sort(function(a,b){
+    return (a.date||'').localeCompare(b.date||'');
+  });
+
+  document.getElementById('cardPendAntLista').innerHTML = lista.map(function(e){
+    var dtLabel = e.date ? fmtD(e.date) : '';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,160,96,.06);border-radius:8px;padding:8px 10px;cursor:pointer;" onclick="editExp(\''+e.id+'\')">'
+      +'<div>'
+      +'<div style="font-size:.78rem;font-weight:500;color:#e8f4f8;">'+e.desc+'</div>'
+      +'<div style="font-size:.68rem;color:#5a8a9f;">'+(dtLabel?'Venceu '+dtLabel:'')+(e.note?' · '+e.note:'')+'</div>'
+      +'</div>'
+      +'<div style="text-align:right;">'
+      +'<div style="font-size:.78rem;font-weight:700;color:#ef6060;">'+R(e.amount)+'</div>'
+      +'<div style="background:#6b3a00;color:#fbbf24;border:1px solid #f97316;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:2px;">Pendente</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+
+  card.style.display = 'block';
+}
+
 function buildCatSelect(){
   var sel=document.getElementById('fCat');
   var currentVal = sel.value;
