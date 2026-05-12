@@ -3142,8 +3142,9 @@ function disconnectDrive(){
 
 function updateSyncStatus(st){
   var dot=document.getElementById('syncDot');
-  var lbl=document.getElementById('syncLabel');
+  var lbl=document.getElementById('syncStatus');
   var btn=document.getElementById('btnGdrive');
+  if(!dot||!lbl||!btn) return;
   if(st==='synced'){dot.style.background='#26c6a0';lbl.textContent='Sincronizado ✓';btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
   else if(st==='syncing'){dot.style.background='#f5c400';lbl.textContent='Sincronizando...';}
   else if(st==='error'){dot.style.background='#ef6060';lbl.textContent='Erro na sincronização';}
