@@ -2860,99 +2860,44 @@ function compartilharRelatorio(){
   janela.document.close();
 }
 
-
-
-
 // ══ ANÁLISE FINANCEIRA ══
 
 var CAT_GRUPOS = {
-  // Supermercado
   'Supermercado':'Supermercado','Padaria':'Supermercado','Açougue':'Supermercado',
-  // Restaurante
   'Restaurante':'Restaurante',
-  // Combustível
   'Combustível':'Combustível',
-  // Carro
   'Carro':'Carro','Manutenção Carro':'Carro',
-  // Casa
   'Manutenção Casa':'Casa','Utilidade Doméstica':'Casa',
   'Condomínio':'Casa','Energia':'Casa','Internet':'Casa',
-  // Saúde
   'Saúde':'Saúde','Medicamentos':'Saúde',
-  // Vestuário
   'Roupas':'Vestuário','Calçados':'Vestuário',
-  // Lazer
   'Viagem':'Lazer','Hotel':'Lazer','Festas':'Lazer',
-  // Educação
   'Educação':'Educação',
-  // Assinaturas
   'Assinaturas':'Assinaturas',
-  // OAB
   'OAB':'OAB',
-  // Celular
   'Celular':'Celular',
-  // Cartão BB
   'Cartão BB':'Cartão BB',
-  // Consignados
   'Consignado BB':'Consignados','Consignado Funpresp':'Consignados',
-  // Financiamento
   'Financiamento Imóvel':'Financiamento Imóvel',
-  // Tributos
   'IPVA':'Tributos','IPTU':'Tributos','Licenciamento':'Tributos',
-  // Plano de Saúde
   'SIS':'Plano de Saúde',
-  // Família
   'Mãe':'Família',
-  // Filhas (separado - pensão alimentícia)
   'Filhas':'Filhas',
-  // Presentes e outros do cartão
   'Presentes':'Outros','Eletrônicos':'Outros','Outros':'Outros',
 };
-
-var CORES_GRUPO = {
-  'Supermercado':'#26c6a0',
-  'Restaurante':'#ff7043',
-  'Combustível':'#ffa060',
-  'Carro':'#90a4ae',
-  'Casa':'#42a5f5',
-  'Saúde':'#ef6060',
-  'Plano de Saúde':'#ec407a',
-  'Vestuário':'#f5c400',
-  'Lazer':'#ab47bc',
-  'Educação':'#4db6ac',
-  'Assinaturas':'#7986cb',
-  'OAB':'#8d6e63',
-  'Celular':'#78909c',
-  'Cartão BB':'#ff8f00',
-  'Consignados':'#ef5350',
-  'Financiamento Imóvel':'#5c6bc0',
-  'Tributos':'#789262',
-  'Família':'#66bb6a',
-  'Filhas':'#a5d6a7',
-  'Outros':'#607d8b',
+var CORES_GRUPO={
+  'Supermercado':'#26c6a0','Restaurante':'#ff7043','Combustível':'#ffa060',
+  'Carro':'#90a4ae','Casa':'#42a5f5','Saúde':'#ef6060','Plano de Saúde':'#ec407a',
+  'Vestuário':'#f5c400','Lazer':'#ab47bc','Educação':'#4db6ac','Assinaturas':'#7986cb',
+  'OAB':'#8d6e63','Celular':'#78909c','Cartão BB':'#ff8f00','Consignados':'#ef5350',
+  'Financiamento Imóvel':'#5c6bc0','Tributos':'#789262','Família':'#66bb6a',
+  'Filhas':'#a5d6a7','Outros':'#607d8b'
 };
-
-var ALERTAS_PCT = {
-  'Supermercado':10,
-  'Restaurante':5,
-  'Combustível':5,
-  'Carro':5,
-  'Casa':15,
-  'Saúde':5,
-  'Plano de Saúde':5,
-  'Vestuário':3,
-  'Lazer':5,
-  'Educação':3,
-  'Assinaturas':3,
-  'OAB':3,
-  'Celular':2,
-  'Cartão BB':10,
-  'Consignados':25,
-  'Financiamento Imóvel':15,
-  'Tributos':3,
-  'Família':5,
-  'Filhas':30,
-  'Outros':3,
+var ALERTAS_PCT={
+  'Supermercado':10,'Restaurante':5,'Combustível':5,'Carro':5,'Casa':15,
+  'Saúde':5,'Plano de Saúde':5,'Vestuário':3,'Lazer':5,'Educação':3,
+  'Assinaturas':3,'OAB':3,'Celular':2,'Cartão BB':10,'Consignados':25,
+  'Financiamento Imóvel':15,'Tributos':3,'Família':5,'Filhas':30,'Outros':3
 };
 
 function openAnalise(){
@@ -2972,10 +2917,7 @@ function openAnalise(){
   document.getElementById('overlayAnalise').style.display='block';
   rodarAnalise();
 }
-
-function closeAnalise(){
-  document.getElementById('overlayAnalise').style.display='none';
-}
+function closeAnalise(){document.getElementById('overlayAnalise').style.display='none';}
 
 function rodarAnalise(){
   var de=document.getElementById('analiseDe').value.split('_');
@@ -2987,7 +2929,6 @@ function rodarAnalise(){
   var nM=mesesPer.length||1;
   var totalRec=0,totalDesp=0;
   var porGrupo={},porCat={},porMes=[];
-
   mesesPer.forEach(function(mp){
     var rec=getRec(mp.y,mp.m);
     var liq=(rec.salarioLiquido||0)+((rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0));
@@ -3011,7 +2952,6 @@ function rodarAnalise(){
     }}
     porMes.push({y:mp.y,m:mp.m,desp:mD,rec:liq});
   });
-
   var rM=totalRec/nM,dM=totalDesp/nM,sobra=totalRec-totalDesp;
   var alertas=[];
   Object.keys(ALERTAS_PCT).forEach(function(g){
@@ -3028,12 +2968,10 @@ function rodarAnalise(){
     if((porGrupo['Assinaturas']||0)/totalRec>0.03) sugs.push('📱 Assinaturas acima de 3% da renda. Revise se está usando todos os serviços pagos.');
     if((porGrupo['Vestuário']||0)/totalRec>0.05) sugs.push('👗 Vestuário acima de 5% da renda. Considere estabelecer um orçamento mensal fixo.');
     if(sobra<0) sugs.push('⚠️ Déficit de '+R(Math.abs(sobra))+' no período. Gastos superaram a renda.');
-    if(rM>0 && dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
+    if(rM>0&&dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
   }
-
   var bdr='#2a3f5a',txt='#e8f4f8',mut='#5a8a9f';
   var html='';
-
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">'
     +'<div style="background:#1a2030;border:1px solid '+bdr+';border-left:3px solid #26c6a0;border-radius:10px;padding:12px;">'
     +'<div style="font-size:.6rem;text-transform:uppercase;color:'+mut+';margin-bottom:3px;">Renda</div>'
@@ -3048,7 +2986,6 @@ function rodarAnalise(){
     +'<div style="font-size:1.2rem;font-weight:700;color:'+(sobra>=0?'#26c6a0':'#ef6060')+';">'+R(Math.abs(sobra))+'</div>'
     +'<div style="font-size:.68rem;color:'+mut+';">'+(sobra>=0?Math.round(sobra/rM*100)+'% da renda mensal sobrou':'Gastos '+Math.round(Math.abs(sobra)/rM*100)+'% acima da renda')+'</div>'
     +'</div></div>';
-
   if(alertas.length){
     html+='<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:'+mut+';margin-bottom:8px;">⚠️ Alertas</div>';
     alertas.forEach(function(a){
@@ -3061,12 +2998,10 @@ function rodarAnalise(){
         +'<div style="width:'+Math.min(a.pr/a.ref*100,100).toFixed(0)+'%;height:100%;background:#ffa060;border-radius:4px;"></div></div></div>';
     });
   }
-
   if(sugs.length){
     html+='<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:'+mut+';margin:16px 0 8px;">💡 Sugestões</div>';
     sugs.forEach(function(s){html+='<div style="background:#1a2430;border:1px solid #2a5060;border-left:3px solid #42a5f5;border-radius:10px;padding:11px;margin-bottom:8px;font-size:.8rem;color:'+txt+';">'+s+'</div>';});
   }
-
   html+='<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:'+mut+';margin:20px 0 10px;">📊 Por grupo</div>';
   var gOrd=Object.keys(porGrupo).sort(function(a,b){return porGrupo[b]-porGrupo[a];});
   var maxG=porGrupo[gOrd[0]]||1;
@@ -3081,7 +3016,6 @@ function rodarAnalise(){
       +'<div style="width:'+Math.min(val/maxG*100,100).toFixed(0)+'%;height:100%;background:'+cor+';border-radius:4px;"></div></div>'
       +'<div style="font-size:.6rem;color:'+mut+';margin-top:2px;">Ref: até '+ref+'% da renda</div></div>';
   });
-
   if(porMes.length>1){
     var mMax=porMes.reduce(function(mx,m){return m.desp>mx.desp?m:mx;},porMes[0]);
     html+='<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:'+mut+';margin:20px 0 10px;">📅 Evolução mensal</div>'
@@ -3104,7 +3038,6 @@ function rodarAnalise(){
     });
     html+='</tbody></table>';
   }
-
   var cOrd=Object.keys(porCat).sort(function(a,b){return porCat[b]-porCat[a];});
   html+='<div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:'+mut+';margin:20px 0 10px;">🏆 Top categorias</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:.73rem;"><thead><tr style="background:#1b2838;">'
@@ -3122,198 +3055,142 @@ function rodarAnalise(){
   html+='</tbody></table>';
   document.getElementById('analiseBody').innerHTML=html;
 }
-
 // ══ GOOGLE DRIVE SYNC ══
 var CLIENT_ID = '901113028963-h32lerf3on87vu2qf5i0m6ajsqak1fq7.apps.googleusercontent.com';
 var SCOPES    = 'https://www.googleapis.com/auth/drive.appdata';
 var FILE_NAME = 'despesas_app_data.json';
+var gdriveReady=false, gAccessToken=null, gFileId=null, syncTimeout=null;
 
-var gdriveReady  = false;
-var gAccessToken = null;
-var gFileId      = null;
-var syncTimeout  = null;
+function getAllData(){
+  var nkData={};
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.indexOf('nk_')===0) nkData[k]=JSON.parse(localStorage.getItem(k)||'[]');
+  }
+  return JSON.stringify({expenses:expenses,notes:notes,receitas:receitas,cats:cats,archivedCats:archivedCats,nk:nkData,v:3});
+}
+
+function applyAllData(json){
+  try{
+    var d=JSON.parse(json);
+    if(d.expenses)     expenses=d.expenses;
+    if(d.notes)        notes=d.notes;
+    if(d.receitas)     receitas=d.receitas;
+    if(d.cats)         cats=d.cats;
+    if(d.archivedCats) archivedCats=d.archivedCats;
+    if(d.nk){Object.keys(d.nk).forEach(function(k){localStorage.setItem(k,JSON.stringify(d.nk[k]));});}
+    persist();
+    checkAndMigrate();
+    render();
+  }catch(e){console.error('Drive parse error',e);}
+}
 
 function gapiLoaded(){
-  gapi.load('client', function(){
+  gapi.load('client',function(){
     gapi.client.init({}).then(function(){
-      gdriveReady = true;
-      // Try to restore token from localStorage
-      var saved = localStorage.getItem('gdrive_token3');
-      if(saved){
-        gAccessToken = saved;
-        gapi.client.setToken({access_token: gAccessToken});
-        setSyncStatus('connected','Conectado ao Google Drive');
-        document.getElementById('btnGdrive').textContent='Sincronizado';
-        document.getElementById('btnGdrive').classList.add('connected');
-        loadFromDrive();
-      }
+      gdriveReady=true;
+      var btn=document.getElementById('btnGdrive');
+      if(gAccessToken){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';loadFromDrive();}
     });
   });
 }
 
 function handleGdriveBtn(){
-  if(gAccessToken){
-    // Disconnect
-    gAccessToken = null;
-    gFileId = null;
-    localStorage.removeItem('gdrive_token3');
-    localStorage.removeItem('gdrive_fileid3');
-    setSyncStatus('','Não conectado ao Google Drive');
-    var btn = document.getElementById('btnGdrive');
-    btn.textContent='Conectar';
-    btn.classList.remove('connected');
-    showToast('Desconectado do Google Drive');
-  } else {
-    signInWithGoogle();
-  }
-}
-
-function signInWithGoogle(){
-  var client = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: function(resp){
-      if(resp.error){ setSyncStatus('error','Erro ao conectar'); return; }
-      gAccessToken = resp.access_token;
-      gapi.client.setToken({access_token: gAccessToken});
-      localStorage.setItem('gdrive_token3', gAccessToken);
-      setSyncStatus('connected','Conectado ao Google Drive');
-      var btn = document.getElementById('btnGdrive');
-      btn.textContent='Sincronizado';
-      btn.classList.add('connected');
+  if(gAccessToken){disconnectDrive();return;}
+  var client=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,scope:SCOPES,
+    callback:function(resp){
+      if(resp.error) return;
+      gAccessToken=resp.access_token;
+      localStorage.setItem('gdrive_token',gAccessToken);
+      var btn=document.getElementById('btnGdrive');
+      btn.textContent='Sincronizado';btn.className='btn-gdrive connected';
       loadFromDrive();
-    },
+    }
   });
   client.requestAccessToken();
 }
 
-function setSyncStatus(type, msg){
-  var dot = document.getElementById('syncDot');
-  dot.className = 'sync-dot' + (type ? ' '+type : '');
-  document.getElementById('syncStatus').textContent = msg;
+function disconnectDrive(){
+  gAccessToken=null;gFileId=null;
+  localStorage.removeItem('gdrive_token');
+  var btn=document.getElementById('btnGdrive');
+  btn.textContent='Conectar';btn.className='btn-gdrive';
+  updateSyncStatus('disconnected');
 }
 
-function getAllData(){
-  // Coleta todas as chaves nk_ do localStorage
-  var nkData = {};
-  for(var i=0; i<localStorage.length; i++){
-    var k = localStorage.key(i);
-    if(k && k.indexOf('nk_')===0){
-      nkData[k] = JSON.parse(localStorage.getItem(k)||'[]');
-    }
-  }
-  return JSON.stringify({expenses:expenses, notes:notes, receitas:receitas, cats:cats, archivedCats:archivedCats, nk:nkData, v:3});
-}
-
-function applyAllData(json){
-  try{
-    var d = JSON.parse(json);
-    if(d.expenses)     expenses     = d.expenses;
-    if(d.notes)        notes        = d.notes;
-    if(d.receitas)     receitas     = d.receitas;
-    if(d.cats)         cats         = d.cats;
-    if(d.archivedCats) archivedCats = d.archivedCats;
-    // Restaura chaves do Nubank
-    if(d.nk){
-      Object.keys(d.nk).forEach(function(k){
-        localStorage.setItem(k, JSON.stringify(d.nk[k]));
-      });
-    }
-    persist();
-    checkAndMigrate();
-    render();
-  }catch(e){ console.error('Drive parse error', e); }
+function updateSyncStatus(st){
+  var dot=document.getElementById('syncDot');
+  var lbl=document.getElementById('syncLabel');
+  var btn=document.getElementById('btnGdrive');
+  if(st==='synced'){dot.style.background='#26c6a0';lbl.textContent='Sincronizado ✓';btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
+  else if(st==='syncing'){dot.style.background='#f5c400';lbl.textContent='Sincronizando...';}
+  else if(st==='error'){dot.style.background='#ef6060';lbl.textContent='Erro na sincronização';}
+  else{dot.style.background='#5a8a9f';lbl.textContent='Não conectado';btn.textContent='Conectar';btn.className='btn-gdrive';}
 }
 
 function findOrCreateFile(cb){
-  if(gFileId){ cb(gFileId); return; }
-  // Check saved id
-  var saved = localStorage.getItem('gdrive_fileid3');
-  if(saved){ gFileId=saved; cb(gFileId); return; }
-  // Search in appDataFolder
-  gapi.client.request({
-    path: 'https://www.googleapis.com/drive/v3/files',
-    method: 'GET',
-    params: {spaces:'appDataFolder', q:"name='"+FILE_NAME+"'", fields:'files(id,name)'}
-  }).then(function(res){
-    var files = res.result.files;
-    if(files && files.length > 0){
-      gFileId = files[0].id;
-      localStorage.setItem('gdrive_fileid3', gFileId);
-      cb(gFileId);
-    } else {
-      // Create new file
-      gapi.client.request({
-        path: 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-        method: 'POST',
-        headers: {'Content-Type': 'multipart/related; boundary=boundary'},
-        body: '--boundary\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'
-          + JSON.stringify({name:FILE_NAME, parents:['appDataFolder']})
-          + '\r\n--boundary\r\nContent-Type: application/json\r\n\r\n'
-          + getAllData()
-          + '\r\n--boundary--'
-      }).then(function(r){
-        gFileId = r.result.id;
-        localStorage.setItem('gdrive_fileid3', gFileId);
-        cb(gFileId);
-      });
-    }
-  }).catch(function(err){
-    // Token may have expired
-    if(err.status===401){
-      gAccessToken=null;
-      localStorage.removeItem('gdrive_token');
-      setSyncStatus('error','Sessão expirada — reconecte');
-      document.getElementById('btnGdrive').textContent='Reconectar';
-      document.getElementById('btnGdrive').classList.remove('connected');
-    } else {
-      setSyncStatus('error','Erro de sincronização');
+  if(gFileId){cb(gFileId);return;}
+  gapi.client.request({path:'https://www.googleapis.com/drive/v3/files',method:'GET',
+    params:{spaces:'appDataFolder',fields:'files(id,name)',q:'name="'+FILE_NAME+'"'},
+    headers:{Authorization:'Bearer '+gAccessToken}
+  }).then(function(r){
+    var files=r.result.files;
+    if(files&&files.length){gFileId=files[0].id;cb(gFileId);}
+    else{
+      gapi.client.request({path:'https://www.googleapis.com/drive/v3/files',method:'POST',
+        headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'application/json'},
+        body:JSON.stringify({name:FILE_NAME,parents:['appDataFolder']})
+      }).then(function(r2){gFileId=r2.result.id;cb(gFileId);});
     }
   });
 }
 
 function saveToDrive(){
-  if(!gAccessToken) return;
-  setSyncStatus('syncing','Salvando...');
-  findOrCreateFile(function(fileId){
+  if(!gAccessToken||!gdriveReady) return;
+  updateSyncStatus('syncing');
+  findOrCreateFile(function(fid){
+    var boundary='-------314159265358979323846';
+    var cr='\r\n';
+    var meta=JSON.stringify({name:FILE_NAME,parents:['appDataFolder']});
+    var data=getAllData();
+    var body='--'+boundary+cr+'Content-Type: application/json; charset=UTF-8'+cr+cr+meta+cr+'--'+boundary+cr+'Content-Type: application/json'+cr+cr+data+cr+'--'+boundary+'--';
     gapi.client.request({
-      path: 'https://www.googleapis.com/upload/drive/v3/files/'+fileId+'?uploadType=media',
-      method: 'PATCH',
-      headers: {'Content-Type':'application/json'},
-      body: getAllData()
-    }).then(function(){
-      setSyncStatus('connected','Sincronizado \u2713');
-    }).catch(function(){
-      setSyncStatus('error','Erro ao salvar');
-    });
+      path:'https://www.googleapis.com/upload/drive/v3/files/'+fid,
+      method:'PATCH',params:{uploadType:'multipart'},
+      headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},
+      body:body
+    }).then(function(){updateSyncStatus('synced');},function(){updateSyncStatus('error');});
   });
 }
+
 
 function loadFromDrive(){
-  if(!gAccessToken) return;
-  setSyncStatus('syncing','Carregando dados...');
-  findOrCreateFile(function(fileId){
+  if(!gAccessToken||!gdriveReady) return;
+  updateSyncStatus('syncing');
+  findOrCreateFile(function(fid){
     gapi.client.request({
-      path: 'https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media',
-      method: 'GET',
-    }).then(function(res){
-      var body = typeof res.body === 'string' ? res.body : JSON.stringify(res.result);
-      applyAllData(body);
-      setSyncStatus('connected','Sincronizado \u2713');
-    }).catch(function(){
-      // File is new/empty — save current data
-      saveToDrive();
-    });
+      path:'https://www.googleapis.com/drive/v3/files/'+fid,
+      method:'GET',params:{alt:'media'},
+      headers:{Authorization:'Bearer '+gAccessToken}
+    }).then(function(r){
+      if(r.body&&r.body.length>2) applyAllData(r.body);
+      else updateSyncStatus('synced');
+    },function(){updateSyncStatus('error');});
   });
 }
 
-// Schedule auto-save 2s after any persist
-var _origPersist = persist;
-persist = function(){
+window.addEventListener('load',function(){
+  var saved=localStorage.getItem('gdrive_token');
+  if(saved){gAccessToken=saved;if(gdriveReady){loadFromDrive();}}
+});
+
+var _origPersist=persist;
+persist=function(){
   _origPersist();
-  if(gAccessToken){
+  if(gAccessToken&&gdriveReady){
     clearTimeout(syncTimeout);
-    syncTimeout = setTimeout(saveToDrive, 2000);
+    syncTimeout=setTimeout(saveToDrive,2000);
   }
 };
 
@@ -3322,298 +3199,6 @@ checkAndMigrate();
 load();
 seedIfEmpty();
 render();
-</script>YPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seu Nonô</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6366f1">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Seu Nonô">
-<meta name="mobile-web-app-capable" content="yes">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#0d1b2a;--surface:#1b2838;--surface2:#1f3248;--border:#2a3f5a;
-    --text:#e8f4f8;--muted:#5a8a9f;--accent:#f5c400;--accent2:#c9a000;
-    --red:#ef6060;--green:#26c6a0;--blue:#42a5f5;--orange:#ffa060;--purple:#820ad1;
-    --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
-    --shadow-md:0 4px 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.3);
-    --card-receitas:#1a2030;--card-saldo:#0d2520;--card-despesas:#162030;
-    --card-notes:#162028;--item-a:#1b2838;--item-b:#1f3248;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 120px;max-width:520px;margin:0 auto;}
-
-  header{text-align:center;padding:8px 0 18px;}
-  header h1{font-family:'DM Sans',sans-serif;font-size:1.5rem;font-weight:600;color:var(--accent);letter-spacing:-.02em;}
-  header p{font-size:.68rem;color:var(--muted);margin-top:3px;letter-spacing:.1em;text-transform:uppercase;}
-
-  /* YEAR NAV */
-  .year-nav{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px;}
-  .year-nav button{background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;padding:2px 10px;font-size:.9rem;transition:all .2s;box-shadow:var(--shadow);}
-  .year-nav button:hover{border-color:var(--accent);color:var(--accent);}
-  .year-nav span{font-size:.65rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;min-width:50px;text-align:center;}
-
-  /* MONTH NAV */
-  .month-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
-  .month-nav button{background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);cursor:pointer;padding:4px 12px;font-size:1rem;transition:all .2s;box-shadow:var(--shadow);}
-  .month-nav button:hover{border-color:var(--accent);}
-  .month-nav span{font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;min-width:110px;text-align:center;color:var(--text);}
-
-  /* SUMMARY */
-  .summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
-  .gastos-card{display:block!important;}
-  .gastos-card .summary-card{grid-column:span 3!important;}
-  .summary-card{border:1px solid var(--border);border-radius:12px;padding:12px 10px;box-shadow:var(--shadow);}
-  .summary-card label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:5px;}
-  .summary-card .value{font-weight:700;font-size:.88rem;}
-  .value.red{color:var(--red);}.value.green{color:var(--green);}.value.orange{color:var(--orange);}
-
-  /* RECEITAS */
-  .receitas-section{background:var(--card-receitas);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
-  .receitas-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .receitas-header em{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-style:normal;}
-  .receitas-total{font-weight:700;font-size:.95rem;color:var(--green);}
-  .receita-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:8px;}
-  .receita-row:last-of-type{margin-bottom:0;}
-  .receita-label{font-size:.78rem;color:var(--muted);}
-  .receita-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-weight:600;font-size:.9rem;padding:7px 10px;outline:none;transition:border-color .2s;width:100%;}
-  .receita-input:focus{border-color:var(--accent);}
-  .receita-input::placeholder{color:var(--muted);font-weight:400;font-size:.78rem;}
-  .btn-del-receita{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;transition:color .2s;}
-  .btn-del-receita:hover{color:var(--red);}
-  .btn-add-receita{background:none;border:1px dashed var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;padding:7px 12px;margin-top:8px;width:100%;transition:all .2s;}
-  .btn-add-receita:hover{border-color:var(--accent);color:var(--accent);}
-
-  /* SALDO */
-  .saldo-card{border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);box-shadow:var(--shadow);}
-  .saldo-card.positivo{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;}
-  .saldo-card.negativo{background:linear-gradient(135deg,#fff1f2,#ffe4e6);border-color:#fca5a5;}
-  .saldo-card.neutro{background:var(--card-saldo);border-left:3px solid var(--green);}
-  .saldo-item label{font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:3px;}
-  .saldo-item .sv{font-weight:700;font-size:.95rem;}
-  .sv.green{color:var(--green);}.sv.red{color:var(--red);}.sv.muted{color:var(--muted);font-size:.8rem;}
-  .saldo-full{flex:1;}
-  .saldo-full label{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:3px;}
-  .saldo-full .sv{font-weight:700;font-size:1.1rem;}
-
-  /* NOTES */
-  .notes-bar{background:#162028;border-left:3px solid var(--muted);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);}
-  .notes-bar em{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);white-space:nowrap;font-style:normal;}
-  .notes-bar input{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.83rem;width:100%;outline:none;}
-  .notes-bar input::placeholder{color:var(--muted);}
-
-  /* BUTTONS ROW */
-  .btn-cfg{background:var(--surface);border:1px solid var(--border);border-radius:11px;color:var(--muted);cursor:pointer;font-size:1rem;padding:11px 14px;transition:all .2s;box-shadow:var(--shadow);}
-  .btn-cfg:hover{border-color:var(--accent);color:var(--accent);}
-
-  .section-title{font-size:.63rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;}
-
-  /* EXPENSE LIST */
-  .expense-list{display:flex;flex-direction:column;gap:6px;}
-  .expense-item{background:linear-gradient(135deg,#ffffff 0%,#f0f4ff 100%);border:1px solid #dde4f5;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;animation:fadeIn .2s ease;box-shadow:var(--shadow);}
-  .expense-item:hover{border-color:var(--accent);box-shadow:var(--shadow-md);}
-  .expense-item.is-dizimo{border-left:3px solid var(--purple);}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-
-  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .status-dot.pago{background:var(--green);}
-  .status-dot.agendado{background:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.2);}
-  .status-dot.pendente{background:#cbd5e1;}
-
-  .exp-info{flex:1;min-width:0;}
-  .exp-name{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
-  .exp-meta{font-size:.68rem;color:var(--muted);margin-top:2px;display:flex;gap:7px;}
-  .exp-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
-  .exp-amount{font-weight:700;font-size:.92rem;white-space:nowrap;}
-  .exp-amount.empty{color:var(--muted);font-size:.7rem;font-weight:400;font-style:italic;}
-  .status-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:6px;white-space:nowrap;font-weight:700;}
-  .status-label.pago{background:#1a6040;color:#4fffb0;border:1px solid #26c6a0;}
-  .status-label.agendado{background:#0d3060;color:#7dd3fc;border:1px solid #3b82f6;}
-  .status-label.pendente{background:#6b3a00;color:#fbbf24;border:1px solid #f97316;}
-  .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;transition:color .2s;flex-shrink:0;}
-  .btn-del:hover{color:var(--red);}
-
-  /* Botão atalho de status */
-  .btn-status-quick{border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;padding:3px 9px;white-space:nowrap;transition:all .2s;letter-spacing:.06em;text-transform:uppercase;}
-  .btn-sq-pago{background:#1a6040;color:#4fffb0;border:1px solid #26c6a0;}
-  .btn-sq-pago:active{opacity:.8;}
-  .btn-sq-agendado{background:#0d3060;color:#7dd3fc;border:1px solid #3b82f6;}
-  .btn-sq-agendado:active{opacity:.8;}
-  .btn-sq-pendente{background:#6b3a00;color:#fbbf24;border:1px solid #f97316;}
-  .btn-sq-pendente:active{opacity:.8;}
-  .empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:.85rem;}
-
-  /* BOTÃO NOVA DESPESA (agora embaixo da lista) */
-  .btn-new{width:100%;background:var(--accent);border:none;border-radius:12px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;padding:13px;margin-top:12px;transition:all .2s;box-shadow:0 4px 14px rgba(99,102,241,.3);}
-  .btn-new:hover{background:var(--accent2);}
-  .btn-new:active{transform:scale(.98);}
-
-  /* DÍZIMO */
-  .dizimo-card{background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #d8b4fe;border-radius:12px;padding:13px 14px;margin-top:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
-  .dizimo-info{flex:1;}
-  .dizimo-info label{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#7c3aed;display:block;margin-bottom:2px;}
-  .dizimo-vals{display:flex;gap:16px;align-items:baseline;}
-  .dizimo-mes{font-weight:700;font-size:1rem;color:#4c1d95;}
-  .dizimo-acum{font-size:.75rem;color:#7c3aed;}
-  .dizimo-acum span{font-weight:700;}
-
-  /* OVERLAYS */
-  .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
-  .overlay.open{display:flex;}
-  .sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-width:520px;animation:slideUp .26s ease;max-height:92vh;overflow-y:auto;}
-  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  .sheet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-  .sheet-header h2{font-size:1.05rem;font-weight:600;color:var(--text);}
-  .btn-close{background:var(--surface2);border:none;border-radius:50%;color:var(--muted);cursor:pointer;font-size:.9rem;width:28px;height:28px;flex-shrink:0;}
-
-  /* FORM */
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .fg{display:flex;flex-direction:column;gap:4px;}
-  .fg.full{grid-column:span 2;}
-  .fg label{font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);}
-  input,select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;padding:9px 11px;width:100%;-webkit-appearance:none;transition:border-color .2s;}
-  input:focus,select:focus{outline:none;border-color:var(--accent);}
-  select option{background:#1b2838;color:#e8f4f8;}
-
-  .status-toggle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-  .status-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.7rem;padding:8px 4px;text-align:center;transition:all .2s;}
-  .status-btn.active[data-s="pago"]{background:#dcfce7;border-color:#86efac;color:#16a34a;}
-  .status-btn.active[data-s="agendado"]{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
-  .status-btn.active[data-s="pendente"]{background:#f1f5f9;border-color:#cbd5e1;color:#64748b;}
-
-  .repeat-section{grid-column:span 2;border-top:1px solid var(--border);padding-top:12px;margin-top:2px;}
-  .repeat-section label.section-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:8px;}
-  .repeat-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
-  .repeat-opt{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.7rem;padding:8px 4px;text-align:center;transition:all .2s;}
-  .repeat-opt.active{background:#ede9fe;border-color:#a78bfa;color:var(--accent);}
-  .repeat-body{display:none;}
-  .repeat-body.open{display:block;}
-  .month-rows{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
-  .month-row{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;}
-  .month-row span{font-size:.78rem;color:var(--muted);}
-
-  .btn-save{width:100%;margin-top:16px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;padding:12px;cursor:pointer;transition:background .2s,transform .1s;box-shadow:0 4px 14px rgba(99,102,241,.3);}
-  .btn-save:active{transform:scale(.98);}
-
-  /* SETTINGS */
-  .settings-section{margin-bottom:20px;}
-  .settings-section h3{font-size:.63rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;}
-  .cat-list{display:flex;flex-direction:column;gap:6px;}
-  .cat-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;display:flex;align-items:center;gap:10px;}
-  .cat-item span{flex:1;font-size:.85rem;}
-  .cat-badge{font-size:.6rem;padding:2px 7px;border-radius:8px;background:#ede9fe;color:#7c3aed;}
-  .cat-badge.arquivada{background:#f1f5f9;color:#94a3b8;}
-  .cat-item.arquivada{opacity:.6;}
-  .btn-cat-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px;transition:color .2s;}
-  .btn-cat-del:hover{color:var(--red);}
-  .add-cat-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;}
-  .btn-add-cat{background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;padding:9px 14px;white-space:nowrap;}
-  .divider{height:1px;background:var(--border);margin:14px 0;}
-
-  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#f5c400;color:#0d1b2a;font-size:.8rem;font-weight:600;padding:9px 18px;border-radius:20px;transition:transform .3s;z-index:999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.4);}
-  #toast.show{transform:translateX(-50%) translateY(0);}
-
-  /* ATRASO BANNER */
-  .atraso-banner{background:#fff1f2;border:1px solid #fca5a5;border-radius:12px;padding:11px 14px;margin-bottom:12px;display:none;cursor:pointer;box-shadow:var(--shadow);}
-  .atraso-banner.visible{display:block;}
-  .atraso-banner-top{display:flex;align-items:center;gap:8px;}
-  .atraso-banner-top span{font-size:.8rem;color:var(--red);flex:1;font-weight:500;}
-  .atraso-banner-top em{font-size:.7rem;color:#f87171;font-style:normal;}
-  .atraso-lista{margin-top:8px;display:none;flex-direction:column;gap:5px;}
-  .atraso-lista.open{display:flex;}
-  .atraso-item{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;padding:5px 0;border-top:1px solid #fee2e2;}
-  .atraso-item-desc{color:var(--text);}
-  .atraso-item-meta{color:#f87171;font-size:.68rem;}
-  .atraso-item-val{color:var(--red);font-weight:700;font-size:.8rem;white-space:nowrap;}
-
-  /* CONTRACHEQUE */
-  .salario-row{cursor:pointer;user-select:none;}
-  .salario-row:hover .receita-label{color:var(--accent);}
-  .salario-chevron{font-size:.7rem;color:var(--muted);transition:transform .2s;}
-  .salario-chevron.open{transform:rotate(180deg);}
-  .contracheque-panel{display:none;border-top:1px solid var(--border);margin-top:10px;padding-top:12px;}
-  .contracheque-panel.open{display:block;}
-  .cc-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-bottom:8px;}
-  .cc-label{font-size:.75rem;color:var(--muted);}
-  .cc-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:7px 10px;outline:none;transition:border-color .2s;width:130px;text-align:right;}
-  .cc-input:focus{border-color:var(--accent);}
-  .cc-divider{height:1px;background:var(--border);margin:8px 0;}
-  .cc-liquido{display:flex;justify-content:space-between;align-items:center;padding-top:4px;}
-  .cc-liquido-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
-  .cc-liquido-val{font-weight:700;font-size:1rem;color:var(--green);}
-  .btn-add-desconto{background:none;border:1px dashed var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;margin-top:4px;width:100%;transition:all .2s;}
-  .btn-add-desconto:hover{border-color:var(--accent);color:var(--accent);}
-
-  /* CARTÃO NUBANK */
-  .nubank-header{background:linear-gradient(135deg,#78909c,#546e7a);border-radius:12px;padding:16px;margin-bottom:14px;color:#fff;}
-  .nubank-header label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;opacity:.8;display:block;margin-bottom:4px;}
-  .nubank-vals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
-  .nubank-val-item label{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;opacity:.75;display:block;margin-bottom:3px;}
-  .nubank-val-item .nv{font-weight:700;font-size:1rem;}
-  .nubank-val-item .nv.alert{color:#fca5a5;}
-  .nubank-manual{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;margin-top:10px;}
-  .nubank-manual label{font-size:.68rem;color:rgba(255,255,255,.85);white-space:nowrap;}
-  .nubank-manual input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.4);color:#fff;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;outline:none;width:100%;text-align:right;}
-  .nubank-manual input::placeholder{color:rgba(255,255,255,.4);}
-
-  .compras-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-  .compra-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;}
-  .compra-item .ci-info{flex:1;min-width:0;overflow:hidden;}
-  .compra-item .ci-desc{font-size:.85rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .compra-item .ci-meta{font-size:.67rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .compra-item .ci-val{font-weight:700;font-size:.88rem;white-space:nowrap;color:var(--red);text-align:right;}
-  .compra-item .ci-parc{font-size:.6rem;background:#ede9fe;color:#7c3aed;padding:2px 6px;border-radius:8px;white-space:nowrap;}
-
-  .futuro-card{background:linear-gradient(135deg,#1a2a3a,#162030);border:1px solid #2a4a6a;border-left:3px solid #f5c400;border-radius:11px;padding:12px 14px;margin-bottom:14px;}
-  .futuro-card label{font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:#f5c400;display:block;margin-bottom:10px;}
-  .futuro-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;padding:6px 0;border-bottom:1px solid #2a3f5a;}
-  .futuro-row:last-child{border:none;font-weight:700;padding-top:8px;}
-  .futuro-row span:first-child{color:#e8f4f8;}
-  .futuro-row span:last-child{color:#26c6a0;font-weight:600;}
-  .rel-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
-  .rel-month-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;padding:8px 6px;text-align:center;transition:all .2s;}
-  .rel-month-btn.sel{background:#ede9fe;border-color:#a78bfa;color:var(--accent);font-weight:500;}
-  .rel-cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-  .rel-cat-btn{background:var(--surface2);border:1px solid var(--border);border-radius:20px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:5px 12px;transition:all .2s;}
-  .rel-cat-btn.sel{background:#ede9fe;border-color:#a78bfa;color:var(--accent);font-weight:500;}
-  .btn-gerar-pdf{width:100%;margin-top:8px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;padding:12px;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.3);}
-
-  /* SYNC BAR */
-  .sync-bar{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:var(--shadow);}
-  .sync-status{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--muted);}
-  .sync-dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1;flex-shrink:0;}
-  .sync-dot.connected{background:var(--green);}
-  .sync-dot.syncing{background:var(--accent);animation:pulse .8s infinite;}
-  .sync-dot.error{background:var(--red);}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .btn-gdrive{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 12px;transition:all .2s;white-space:nowrap;}
-  .btn-gdrive:hover{border-color:var(--accent);color:var(--accent);}
-  .btn-gdrive.connected{border-color:#86efac;color:#16a34a;background:#dcfce7;}
-
-  #pdfContent{display:none;}
-</style>
-</head>
-<body>
-
-<header>
-  <h1>Seu Nonô</h1>
-  <p>Controle financeiro pessoal</p>
-</header>
-
-// ══ INIT ══
-checkAndMigrate();
-load();
-seedIfEmpty();
-render();
-</script>
-
-</body>
-</html>
 </script>
 
 </body>
