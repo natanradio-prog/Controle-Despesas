@@ -3176,13 +3176,32 @@ function loadFromDrive(){
     }).then(function(r){
       if(r.body&&r.body.length>2) applyAllData(r.body);
       else updateSyncStatus('synced');
-    },function(){updateSyncStatus('error');});
+    },function(err){
+      // Token expirado ou inválido - desconecta para forçar novo login
+      if(err&&(err.status===401||err.status===403)){
+        disconnectDrive();
+        showToast('Sessão expirada — reconecte o Google Drive');
+      } else {
+        updateSyncStatus('error');
+      }
+    });
   });
 }
 
 window.addEventListener('load',function(){
   var saved=localStorage.getItem('gdrive_token');
-  if(saved){gAccessToken=saved;if(gdriveReady){loadFromDrive();}}
+  if(saved){
+    gAccessToken=saved;
+    // Atualiza visual imediatamente
+    var btn=document.getElementById('btnGdrive');
+    if(btn){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
+    updateSyncStatus('syncing');
+    // Se gapi já carregou, conecta direto; senão aguarda gapiLoaded
+    if(gdriveReady){loadFromDrive();}
+    // gapiLoaded vai chamar loadFromDrive quando terminar de carregar
+  } else {
+    updateSyncStatus('disconnected');
+  }
 });
 
 var _origPersist=persist;
