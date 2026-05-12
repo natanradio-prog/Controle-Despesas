@@ -1056,16 +1056,17 @@ var editId   = null;
 var APP_VERSION = 5;
 
 function checkAndMigrate(){
-  var savedVersion = parseInt(localStorage.getItem('desp_version')||'0');
   localStorage.setItem('desp_version', APP_VERSION);
 
-  // Migra categorias sem acento para com acento
   var catFixes = {
     'Mae':'Mãe','Cartao BB':'Cartão BB','Cartao Nubank':'Cartão Nubank',
-    'Financiamento Imovel':'Financiamento Imóvel','Condominio':'Condomínio',
-    'Utilidade Domestica':'Utilidade Doméstica','Calcados':'Calçados',
-    'Combustivel':'Combustível','Manutencao Casa':'Manutenção Casa',
-    'Saude':'Saúde','Educacao':'Educação','Eletronicos':'Eletrônicos'
+    'Financiamento Imovel':'Financiamento Imóvel','Financiamento Imóvel':'Financiamento Imóvel',
+    'Condominio':'Condomínio','Condomínio':'Condomínio',
+    'Utilidade Domestica':'Utilidade Doméstica',
+    'Calcados':'Calçados','Combustivel':'Combustível',
+    'Manutencao Casa':'Manutenção Casa','Saude':'Saúde',
+    'Educacao':'Educação','Eletronicos':'Eletrônicos',
+    'Farmacia':'Farmácia',
   };
 
   // Corrige cats
@@ -2830,7 +2831,9 @@ var CAT_GRUPOS = {
   // Plano de Saúde
   'SIS':'Plano de Saúde',
   // Família
-  'Mãe':'Família','Filhas':'Família',
+  'Mãe':'Família',
+  // Filhas (separado - pensão alimentícia)
+  'Filhas':'Filhas',
   // Presentes e outros do cartão
   'Presentes':'Outros','Eletrônicos':'Outros','Outros':'Outros',
 };
@@ -2854,6 +2857,7 @@ var CORES_GRUPO = {
   'Financiamento Imóvel':'#5c6bc0',
   'Tributos':'#789262',
   'Família':'#66bb6a',
+  'Filhas':'#a5d6a7',
   'Outros':'#607d8b',
 };
 
@@ -2875,7 +2879,8 @@ var ALERTAS_PCT = {
   'Consignados':25,
   'Financiamento Imóvel':15,
   'Tributos':3,
-  'Família':10,
+  'Família':5,
+  'Filhas':30,
   'Outros':3,
 };
 
@@ -3144,6 +3149,7 @@ function applyAllData(json){
       });
     }
     persist();
+    checkAndMigrate();
     render();
   }catch(e){ console.error('Drive parse error', e); }
 }
