@@ -2878,7 +2878,7 @@ function rodarAnalise(){
   if((porGrupo['Dívidas']||0)/totalRec>0.35) sugs.push('💳 Dívidas acima de 35% da renda. Avalie renegociar ou antecipar parcelas.');
   if((porGrupo['Alimentação']||0)/totalRec>0.20) sugs.push('🛒 Alimentação acima de 20% da renda. Planejamento de compras pode ajudar.');
   if(sobra<0) sugs.push('⚠️ Déficit de '+R(Math.abs(sobra))+' no período. Gastos superaram a renda.');
-  if(dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
+  if(rM>0 && dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
 
   var bdr='#2a3f5a',txt='#e8f4f8',mut='#5a8a9f';
   var html='';
