@@ -3057,7 +3057,7 @@ function rodarAnalise(){
 }
 // ══ GOOGLE DRIVE SYNC ══
 var CLIENT_ID = '901113028963-h32lerf3on87vu2qf5i0m6ajsqak1fq7.apps.googleusercontent.com';
-var SCOPES    = 'https://www.googleapis.com/auth/drive.appdata';
+var SCOPES    = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 var FILE_NAME = 'despesas_app_data.json';
 var gdriveReady=false, gAccessToken=null, gFileId=null, syncTimeout=null;
 
@@ -3095,7 +3095,7 @@ function gapiLoaded(){
         var btn=document.getElementById('btnGdrive');
         if(btn){btn.textContent='Conectando...';btn.className='btn-gdrive';}
         var client=google.accounts.oauth2.initTokenClient({
-          client_id:CLIENT_ID,scope:SCOPES,prompt:'',
+          client_id:CLIENT_ID,scope:SCOPES,
           callback:function(resp){
             if(resp&&resp.access_token){
               gAccessToken=resp.access_token;
@@ -3103,14 +3103,13 @@ function gapiLoaded(){
               if(btn){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
               loadFromDrive();
             } else {
-              // Falhou silencioso - pede login manual
               localStorage.removeItem('gdrive_token');
               gAccessToken=null;
               updateSyncStatus('disconnected');
             }
           }
         });
-        client.requestAccessToken({prompt:''});
+        client.requestAccessToken();
       }
     });
   });
