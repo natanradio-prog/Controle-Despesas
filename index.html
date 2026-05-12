@@ -2794,20 +2794,90 @@ function compartilharRelatorio(){
 // ══ ANÁLISE FINANCEIRA ══
 
 var CAT_GRUPOS = {
-  'Supermercado':'Alimentação','Padaria':'Alimentação','Restaurante':'Alimentação','Alimentação':'Alimentação',
-  'Financiamento Imóvel':'Moradia','Condomínio':'Moradia','Energia':'Moradia','Internet':'Moradia','Celular':'Moradia',
-  'Combustível':'Transporte','IPVA':'Transporte','IPTU':'Transporte','Licenciamento':'Transporte',
+  // Supermercado
+  'Supermercado':'Supermercado','Padaria':'Supermercado','Açougue':'Supermercado',
+  // Restaurante
+  'Restaurante':'Restaurante',
+  // Combustível
+  'Combustível':'Combustível',
+  // Carro
+  'Carro':'Carro','Manutenção Carro':'Carro',
+  // Casa
+  'Manutenção Casa':'Casa','Utilidade Doméstica':'Casa',
+  'Condomínio':'Casa','Energia':'Casa','Internet':'Casa',
+  // Saúde
   'Saúde':'Saúde','Medicamentos':'Saúde',
-  'Festas':'Lazer','Viagem':'Lazer','Hotel':'Lazer',
+  // Vestuário
   'Roupas':'Vestuário','Calçados':'Vestuário',
+  // Lazer
+  'Viagem':'Lazer','Hotel':'Lazer','Festas':'Lazer',
+  // Educação
   'Educação':'Educação',
-  'Consignado BB':'Dívidas','Consignado Funpresp':'Dívidas','Cartão BB':'Dívidas','Cartão Nubank':'Dívidas',
-  'Assinaturas':'Outros','Utilidade Doméstica':'Outros','Presentes':'Outros',
-  'Eletrônicos':'Outros','Manutenção Casa':'Outros','Outros':'Outros',
-  'Mãe':'Outros','Filhas':'Outros','SIS':'Outros'
+  // Assinaturas
+  'Assinaturas':'Assinaturas',
+  // OAB
+  'OAB':'OAB',
+  // Celular
+  'Celular':'Celular',
+  // Cartão BB
+  'Cartão BB':'Cartão BB',
+  // Consignados
+  'Consignado BB':'Consignados','Consignado Funpresp':'Consignados',
+  // Financiamento
+  'Financiamento Imóvel':'Financiamento Imóvel',
+  // Tributos
+  'IPVA':'Tributos','IPTU':'Tributos','Licenciamento':'Tributos',
+  // Plano de Saúde
+  'SIS':'Plano de Saúde',
+  // Família
+  'Mãe':'Família','Filhas':'Família',
+  // Presentes e outros do cartão
+  'Presentes':'Outros','Eletrônicos':'Outros','Outros':'Outros',
 };
-var CORES_GRUPO={'Alimentação':'#26c6a0','Moradia':'#42a5f5','Transporte':'#ffa060','Saúde':'#ef6060','Lazer':'#ab47bc','Vestuário':'#f5c400','Educação':'#4db6ac','Dívidas':'#ef5350','Outros':'#78909c'};
-var ALERTAS_PCT={'Alimentação':15,'Moradia':30,'Transporte':10,'Saúde':10,'Lazer':5,'Vestuário':5,'Educação':5,'Dívidas':30,'Outros':5};
+
+var CORES_GRUPO = {
+  'Supermercado':'#26c6a0',
+  'Restaurante':'#ff7043',
+  'Combustível':'#ffa060',
+  'Carro':'#90a4ae',
+  'Casa':'#42a5f5',
+  'Saúde':'#ef6060',
+  'Plano de Saúde':'#ec407a',
+  'Vestuário':'#f5c400',
+  'Lazer':'#ab47bc',
+  'Educação':'#4db6ac',
+  'Assinaturas':'#7986cb',
+  'OAB':'#8d6e63',
+  'Celular':'#78909c',
+  'Cartão BB':'#ff8f00',
+  'Consignados':'#ef5350',
+  'Financiamento Imóvel':'#5c6bc0',
+  'Tributos':'#789262',
+  'Família':'#66bb6a',
+  'Outros':'#607d8b',
+};
+
+var ALERTAS_PCT = {
+  'Supermercado':10,
+  'Restaurante':5,
+  'Combustível':5,
+  'Carro':5,
+  'Casa':15,
+  'Saúde':5,
+  'Plano de Saúde':5,
+  'Vestuário':3,
+  'Lazer':5,
+  'Educação':3,
+  'Assinaturas':3,
+  'OAB':3,
+  'Celular':2,
+  'Cartão BB':10,
+  'Consignados':25,
+  'Financiamento Imóvel':15,
+  'Tributos':3,
+  'Família':10,
+  'Outros':3,
+};
 
 function openAnalise(){
   var meses=[];
@@ -2874,11 +2944,16 @@ function rodarAnalise(){
     if(pr>ref*1.2) alertas.push({g:g,pr:pr,ref:ref,v:v,diff:v-(totalRec*ref/100)});
   });
   var sugs=[];
-  if((porGrupo['Lazer']||0)/totalRec>0.08) sugs.push('🍽️ Lazer acima de 8% da renda. Reduza refeições fora e entretenimento.');
-  if((porGrupo['Dívidas']||0)/totalRec>0.35) sugs.push('💳 Dívidas acima de 35% da renda. Avalie renegociar ou antecipar parcelas.');
-  if((porGrupo['Alimentação']||0)/totalRec>0.20) sugs.push('🛒 Alimentação acima de 20% da renda. Planejamento de compras pode ajudar.');
-  if(sobra<0) sugs.push('⚠️ Déficit de '+R(Math.abs(sobra))+' no período. Gastos superaram a renda.');
-  if(rM>0 && dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
+  if(totalRec>0){
+    if((porGrupo['Restaurante']||0)/totalRec>0.08) sugs.push('🍽️ Restaurantes acima de 8% da renda. Refeições em casa podem gerar economia significativa.');
+    if((porGrupo['Consignados']||0)/totalRec>0.30) sugs.push('💳 Consignados acima de 30% da renda. Avalie antecipar parcelas quando possível.');
+    if((porGrupo['Supermercado']||0)/totalRec>0.12) sugs.push('🛒 Supermercado acima de 12% da renda. Planejamento de compras semanais pode reduzir esse gasto.');
+    if((porGrupo['Lazer']||0)/totalRec>0.08) sugs.push('🎭 Lazer acima de 8% da renda. Avalie priorizar as atividades de maior valor para você.');
+    if((porGrupo['Assinaturas']||0)/totalRec>0.03) sugs.push('📱 Assinaturas acima de 3% da renda. Revise se está usando todos os serviços pagos.');
+    if((porGrupo['Vestuário']||0)/totalRec>0.05) sugs.push('👗 Vestuário acima de 5% da renda. Considere estabelecer um orçamento mensal fixo.');
+    if(sobra<0) sugs.push('⚠️ Déficit de '+R(Math.abs(sobra))+' no período. Gastos superaram a renda.');
+    if(rM>0 && dM>rM*0.9) sugs.push('📉 '+Math.round(dM/rM*100)+'% da renda comprometida em média. Ideal: abaixo de 80%.');
+  }
 
   var bdr='#2a3f5a',txt='#e8f4f8',mut='#5a8a9f';
   var html='';
