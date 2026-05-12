@@ -3089,8 +3089,29 @@ function gapiLoaded(){
   gapi.load('client',function(){
     gapi.client.init({}).then(function(){
       gdriveReady=true;
-      var btn=document.getElementById('btnGdrive');
-      if(gAccessToken){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';loadFromDrive();}
+      // Se havia token salvo, tenta renovar silenciosamente
+      var saved=localStorage.getItem('gdrive_token');
+      if(saved){
+        var btn=document.getElementById('btnGdrive');
+        if(btn){btn.textContent='Conectando...';btn.className='btn-gdrive';}
+        var client=google.accounts.oauth2.initTokenClient({
+          client_id:CLIENT_ID,scope:SCOPES,prompt:'',
+          callback:function(resp){
+            if(resp&&resp.access_token){
+              gAccessToken=resp.access_token;
+              localStorage.setItem('gdrive_token',gAccessToken);
+              if(btn){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
+              loadFromDrive();
+            } else {
+              // Falhou silencioso - pede login manual
+              localStorage.removeItem('gdrive_token');
+              gAccessToken=null;
+              updateSyncStatus('disconnected');
+            }
+          }
+        });
+        client.requestAccessToken({prompt:''});
+      }
     });
   });
 }
@@ -3189,19 +3210,9 @@ function loadFromDrive(){
 }
 
 window.addEventListener('load',function(){
+  // gapiLoaded cuida da reconexão automática quando a API carregar
   var saved=localStorage.getItem('gdrive_token');
-  if(saved){
-    gAccessToken=saved;
-    // Atualiza visual imediatamente
-    var btn=document.getElementById('btnGdrive');
-    if(btn){btn.textContent='Sincronizado';btn.className='btn-gdrive connected';}
-    updateSyncStatus('syncing');
-    // Se gapi já carregou, conecta direto; senão aguarda gapiLoaded
-    if(gdriveReady){loadFromDrive();}
-    // gapiLoaded vai chamar loadFromDrive quando terminar de carregar
-  } else {
-    updateSyncStatus('disconnected');
-  }
+  if(!saved) updateSyncStatus('disconnected');
 });
 
 var _origPersist=persist;
