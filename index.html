@@ -698,6 +698,17 @@
     <span style="font-family:'DM Sans',sans-serif;color:#f5c400;font-size:1rem;font-weight:600;">📊 Análise Financeira</span>
     <button onclick="closeAnalise()" style="background:#2a3f5a;border:none;border-radius:8px;color:#e8f4f8;font-family:'DM Sans',sans-serif;font-size:.78rem;padding:7px 12px;cursor:pointer;">✕ Fechar</button>
   </div>
+  <!-- Filtro de período -->
+  <div style="padding:14px 16px 0;background:#1b2838;border-bottom:1px solid #2a3f5a;">
+    <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:#5a8a9f;margin-bottom:8px;">Período de análise</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding-bottom:14px;">
+      <select id="analiseDe" onchange="rodarAnalise()" style="background:#0d1b2a;border:1px solid #2a3f5a;border-radius:8px;color:#e8f4f8;font-size:.8rem;padding:7px 10px;"></select>
+      <select id="analiseAte" onchange="rodarAnalise()" style="background:#0d1b2a;border:1px solid #2a3f5a;border-radius:8px;color:#e8f4f8;font-size:.8rem;padding:7px 10px;"></select>
+      <button onclick="rodarAnalise()" style="background:#f5c400;border:none;border-radius:8px;color:#0d1b2a;font-weight:700;font-size:.8rem;padding:8px 12px;cursor:pointer;white-space:nowrap;">Analisar</button>
+    </div>
+  </div>
+  <div id="analiseBody" style="padding:16px;"></div>
+</div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
