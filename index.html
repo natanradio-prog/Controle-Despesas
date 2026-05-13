@@ -3173,7 +3173,7 @@ function saveToDrive(){
   findOrCreateFile(function(fid){
     var boundary='-------314159265358979323846';
     var cr='\r\n';
-    var meta=JSON.stringify({name:FILE_NAME,parents:['appDataFolder']});
+    var meta=JSON.stringify({name:FILE_NAME});
     var data=getAllData();
     var body='--'+boundary+cr+'Content-Type: application/json; charset=UTF-8'+cr+cr+meta+cr+'--'+boundary+cr+'Content-Type: application/json'+cr+cr+data+cr+'--'+boundary+'--';
     gapi.client.request({
