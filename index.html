@@ -1183,6 +1183,8 @@ function getRec(y,m){
   }
   return {salario:null,outras:[]};
 }
+// Versão que nunca retorna estimativa — para operações de escrita
+function getRealRec(y,m){return receitas[recKey(y,m)]||{salario:null,outras:[]};}
 function setRec(y,m,obj){receitas[recKey(y,m)]=obj;persist();}
 
 // ══ SEED ══
@@ -1407,32 +1409,32 @@ document.getElementById('notesField').addEventListener('input',function(){
 // ══ RECEITAS ══
 function onSalarioMask(el){
   var v = applyMoneyMask(el);
-  var rec = getRec(curY,curM);
+  var rec = receitas[recKey(curY,curM)] || {salario:null,outras:[]};
   rec.salario = v > 0 ? v : null;
   setRec(curY,curM,rec);
   updateReceitasUI(rec);
   calcLiquido(curY,curM);
 }
 function addOutraReceita(){
-  var rec=getRec(curY,curM);
+  var rec=getRealRec(curY,curM);
   if(!rec.outras)rec.outras=[];
   rec.outras.push({id:String(Date.now()),desc:'',val:null});
   setRec(curY,curM,rec);
   renderOutrasReceitas(rec);
 }
 function onOutraDesc(id,val){
-  var rec=getRec(curY,curM);
+  var rec=getRealRec(curY,curM);
   var o=rec.outras.find(function(x){return x.id===id;});
   if(o){o.desc=val;setRec(curY,curM,rec);}
 }
 function onOutraVal(id,val){
-  var rec=getRec(curY,curM);
+  var rec=getRealRec(curY,curM);
   var o=rec.outras.find(function(x){return x.id===id;});
   if(o){o.val=val!==''?parseFloat(val):null;setRec(curY,curM,rec);}
   updateReceitasUI(rec);
 }
 function delOutraReceita(id){
-  var rec=getRec(curY,curM);
+  var rec=getRealRec(curY,curM);
   rec.outras=rec.outras.filter(function(o){return o.id!==id;});
   setRec(curY,curM,rec);
   renderOutrasReceitas(rec);
@@ -1911,7 +1913,7 @@ function getCC(y,m){
 }
 
 function saveCC(y,m,cc){
-  var rec = getRec(y,m);
+  var rec = getRealRec(y,m);
   rec.cc = cc;
   setRec(y,m,rec);
 }
