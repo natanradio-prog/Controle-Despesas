@@ -1320,9 +1320,6 @@ function render(){
   document.getElementById('sumResto').textContent=total>0?R(Math.max(0,resto)):'-';
   document.getElementById('listCount').textContent=me.length;
   document.getElementById('totalDespesas').textContent=known.length?R(total):'';
-  // Saldo calculado de forma independente após renderContracheque atualizar receitasTotal
-  updateSaldo();
-
   // Dízimo
   updateDizimoCard();
 
@@ -1463,7 +1460,6 @@ function updateReceitasUI(rec){
 function updateSaldo(){
   // Calcula receita liquida diretamente dos dados, sem depender do DOM
   var rec = getRec(curY,curM);
-  console.log('[updateSaldo] rec=', JSON.stringify({salario:rec.salario,salarioLiquido:rec.salarioLiquido,outras:rec.outras,_estimado:rec._estimado,cc:rec.cc}));
   var liq;
   if(rec._estimado){
     liq = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
