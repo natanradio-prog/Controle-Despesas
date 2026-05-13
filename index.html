@@ -1320,7 +1320,8 @@ function render(){
   document.getElementById('sumResto').textContent=total>0?R(Math.max(0,resto)):'-';
   document.getElementById('listCount').textContent=me.length;
   document.getElementById('totalDespesas').textContent=known.length?R(total):'';
-  // Saldo e receitasTotal são atualizados por updateReceitasUI (chamado via calcLiquido)
+  // Saldo calculado de forma independente após renderContracheque atualizar receitasTotal
+  updateSaldo();
 
   // Dízimo
   updateDizimoCard();
@@ -1440,26 +1441,39 @@ function delOutraReceita(id){
   updateReceitasUI(rec);
 }
 function updateReceitasUI(rec){
+  // Só atualiza o total exibido no header do card de Receitas
   var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
   var total = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   document.getElementById('receitasTotal').textContent=total>0?R(total):'-';
-  var me=getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
-  var known=me.filter(function(e){return e.amount!=null;});
-  var pagoAgendado=known.filter(function(e){return e.status==='pago'||e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
-  var saldoEl=document.getElementById('saldoDisp');
-  var saldoCard=document.getElementById('saldoCard');
-  if(total>0){
-    var saldo=total-pagoAgendado;
-    saldoEl.textContent=R(saldo)+(saldo<0?' \u26A0':'');
-    saldoEl.style.color=saldo>=0?'var(--green)':'var(--red)';
-    saldoEl.style.fontWeight='700';
-    saldoEl.style.fontSize='.92rem';
+  // Saldo calculado de forma independente
+  updateSaldo();
+}
+
+function updateSaldo(){
+  // Receita: pega direto do elemento já renderizado (evita recalcular estimativa)
+  var receitaTotal = 0;
+  var receitaEl = document.getElementById('receitasTotal');
+  if(receitaEl && receitaEl.textContent !== '-'){
+    // Remove 'R$ ' e converte para número
+    receitaTotal = parseFloat(receitaEl.textContent.replace('R$\u00a0','').replace(/\./g,'').replace(',','.')) || 0;
+  }
+  // Despesas: soma pago + agendado
+  var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
+  var known = me.filter(function(e){ return e.amount!=null; });
+  var pagoAgendado = known.filter(function(e){ return e.status==='pago'||e.status==='agendado'; }).reduce(function(s,e){ return s+e.amount; },0);
+  var saldoEl = document.getElementById('saldoDisp');
+  if(receitaTotal > 0){
+    var saldo = receitaTotal - pagoAgendado;
+    saldoEl.textContent = R(saldo)+(saldo<0?' \u26A0':'');
+    saldoEl.style.color = saldo>=0?'var(--green)':'var(--red)';
+    saldoEl.style.fontWeight = '700';
+    saldoEl.style.fontSize = '.92rem';
     checkSobra(saldo);
-  }else{
-    saldoEl.textContent='\u2013';
-    saldoEl.style.color='var(--muted)';
-    saldoEl.style.fontWeight='400';
-    saldoEl.style.fontSize='.85rem';
+  } else {
+    saldoEl.textContent = '\u2013';
+    saldoEl.style.color = 'var(--muted)';
+    saldoEl.style.fontWeight = '400';
+    saldoEl.style.fontSize = '.85rem';
     document.getElementById('sobraCard').style.display='none';
   }
 }
@@ -1483,28 +1497,22 @@ function checkSobra(saldo){
 }
 
 function transferirSobra(){
+  // Lê o saldo já calculado e exibido na tela
   var saldoEl = document.getElementById('saldoDisp');
-  var saldoTxt = saldoEl.textContent.replace(' \u26A0','');
-  // Pega o valor do saldo atual
-  var rec = getRec(curY, curM);
-  var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
-  var totalRec = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-  var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
-  var known = me.filter(function(e){return e.amount!=null;});
-  var pagoAgendado = known.filter(function(e){return e.status==='pago'||e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
-  var saldo = totalRec - pagoAgendado;
+  var saldoTxt = saldoEl.textContent.replace(' \u26A0','').replace('R$\u00a0','').replace(/\./g,'').replace(',','.');
+  var saldo = parseFloat(saldoTxt) || 0;
 
   if(saldo <= 0) return;
 
-  // Lança no próximo mês como outra receita
+  // Lança no próximo mês como outra receita (usa getRealRec para não promover estimativa)
   var proxM = curM === 12 ? 1 : curM + 1;
   var proxY = curM === 12 ? curY + 1 : curY;
-  var proxRec = getRec(proxY, proxM);
+  var proxRec = getRealRec(proxY, proxM);
   if(!proxRec.outras) proxRec.outras = [];
   proxRec.outras.push({id: String(Date.now()), desc: 'Sobra de '+MONTHS_PT[curM-1], val: Math.round(saldo*100)/100});
   setRec(proxY, proxM, proxRec);
 
-  // Marca como descartado/transferido
+  // Marca como transferido
   localStorage.setItem('sobra_'+curY+'_'+curM, '1');
   document.getElementById('sobraCard').style.display='none';
   showToast('Transferido para '+MONTHS_PT[proxM-1]+' \u2713');
