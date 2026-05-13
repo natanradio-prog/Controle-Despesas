@@ -1291,44 +1291,25 @@ function render(){
 
   // Receitas
   var rec=getRec(curY,curM);
-  document.getElementById('salarioInput').value=rec.salario!=null?rec.salario:'';
   // Badge estimado
   var badge=document.getElementById('badgeEstimado');
   if(badge) badge.style.display=rec._estimado?'inline':'none';
+  // renderContracheque chama calcLiquido que chama updateReceitasUI — atualiza saldo corretamente
   renderContracheque(curY,curM);
   renderOutrasReceitas(rec);
-  var totalRec=(rec.salario||0)+(rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-  document.getElementById('receitasTotal').textContent=totalRec>0?R(totalRec):'-';
 
   var me=getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
   var known=me.filter(function(e){return e.amount!=null;});
   var total=known.reduce(function(s,e){return s+e.amount;},0);
   var pago=known.filter(function(e){return e.status==='pago';}).reduce(function(s,e){return s+e.amount;},0);
   var agendado=known.filter(function(e){return e.status==='agendado';}).reduce(function(s,e){return s+e.amount;},0);
-  var pagoAgendado=pago+agendado;
   var resto=total-pago;
   document.getElementById('sumTotal').textContent=known.length?R(total):'-';
   document.getElementById('sumPago').textContent=pago>0?R(pago):'-';
   document.getElementById('sumResto').textContent=total>0?R(Math.max(0,resto)):'-';
   document.getElementById('listCount').textContent=me.length;
   document.getElementById('totalDespesas').textContent=known.length?R(total):'';
-  // Saldo baseado em pago + agendado
-  var recLiquido=(rec.salarioLiquido!=null?rec.salarioLiquido:(rec.salario||0));
-  var totalRecEfetivo=recLiquido+(rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-  var saldoEl=document.getElementById('saldoDisp');
-  var saldoCard=document.getElementById('saldoCard');
-  if(totalRecEfetivo>0){
-    var saldo=totalRecEfetivo-pagoAgendado;
-    saldoEl.textContent=R(saldo)+(saldo<0?' \u26A0':'');
-    saldoEl.className='sv '+(saldo>=0?'green':'red');
-    saldoCard.className='saldo-card '+(saldo>=0?'positivo':'negativo');
-    checkSobra(saldo);
-  }else{
-    saldoEl.textContent='Lance as receitas para ver o saldo';
-    saldoEl.className='sv muted';
-    saldoCard.className='saldo-card neutro';
-    document.getElementById('sobraCard').style.display='none';
-  }
+  // Saldo e receitasTotal são atualizados por updateReceitasUI (chamado via calcLiquido)
 
   // Dízimo
   updateDizimoCard();
