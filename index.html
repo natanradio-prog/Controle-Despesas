@@ -513,6 +513,19 @@
       <button class="btn-add-cat" onclick="addCategory()">+ Adicionar</button>
     </div>
   </div>
+  <div class="settings-section">
+    <h3>Backup</h3>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">O backup automático diário é salvo no Google Drive e mantém os últimos 7 dias. Use o backup manual como segurança adicional.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button onclick="exportarBackup();closeSettings();" style="background:#1f3248;border:1px solid #2a3f5a;border-radius:8px;color:#e8f4f8;font-family:'DM Sans',sans-serif;font-size:.82rem;padding:10px;cursor:pointer;text-align:left;">
+        📥 Exportar backup manual (.json)
+      </button>
+      <button onclick="importarBackup();closeSettings();" style="background:#1f3248;border:1px solid #2a3f5a;border-radius:8px;color:#e8f4f8;font-family:'DM Sans',sans-serif;font-size:.82rem;padding:10px;cursor:pointer;text-align:left;">
+        📤 Importar backup (.json)
+      </button>
+      <div id="infoUltimoBackup" style="font-size:.7rem;color:#5a8a9f;padding:4px 2px;"></div>
+    </div>
+  </div>
  </div>
 </div>
 
@@ -1707,7 +1720,13 @@ function setRepeat(r){
 function closeForm(){document.getElementById('overlayForm').classList.remove('open');editId=null;}
 
 // ══ SETTINGS ══
-function openSettings(){renderCatList();document.getElementById('overlaySettings').classList.add('open');}
+function openSettings(){
+  renderCatList();
+  var ub = localStorage.getItem('ultimo_backup_drive');
+  var el = document.getElementById('infoUltimoBackup');
+  if(el) el.textContent = ub ? '☁️ Último backup automático: '+ub : '☁️ Nenhum backup automático ainda';
+  document.getElementById('overlaySettings').classList.add('open');
+}
 function closeSettings(){document.getElementById('overlaySettings').classList.remove('open');buildCatSelect();render();}
 function renderCatList(){
   var html = cats.slice().sort(function(a,b){return a.localeCompare(b,'pt-BR');}).map(function(c){
@@ -3057,6 +3076,115 @@ var SCOPES    = 'https://www.googleapis.com/auth/drive.appdata https://www.googl
 var FILE_NAME = 'despesas_app_data.json';
 var gdriveReady=false, gAccessToken=null, gFileId=null, syncTimeout=null;
 
+// ══ BACKUP ══
+
+function exportarBackup(){
+  var dados = getAllData();
+  var hoje = new Date();
+  var nome = 'seuNono_backup_'
+    + hoje.getFullYear()+'-'
+    + String(hoje.getMonth()+1).padStart(2,'0')+'-'
+    + String(hoje.getDate()).padStart(2,'0')
+    + '.json';
+  var blob = new Blob([dados], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 Backup exportado: '+nome);
+}
+
+function importarBackup(){
+  var input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        // Valida que é um backup válido
+        var d = JSON.parse(ev.target.result);
+        if(!d.expenses && !d.receitas){
+          showToast('❌ Arquivo inválido');
+          return;
+        }
+        if(!confirm('Restaurar backup de '+file.name+'?\nOs dados atuais serão substituídos.')) return;
+        applyAllData(ev.target.result);
+        showToast('✅ Backup restaurado com sucesso!');
+      }catch(err){
+        showToast('❌ Erro ao ler o arquivo');
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
+}
+
+function salvarBackupDiarioDrive(){
+  if(!gAccessToken||!gdriveReady) return;
+
+  // Verifica se já fez backup hoje
+  var hoje = new Date();
+  var hojeStr = hoje.getFullYear()+'-'
+    + String(hoje.getMonth()+1).padStart(2,'0')+'-'
+    + String(hoje.getDate()).padStart(2,'0');
+  var ultimoBackup = localStorage.getItem('ultimo_backup_drive');
+  if(ultimoBackup === hojeStr) return; // já fez hoje
+
+  var nomeBackup = 'seuNono_backup_'+hojeStr+'.json';
+
+  // Cria o arquivo de backup
+  var boundary='-------314159265358979323846';
+  var cr='\r\n';
+  var meta=JSON.stringify({name:nomeBackup,parents:['appDataFolder']});
+  var data=getAllData();
+  var body='--'+boundary+cr+'Content-Type: application/json; charset=UTF-8'+cr+cr+meta+cr
+    +'--'+boundary+cr+'Content-Type: application/json'+cr+cr+data+cr+'--'+boundary+'--';
+
+  gapi.client.request({
+    path:'https://www.googleapis.com/upload/drive/v3/files',
+    method:'POST', params:{uploadType:'multipart'},
+    headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},
+    body:body
+  }).then(function(){
+    localStorage.setItem('ultimo_backup_drive', hojeStr);
+    // Limpa backups com mais de 7 dias
+    limparBackupsAntigos();
+  }, function(){ /* falha silenciosa no backup */ });
+}
+
+function limparBackupsAntigos(){
+  if(!gAccessToken||!gdriveReady) return;
+  // Lista todos os backups no appDataFolder
+  gapi.client.request({
+    path:'https://www.googleapis.com/drive/v3/files',
+    method:'GET',
+    params:{
+      spaces:'appDataFolder',
+      fields:'files(id,name,createdTime)',
+      q:'name contains "seuNono_backup_"',
+      orderBy:'createdTime'
+    },
+    headers:{Authorization:'Bearer '+gAccessToken}
+  }).then(function(r){
+    var files = r.result.files||[];
+    // Mantém só os últimos 7
+    var paraApagar = files.slice(0, Math.max(0, files.length-7));
+    paraApagar.forEach(function(f){
+      gapi.client.request({
+        path:'https://www.googleapis.com/drive/v3/files/'+f.id,
+        method:'DELETE',
+        headers:{Authorization:'Bearer '+gAccessToken}
+      });
+    });
+  });
+}
+
 function getAllData(){
   var nkData={};
   for(var i=0;i<localStorage.length;i++){
@@ -3193,6 +3321,8 @@ function loadFromDrive(){
     }).then(function(r){
       if(r.body&&r.body.length>2) applyAllData(r.body);
       else updateSyncStatus('synced');
+      // Backup diário após carregar
+      setTimeout(salvarBackupDiarioDrive, 3000);
     },function(err){
       // Token expirado ou inválido - desconecta para forçar novo login
       if(err&&(err.status===401||err.status===403)){
