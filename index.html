@@ -2218,8 +2218,13 @@ function migrarComprasNubank(){
     }
   });
 }
-function getNubankFatura(y,m){ var r=getRec(y,m); return r.nubankFatura||null; }
-function setNubankFatura(y,m,v){ var r=getRec(y,m); r.nubankFatura=v; setRec(y,m,r); }
+function getNubankFatura(y,m){ var r=getRealRec(y,m); return r.nubankFatura||null; }
+function setNubankFatura(y,m,v){
+  // Usa getRealRec para nunca promover uma estimativa a dado real
+  var r=getRealRec(y,m);
+  r.nubankFatura=v;
+  setRec(y,m,r);
+}
 
 function calcNubankTotal(y,m){
   var total = 0;
