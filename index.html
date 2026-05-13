@@ -1490,15 +1490,11 @@ function renderPendentesAnteriores(){
   var antM = curM - 1, antY = curY;
   if(antM < 1){ antM = 12; antY--; }
 
-  // Pendências do mês anterior vencidas até dia 19 (fim do ciclo)
-  var limitStr = antY+'-'+String(antM).padStart(2,'0')+'-19';
-
   var pendentes = (expenses[antY]||[]).filter(function(e){
     return e.month === antM
       && e.category !== 'Dizimo'
       && e.status === 'pendente'
-      && e.amount != null
-      && (!e.date || e.date <= limitStr);
+      && e.amount != null;
   });
 
   if(!pendentes.length){ card.style.display='none'; return; }
