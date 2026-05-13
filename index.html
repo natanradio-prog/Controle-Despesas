@@ -1935,7 +1935,16 @@ function onDescontoInputMask(el, field){
 
 function renderContracheque(y,m){
   var rec = getRec(y,m);
-  var cc = rec._estimado ? {inss:rec.psss, ir:rec.ir, funpresp:rec.funpresp, eventuais:rec.descontosEventuais||[]} : getCC(y,m);
+  var cc;
+  if(rec._estimado){
+    // Busca cc real do mês anterior
+    var antM = m-1, antY = y;
+    if(antM < 1){ antM = 12; antY--; }
+    var antRec = receitas[recKey(antY,antM)];
+    cc = (antRec && antRec.cc) ? antRec.cc : {inss:null,funpresp:null,ir:null,eventuais:[]};
+  } else {
+    cc = getCC(y,m);
+  }
 
   // Salário bruto formatado
   var si = document.getElementById('salarioInput');
@@ -2010,7 +2019,15 @@ function delEvDesc(id){
 function calcLiquido(y,m){
   var rec = getRec(y,m);
   var bruto = rec.salario || 0;
-  var cc = rec.cc || {};
+  var cc;
+  if(rec._estimado){
+    var antM2 = m-1, antY2 = y;
+    if(antM2 < 1){ antM2 = 12; antY2--; }
+    var antRec2 = receitas[recKey(antY2,antM2)];
+    cc = (antRec2 && antRec2.cc) ? antRec2.cc : {};
+  } else {
+    cc = rec.cc || {};
+  }
   var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0)
     + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
   var liquido = bruto - totalDesc;
