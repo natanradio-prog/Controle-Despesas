@@ -316,7 +316,7 @@
 <!-- Receitas -->
 <div class="receitas-section">
   <div class="receitas-header">
-    <em>&#128176; Receitas</em>
+    <em>&#128176; Receitas <span id="badgeEstimado" style="display:none;font-size:.65rem;background:#2a3f1a;color:#a3d977;border:1px solid #4a7a2a;border-radius:6px;padding:1px 7px;margin-left:6px;font-style:normal;">estimado</span></em>
     <div class="receitas-total" id="receitasTotal">-</div>
   </div>
   <div id="receitasList">
@@ -1162,7 +1162,27 @@ function setYearExp(y,arr){expenses[y]=arr;persist();}
 
 function noteKey(y,m){return y+'-'+m;}
 function recKey(y,m){return y+'-'+m;}
-function getRec(y,m){return receitas[recKey(y,m)]||{salario:null,outras:[]};}
+function getRec(y,m){
+  var rec = receitas[recKey(y,m)];
+  if(rec) return rec;
+  // Sem receita lançada — usa mês anterior como estimativa
+  var antM = m-1, antY = y;
+  if(antM < 1){ antM = 12; antY--; }
+  var ant = receitas[recKey(antY,antM)];
+  if(ant && (ant.salario || ant.salarioLiquido)){
+    return {
+      salario: ant.salario,
+      salarioLiquido: ant.salarioLiquido,
+      psss: ant.psss,
+      ir: ant.ir,
+      funpresp: ant.funpresp,
+      descontosEventuais: ant.descontosEventuais||[],
+      outras: ant.outras||[],
+      _estimado: true
+    };
+  }
+  return {salario:null,outras:[]};
+}
 function setRec(y,m,obj){receitas[recKey(y,m)]=obj;persist();}
 
 // ══ SEED ══
@@ -1267,6 +1287,9 @@ function render(){
   // Receitas
   var rec=getRec(curY,curM);
   document.getElementById('salarioInput').value=rec.salario!=null?rec.salario:'';
+  // Badge estimado
+  var badge=document.getElementById('badgeEstimado');
+  if(badge) badge.style.display=rec._estimado?'inline':'none';
   renderContracheque(curY,curM);
   renderOutrasReceitas(rec);
   var totalRec=(rec.salario||0)+(rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
@@ -1911,8 +1934,8 @@ function onDescontoInputMask(el, field){
 }
 
 function renderContracheque(y,m){
-  var cc = getCC(y,m);
   var rec = getRec(y,m);
+  var cc = rec._estimado ? {inss:rec.psss, ir:rec.ir, funpresp:rec.funpresp, eventuais:rec.descontosEventuais||[]} : getCC(y,m);
 
   // Salário bruto formatado
   var si = document.getElementById('salarioInput');
@@ -1928,9 +1951,8 @@ function renderContracheque(y,m){
     }
   });
 
-  renderDescontosEventuais(cc);
+  if(!rec._estimado) renderDescontosEventuais(cc);
   calcLiquido(y,m);
-  // Sincroniza display visível
   var elVis = document.getElementById('salarioLiquidoVis');
   var elIn = document.getElementById('salarioLiquido');
   if(elVis && elIn){ elVis.textContent = elIn.textContent; elVis.style.color = elIn.style.color || 'var(--green)'; }
@@ -1993,7 +2015,6 @@ function calcLiquido(y,m){
     + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
   var liquido = bruto - totalDesc;
 
-  // Base do dízimo = (salário bruto + outras receitas) - descontos
   var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   var baseDizimo = (bruto + outrasRec) - totalDesc;
   var dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
@@ -2011,13 +2032,13 @@ function calcLiquido(y,m){
     rec.salarioLiquido = null;
   }
 
-  // Salva dízimo calculado na receita do mês
   rec.dizimo = dizimo;
-  setRec(y,m,rec);
+  // Só salva se for receita real (não estimada do mês anterior)
+  if(!rec._estimado){
+    setRec(y,m,rec);
+  }
 
-  // Atualiza card do dízimo se for o mês atual
   if(y===curY && m===curM) updateDizimoCard();
-
   updateReceitasUI(rec);
 }
 
