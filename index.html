@@ -1409,10 +1409,21 @@ document.getElementById('notesField').addEventListener('input',function(){
 // ══ RECEITAS ══
 function onSalarioMask(el){
   var v = applyMoneyMask(el);
-  var rec = receitas[recKey(curY,curM)] || {salario:null,outras:[]};
+  // Usa getRealRec para não promover estimativa, mas copia o cc do mês anterior
+  // se o mês ainda não tem cc próprio (usuário está confirmando a estimativa)
+  var rec = getRealRec(curY,curM);
   rec.salario = v > 0 ? v : null;
+  // Se não tem cc próprio, copia do mês anterior para que os descontos já visíveis sejam válidos
+  if(!rec.cc){
+    var antM = curM-1, antY = curY;
+    if(antM < 1){ antM = 12; antY--; }
+    var antRec = receitas[recKey(antY,antM)];
+    if(antRec && antRec.cc) rec.cc = JSON.parse(JSON.stringify(antRec.cc));
+  }
   setRec(curY,curM,rec);
-  updateReceitasUI(rec);
+  // Remove badge estimado pois o usuário lançou o salário
+  var badge = document.getElementById('badgeEstimado');
+  if(badge) badge.style.display = v > 0 ? 'none' : 'none';
   calcLiquido(curY,curM);
 }
 function addOutraReceita(){
