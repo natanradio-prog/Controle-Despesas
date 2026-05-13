@@ -313,57 +313,6 @@
   <button onclick="changeMonth(1)">&#8250;</button>
 </div>
 
-<!-- Receitas -->
-<div class="receitas-section">
-  <div class="receitas-header">
-    <em>&#128176; Receitas <span id="badgeEstimado" style="display:none;font-size:.65rem;background:#2a3f1a;color:#a3d977;border:1px solid #4a7a2a;border-radius:6px;padding:1px 7px;margin-left:6px;font-style:normal;">estimado</span></em>
-    <div class="receitas-total" id="receitasTotal">-</div>
-  </div>
-  <div id="receitasList">
-    <div class="receita-row salario-row" onclick="toggleContracheque()">
-      <div class="receita-label">Salário bruto <span class="salario-chevron" id="salarioChevron">&#9660;</span></div>
-      <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" />
-      <span style="width:20px"></span>
-    </div>
-    <!-- Salário líquido sempre visível -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0 4px;border-top:1px solid var(--border);margin-top:6px;">
-      <span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Salário líquido</span>
-      <span id="salarioLiquidoVis" style="font-weight:700;font-size:.92rem;color:var(--green);">-</span>
-    </div>
-    <!-- Contracheque -->
-    <div class="contracheque-panel" id="contrachequePanel">
-      <div class="cc-row">
-        <div class="cc-label">PSSS</div>
-        <input type="text" class="cc-input" id="ccINSS" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'inss')" />
-      </div>
-      <div class="cc-row">
-        <div class="cc-label">IR</div>
-        <input type="text" class="cc-input" id="ccIR" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'ir')" />
-      </div>
-      <div class="cc-row">
-        <div class="cc-label">Contribuição Funpresp</div>
-        <input type="text" class="cc-input" id="ccFunpresp" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'funpresp')" />
-      </div>
-      <div id="descontosEventuais"></div>
-      <button class="btn-add-desconto" onclick="addDescontoEventual()">+ Desconto eventual</button>
-      <div class="cc-divider"></div>
-      <div class="cc-liquido">
-        <div class="cc-liquido-label">Salário líquido</div>
-        <div class="cc-liquido-val" id="salarioLiquido">-</div>
-      </div>
-    </div>
-  </div>
-  <button class="btn-add-receita" onclick="addOutraReceita()">+ Outra receita</button>
-</div>
-
-<!-- Saldo -->
-<div class="saldo-card neutro" id="saldoCard">
-  <div class="saldo-full" style="grid-column:span 2;border-top:none;padding-top:0;margin-top:0;">
-    <label>Saldo disponível</label>
-    <div class="sv muted" id="saldoDisp">Lance as receitas para ver o saldo</div>
-  </div>
-</div>
-
 <!-- Pendências mês anterior -->
 <div id="cardPendAnt" style="display:none;background:#2a1a10;border:1px solid #8b4510;border-left:3px solid #ffa060;border-radius:12px;padding:14px;margin-bottom:12px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
@@ -377,11 +326,60 @@
   </div>
 </div>
 
+<!-- Receitas -->
+<div class="receitas-section">
+<div class="receitas-section">
+  <div class="receitas-header">
+    <span style="font-size:.82rem;font-weight:600;color:var(--text);">Receitas <span id="badgeEstimado" style="display:none;font-size:.62rem;background:#2a3f1a;color:#a3d977;border:1px solid #4a7a2a;border-radius:6px;padding:1px 7px;margin-left:6px;font-style:normal;font-weight:400;">estimado</span></span>
+    <div class="receitas-total" id="receitasTotal">-</div>
+  </div>
+  <div id="receitasList">
+    <!-- Bloco Senado -->
+    <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+      <div class="salario-row" onclick="toggleContracheque()" style="font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+        Senado <span class="salario-chevron" id="salarioChevron">&#9660;</span>
+      </div>
+      <div class="receita-row" style="margin-bottom:0;">
+        <div class="receita-label">Salário bruto</div>
+        <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" style="color:#ef6060;" />
+        <span style="width:20px"></span>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="receita-label">Salário líquido</span>
+        <span id="salarioLiquidoVis" style="font-weight:700;font-size:.92rem;color:#42a5f5;">-</span>
+      </div>
+      <!-- Contracheque expansível -->
+      <div class="contracheque-panel" id="contrachequePanel">
+        <div class="cc-row" style="margin-top:10px;">
+          <div class="cc-label">PSSS</div>
+          <input type="text" class="cc-input" id="ccINSS" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'inss')" />
+        </div>
+        <div class="cc-row">
+          <div class="cc-label">IR</div>
+          <input type="text" class="cc-input" id="ccIR" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'ir')" />
+        </div>
+        <div class="cc-row">
+          <div class="cc-label">Contribuição Funpresp</div>
+          <input type="text" class="cc-input" id="ccFunpresp" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'funpresp')" />
+        </div>
+        <div id="descontosEventuais"></div>
+        <button class="btn-add-desconto" onclick="addDescontoEventual()">+ Desconto eventual</button>
+        <div class="cc-divider"></div>
+        <div class="cc-liquido">
+          <div class="cc-liquido-label">Salário líquido</div>
+          <div class="cc-liquido-val" id="salarioLiquido">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="btn-add-receita" onclick="addOutraReceita()">+ Outra receita</button>
+</div>
+
 <!-- Gastos -->
-<div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px;">Gastos</div>
-<div style="background:#1a2030;border:1px solid var(--border);border-left:3px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:var(--shadow);">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;">
-    <label style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Previsto</label>
+<div style="background:#1a2030;border:1px solid var(--border);border-left:3px solid var(--red);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <span style="font-size:.82rem;font-weight:600;color:var(--text);">Gastos</span>
     <div class="value red" id="sumTotal" style="font-size:.92rem;">-</div>
   </div>
   <div style="height:1px;background:var(--border);margin:4px 0;"></div>
@@ -394,6 +392,12 @@
     <label style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">A pagar</label>
     <div class="value orange" id="sumResto" style="font-size:.92rem;">-</div>
   </div>
+</div>
+
+<!-- Saldo disponível -->
+<div id="saldoCard" style="background:#131f2e;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+  <span style="font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);">Saldo disponível</span>
+  <span id="saldoDisp" class="sv muted">Lance as receitas para ver o saldo</span>
 </div>
 
 <!-- Sugestão de sobra -->
@@ -1383,15 +1387,16 @@ function renderOutrasReceitas(rec){
   var list=document.getElementById('receitasList');
   list.querySelectorAll('.outra-receita-row').forEach(function(r){r.parentNode.removeChild(r);});
   (rec.outras||[]).forEach(function(o){
-    var row=document.createElement('div');
-    row.className='receita-row outra-receita-row';
-    row.innerHTML='<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;">'
-      +'<span style="font-size:.54rem;text-transform:uppercase;letter-spacing:.08em;background:#2a1a40;color:#b48aff;border:1px solid #6a3aaf;border-radius:5px;padding:1px 6px;align-self:flex-start;white-space:nowrap;">eventual</span>'
+    var wrap=document.createElement('div');
+    wrap.className='outra-receita-row';
+    wrap.style.cssText='background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;';
+    wrap.innerHTML='<span style="font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;background:#2a1a40;color:#b48aff;border:1px solid #6a3aaf;border-radius:4px;padding:1px 6px;display:inline-block;margin-bottom:6px;">eventual</span>'
+      +'<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;">'
       +'<input type="text" class="receita-input" style="font-family:\'DM Sans\',sans-serif;font-size:.83rem;color:var(--text);" placeholder="Descrição" value="'+o.desc+'" oninput="onOutraDesc(\''+o.id+'\',this.value)"/>'
-      +'</div>'
-      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;flex-shrink:0;"/>'
-      +'<button class="btn-del-receita" onclick="delOutraReceita(\''+o.id+'\')">&#x2715;</button>';
-    list.appendChild(row);
+      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;color:#f5c400;font-weight:600;"/>'
+      +'<button class="btn-del-receita" onclick="delOutraReceita(\''+o.id+'\')">&#x2715;</button>'
+      +'</div>';
+    list.appendChild(wrap);
   });
 }
 
@@ -1446,14 +1451,15 @@ function updateReceitasUI(rec){
   if(total>0){
     var saldo=total-pagoAgendado;
     saldoEl.textContent=R(saldo)+(saldo<0?' \u26A0':'');
-    saldoEl.className='sv '+(saldo>=0?'green':'red');
-    saldoCard.className='saldo-card '+(saldo>=0?'positivo':'negativo');
-    // Sugestão de sobra — só mostra se positivo e não foi descartado
+    saldoEl.style.color=saldo>=0?'var(--green)':'var(--red)';
+    saldoEl.style.fontWeight='700';
+    saldoEl.style.fontSize='.92rem';
     checkSobra(saldo);
   }else{
-    saldoEl.textContent='Lance as receitas para ver o saldo';
-    saldoEl.className='sv muted';
-    saldoCard.className='saldo-card neutro';
+    saldoEl.textContent='\u2013';
+    saldoEl.style.color='var(--muted)';
+    saldoEl.style.fontWeight='400';
+    saldoEl.style.fontSize='.85rem';
     document.getElementById('sobraCard').style.display='none';
   }
 }
