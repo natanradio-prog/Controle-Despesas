@@ -1493,7 +1493,7 @@ function renderPendentesAnteriores(){
   var pendentes = (expenses[antY]||[]).filter(function(e){
     return e.month === antM
       && e.category !== 'Dizimo'
-      && e.status === 'pendente'
+      && (e.status === 'pendente' || e.status === 'agendado')
       && e.amount != null;
   });
 
@@ -1521,7 +1521,7 @@ function renderPendentesAnteriores(){
       +'</div>'
       +'<div style="text-align:right;">'
       +'<div style="font-size:.78rem;font-weight:700;color:#ef6060;">'+R(e.amount)+'</div>'
-      +'<div style="background:#6b3a00;color:#fbbf24;border:1px solid #f97316;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:2px;">Pendente</div>'
+      +'<div style="background:'+(e.status==='agendado'?'#0d3060':'#6b3a00')+';color:'+(e.status==='agendado'?'#7dd3fc':'#fbbf24')+';border:1px solid '+(e.status==='agendado'?'#3b82f6':'#f97316')+';font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:2px;">'+(e.status==='agendado'?'Agendado':'Pendente')+'</div>'
       +'</div>'
       +'</div>';
   }).join('');
@@ -3177,7 +3177,7 @@ function saveToDrive(){
       method:'PATCH',params:{uploadType:'multipart'},
       headers:{Authorization:'Bearer '+gAccessToken,'Content-Type':'multipart/related; boundary="'+boundary+'"'},
       body:body
-    }).then(function(){updateSyncStatus('synced');},function(){updateSyncStatus('error');});
+    }).then(function(){updateSyncStatus('synced');showToast('💾 Dados salvos');},function(){updateSyncStatus('error');});
   });
 }
 
