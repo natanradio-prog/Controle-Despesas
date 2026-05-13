@@ -1461,17 +1461,28 @@ function updateReceitasUI(rec){
 }
 
 function updateSaldo(){
-  // Receita: pega direto do elemento já renderizado (evita recalcular estimativa)
-  var receitaTotal = 0;
-  var receitaEl = document.getElementById('receitasTotal');
-  if(receitaEl && receitaEl.textContent !== '-'){
-    // Remove 'R$ ' e converte para número
-    receitaTotal = parseFloat(receitaEl.textContent.replace('R$\u00a0','').replace(/\./g,'').replace(',','.')) || 0;
+  // Calcula receita liquida diretamente dos dados, sem depender do DOM
+  var rec = getRec(curY,curM);
+  var liq;
+  if(rec._estimado){
+    liq = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
+  } else {
+    if(rec.salarioLiquido != null){
+      liq = rec.salarioLiquido;
+    } else {
+      var cc = rec.cc || {};
+      var totalDesc = (cc.inss||0)+(cc.funpresp||0)+(cc.ir||0)
+        +(cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+      liq = (rec.salario||0) - totalDesc;
+    }
   }
+  var receitaTotal = liq + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+
   // Despesas: soma pago + agendado
   var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
   var known = me.filter(function(e){ return e.amount!=null; });
   var pagoAgendado = known.filter(function(e){ return e.status==='pago'||e.status==='agendado'; }).reduce(function(s,e){ return s+e.amount; },0);
+
   var saldoEl = document.getElementById('saldoDisp');
   if(receitaTotal > 0){
     var saldo = receitaTotal - pagoAgendado;
@@ -1488,6 +1499,7 @@ function updateSaldo(){
     document.getElementById('sobraCard').style.display='none';
   }
 }
+
 
 function checkSobra(saldo){
   var card = document.getElementById('sobraCard');
