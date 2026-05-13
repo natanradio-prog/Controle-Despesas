@@ -1164,22 +1164,22 @@ function noteKey(y,m){return y+'-'+m;}
 function recKey(y,m){return y+'-'+m;}
 function getRec(y,m){
   var rec = receitas[recKey(y,m)];
-  // Se o mês existe E tem salário lançado, retorna direto
+  // Mês existe e tem salário lançado — retorna direto
   if(rec && (rec.salario || rec.salarioLiquido)) return rec;
-  // Se o mês existe mas sem salário, ainda retorna ele (para não perder outras receitas)
-  if(rec && !rec.salario && !rec.salarioLiquido){
-    // verifica se tem outras receitas lançadas
-    if(rec.outras && rec.outras.length > 0) return rec;
-  }
-  // Busca para trás até 12 meses para encontrar um mês com salário lançado
+  // Mês existe sem salário mas tem outras receitas — retorna ele preservando os dados
+  if(rec && rec.outras && rec.outras.length > 0) return rec;
+  // Varre para trás até 12 meses buscando um mês com salário lançado
   var bkM = m, bkY = y;
   for(var i = 0; i < 12; i++){
     bkM--;
     if(bkM < 1){ bkM = 12; bkY--; }
     var ant = receitas[recKey(bkY,bkM)];
     if(ant && (ant.salario || ant.salarioLiquido)){
+      // Usa salarioLiquido como salario na estimativa quando disponível,
+      // para que o saldo já venha calculado no líquido
+      var salRef = (ant.salarioLiquido != null) ? ant.salarioLiquido : ant.salario;
       return {
-        salario: ant.salario,
+        salario: salRef,
         salarioLiquido: ant.salarioLiquido,
         psss: ant.psss,
         ir: ant.ir,
@@ -1190,7 +1190,7 @@ function getRec(y,m){
       };
     }
   }
-  // Nenhum mês anterior tem salário
+  // Nenhum mês anterior com salário encontrado
   if(rec) return rec;
   return {salario:null,outras:[]};
 }
