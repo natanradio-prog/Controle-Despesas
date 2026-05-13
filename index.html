@@ -1164,12 +1164,14 @@ function noteKey(y,m){return y+'-'+m;}
 function recKey(y,m){return y+'-'+m;}
 function getRec(y,m){
   var rec = receitas[recKey(y,m)];
+  console.log('getRec('+y+','+m+'): receitas key='+recKey(y,m)+' found='+(!!rec)+' keys='+JSON.stringify(Object.keys(receitas)));
   if(rec) return rec;
-  // Sem receita lançada — usa mês anterior como estimativa
   var antM = m-1, antY = y;
   if(antM < 1){ antM = 12; antY--; }
   var ant = receitas[recKey(antY,antM)];
+  console.log('  ant key='+recKey(antY,antM)+' found='+(!!ant)+' salario='+(ant&&ant.salario));
   if(ant && (ant.salario || ant.salarioLiquido)){
+    console.log('  RETORNANDO ESTIMATIVA');
     return {
       salario: ant.salario,
       salarioLiquido: ant.salarioLiquido,
@@ -1181,6 +1183,7 @@ function getRec(y,m){
       _estimado: true
     };
   }
+  console.log('  RETORNANDO VAZIO');
   return {salario:null,outras:[]};
 }
 // Versão que nunca retorna estimativa — para operações de escrita
