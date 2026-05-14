@@ -1460,6 +1460,7 @@ function updateReceitasUI(rec){
 function updateSaldo(){
   // Calcula receita liquida diretamente dos dados, sem depender do DOM
   var rec = getRec(curY,curM);
+  console.log('[updateSaldo] curY='+curY+' curM='+curM+' _estimado='+rec._estimado+' salario='+rec.salario+' salarioLiquido='+rec.salarioLiquido+' outras='+JSON.stringify(rec.outras));
   var liq;
   if(rec._estimado){
     liq = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
