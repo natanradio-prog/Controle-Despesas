@@ -1478,13 +1478,11 @@ function updateSaldo(){
   // Despesas: soma pago + agendado
   var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
   var known = me.filter(function(e){ return e.amount!=null; });
-  var pagoAgendado = known.filter(function(e){ return e.status==='pago'||e.status==='agendado'; }).reduce(function(s,e){ return s+e.amount; },0);
+  var pagoAgendado = known.reduce(function(s,e){ return s+e.amount; },0); // desconta tudo: pago+agendado+pendente
 
   var saldoEl = document.getElementById('saldoDisp');
-  console.log('[updateSaldo] liq='+liq+' receitaTotal='+receitaTotal+' pagoAgendado='+pagoAgendado);
   if(receitaTotal > 0){
     var saldo = receitaTotal - pagoAgendado;
-    console.log('[updateSaldo] saldo='+saldo);
     saldoEl.textContent = R(saldo)+(saldo<0?' \u26A0':'');
     saldoEl.style.color = saldo>=0?'var(--green)':'var(--red)';
     saldoEl.style.fontWeight = '700';
