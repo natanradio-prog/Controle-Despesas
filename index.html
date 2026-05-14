@@ -1460,7 +1460,6 @@ function updateReceitasUI(rec){
 function updateSaldo(){
   // Calcula receita liquida diretamente dos dados, sem depender do DOM
   var rec = getRec(curY,curM);
-  console.log('[updateSaldo] curY='+curY+' curM='+curM+' _estimado='+rec._estimado+' salario='+rec.salario+' salarioLiquido='+rec.salarioLiquido+' outras='+JSON.stringify(rec.outras));
   var liq;
   if(rec._estimado){
     liq = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
@@ -1482,8 +1481,10 @@ function updateSaldo(){
   var pagoAgendado = known.filter(function(e){ return e.status==='pago'||e.status==='agendado'; }).reduce(function(s,e){ return s+e.amount; },0);
 
   var saldoEl = document.getElementById('saldoDisp');
+  console.log('[updateSaldo] liq='+liq+' receitaTotal='+receitaTotal+' pagoAgendado='+pagoAgendado);
   if(receitaTotal > 0){
     var saldo = receitaTotal - pagoAgendado;
+    console.log('[updateSaldo] saldo='+saldo);
     saldoEl.textContent = R(saldo)+(saldo<0?' \u26A0':'');
     saldoEl.style.color = saldo>=0?'var(--green)':'var(--red)';
     saldoEl.style.fontWeight = '700';
