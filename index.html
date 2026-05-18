@@ -99,7 +99,7 @@
   .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .status-dot.pago{background:var(--green);}
   .status-dot.agendado{background:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.2);}
-  .status-dot.pendente{background:#cbd5e1;}
+  .status-dot.pendente{background:#ff6600;}
 
   .exp-info{flex:1;min-width:0;}
   .exp-name{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
@@ -108,9 +108,9 @@
   .exp-amount{font-weight:700;font-size:.92rem;white-space:nowrap;}
   .exp-amount.empty{color:var(--muted);font-size:.7rem;font-weight:400;font-style:italic;}
   .status-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:6px;white-space:nowrap;font-weight:700;}
-  .status-label.pago{background:#1a6040;color:#4fffb0;border:1px solid #26c6a0;}
-  .status-label.agendado{background:#0d3060;color:#7dd3fc;border:1px solid #3b82f6;}
-  .status-label.pendente{background:#6b3a00;color:#fbbf24;border:1px solid #f97316;}
+  .status-label.pago{background:#0d4028;color:#00ffaa;border:1px solid #00e896;}
+  .status-label.agendado{background:#0a2a6e;color:#60c8ff;border:1px solid #2196f3;}
+  .status-label.pendente{background:#7a2e00;color:#ff9800;border:1px solid #ff6600;}
   .btn-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:3px;transition:color .2s;flex-shrink:0;}
   .btn-del:hover{color:var(--red);}
 
@@ -118,9 +118,9 @@
   .btn-status-quick{border:none;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.62rem;font-weight:700;padding:3px 9px;white-space:nowrap;transition:all .2s;letter-spacing:.06em;text-transform:uppercase;}
   .btn-sq-pago{background:#1a6040;color:#4fffb0;border:1px solid #26c6a0;}
   .btn-sq-pago:active{opacity:.8;}
-  .btn-sq-agendado{background:#0d3060;color:#7dd3fc;border:1px solid #3b82f6;}
+  .btn-sq-agendado{background:#0a2a6e;color:#60c8ff;border:1px solid #2196f3;}
   .btn-sq-agendado:active{opacity:.8;}
-  .btn-sq-pendente{background:#6b3a00;color:#fbbf24;border:1px solid #f97316;}
+  .btn-sq-pendente{background:#7a2e00;color:#ff9800;border:1px solid #ff6600;}
   .btn-sq-pendente:active{opacity:.8;}
   .empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:.85rem;}
 
@@ -159,8 +159,8 @@
   .status-toggle{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
   .status-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.7rem;padding:8px 4px;text-align:center;transition:all .2s;}
   .status-btn.active[data-s="pago"]{background:#dcfce7;border-color:#86efac;color:#16a34a;}
-  .status-btn.active[data-s="agendado"]{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
-  .status-btn.active[data-s="pendente"]{background:#f1f5f9;border-color:#cbd5e1;color:#64748b;}
+  .status-btn.active[data-s="agendado"]{background:#1a3a7a;border-color:#2196f3;color:#60c8ff;}
+  .status-btn.active[data-s="pendente"]{background:#5a2000;border-color:#ff6600;color:#ff9800;}
 
   .repeat-section{grid-column:span 2;border-top:1px solid var(--border);padding-top:12px;margin-top:2px;}
   .repeat-section label.section-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);display:block;margin-bottom:8px;}
@@ -1364,8 +1364,8 @@ function render(){
     var nextLabels = {pendente:'→ Agendado', agendado:'→ Pago', pago:'→ Pendente'};
     var stColors = {
       pago:     'background:#dcfce7;color:#16a34a;border:1px solid #86efac;',
-      agendado: 'background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd;',
-      pendente: 'background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0;'
+      agendado: 'background:#0a2a6e;color:#60c8ff;border:1px solid #2196f3;',
+      pendente: 'background:#5a2000;color:#ff9800;border:1px solid #ff6600;'
     };
 
     return '<div class="expense-item" style="background:'+bgColor+'" onclick="'+(e.category==='Cartão Nubank'||e.category==='Cartao Nubank'?'abrirNubankDoMes()':'editExp(\''+e.id+'\')')+'">'
@@ -1587,7 +1587,7 @@ function renderPendentesAnteriores(){
       +'</div>'
       +'<div style="text-align:right;">'
       +'<div style="font-size:.78rem;font-weight:700;color:#ef6060;">'+R(e.amount)+'</div>'
-      +'<div style="background:'+(e.status==='agendado'?'#0d3060':'#6b3a00')+';color:'+(e.status==='agendado'?'#7dd3fc':'#fbbf24')+';border:1px solid '+(e.status==='agendado'?'#3b82f6':'#f97316')+';font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:2px;">'+(e.status==='agendado'?'Agendado':'Pendente')+'</div>'
+      +'<div style="background:'+(e.status==='agendado'?'#0a2a6e':'#7a2e00')+';color:'+(e.status==='agendado'?'#60c8ff':'#ff9800')+';border:1px solid '+(e.status==='agendado'?'#2196f3':'#ff6600')+';font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:5px;margin-top:2px;">'+(e.status==='agendado'?'Agendado':'Pendente')+'</div>'
       +'</div>'
       +'</div>';
   }).join('');
