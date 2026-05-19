@@ -2675,18 +2675,30 @@ function openRelNubank(){
   document.getElementById('nkRelAte').innerHTML=opts;
   document.getElementById('nkRelAte').selectedIndex=meses.length-1;
 
-  // Categorias
-  var cats=getNKCats();
-  nkRelCatsSel=cats.slice();
-  document.getElementById('nkRelCatsGrid').innerHTML=cats.map(function(c,i){
-    return '<button class="rel-cat-btn sel" id="nkrc'+i+'" onclick="nkToggleCat(\''+c+'\','+i+')">'+c+'</button>';
-  }).join('');
+  // Categorias: constrói a partir dos dados reais — inclui tudo que foi lançado
+  var catsSet = {};
+  for(var sy=2025;sy<=curY+1;sy++) for(var sm=1;sm<=12;sm++){
+    getNubankCompras(sy,sm).forEach(function(c){
+      var cat = (c.cat||'Outros').trim();
+      // Normaliza para versão com acento se existir em getNKCats
+      var norm = cat.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      var nkRef = getNKCats();
+      var match = nkRef.find(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===norm; });
+      catsSet[match||cat] = true;
+    });
+  }
+  var cats = Object.keys(catsSet).sort();
+  nkRelCatsSel = cats.slice();
+  document.getElementById('nkRelCatsGrid').innerHTML = cats.map(function(c,i){
+    return '<button class="rel-cat-btn sel" id="nkrc'+i+'" onclick="nkToggleCat(\''+c.replace(/'/g,"\\'")+'\',' +i+')">'+c+'</button>';
+  }).join('')
 
   document.getElementById('overlayRelNubank').classList.add('open');
 }
 
 function nkSelAllCats(){
-  nkRelCatsSel=getNKCats().slice();
+  // Seleciona todas as categorias atualmente exibidas nos botões
+  nkRelCatsSel = Array.from(document.querySelectorAll('[id^="nkrc"]')).map(function(b){return b.textContent;});
   document.querySelectorAll('[id^="nkrc"]').forEach(function(b){b.classList.add('sel');});
 }
 function nkSelNenhumCats(){
@@ -2725,15 +2737,21 @@ function gerarRelNubank(){
   // Para o período selecionado, varre mês atual e mês anterior (onde ficam as compras de 20+)
   var y2=deY, m2=deM;
   while(y2<ateY||(y2===ateY&&m2<=ateM)){
-    // Meses a pesquisar: mês atual e anterior (compras à vista de 20+ ficam no anterior)
+    // Meses a pesquisar: mês atual, anterior e seguinte
+    // (compras podem estar salvas em qualquer um dos três por imprecisão de lançamento)
     var buscarMeses = [{y:y2,m:m2}];
     var antM2 = m2===1?12:m2-1, antY2 = m2===1?y2-1:y2;
+    var proxM2 = m2===12?1:m2+1, proxY2 = m2===12?y2+1:y2;
     buscarMeses.push({y:antY2,m:antM2});
+    buscarMeses.push({y:proxY2,m:proxM2});
 
     buscarMeses.forEach(function(bm){
       getNubankCompras(bm.y,bm.m).forEach(function(c){
         if(vistos[c.id]) return;
-        if(nkRelCatsSel.indexOf(c.cat||'Outros')===-1) return;
+        // Normaliza acentos na comparação para não perder itens com categoria sem acento
+        var catNorm = (c.cat||'Outros').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        var catMatch = nkRelCatsSel.some(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===catNorm; });
+        if(!catMatch) return;
         var inclui = false;
         if(c.parcelas>1){
           // Parceladas: inclui se este mês de fatura está dentro do range de parcelas
@@ -2756,10 +2774,19 @@ function gerarRelNubank(){
   // Para parceladas, o valor relevante é a parcela mensal (val / parcelas)
   function valParcela(c){ return c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val; }
 
+  // Resolve categoria com acento correto (busca em getNKCats para normalizar)
+  var nkCatsRef = getNKCats();
+  function catCorreta(cat){
+    if(!cat) return 'Outros';
+    var norm = cat.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    var found = nkCatsRef.find(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===norm; });
+    return found || cat;
+  }
+
   // Totais por categoria
   var catTotals={};
   todasCompras.forEach(function(c){
-    var cat=c.cat||'Outros';
+    var cat=catCorreta(c.cat);
     catTotals[cat]=(catTotals[cat]||0)+valParcela(c);
   });
   var total=todasCompras.reduce(function(s,c){return s+valParcela(c);},0);
@@ -2804,7 +2831,7 @@ function gerarRelNubank(){
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid '+border+';">'
         +'<div>'
         +'<div style="font-size:.82rem;font-weight:500;color:'+textCol+';">'+c.desc+'</div>'
-        +'<div style="font-size:.68rem;color:'+mutedCol+';">'+fmtD(c.date)+' &bull; '+(c.cat||'Outros')+(c.parcelas>1?' &bull; '+c.parcelas+'x':'')+(c.note?' &bull; '+c.note:'')+'</div>'
+        +'<div style="font-size:.68rem;color:'+mutedCol+';">'+fmtD(c.date)+' &bull; '+catCorreta(c.cat)+(c.parcelas>1?' &bull; '+c.parcelas+'x':'')+(c.note?' &bull; '+c.note:'')+'</div>'
         +'</div>'
         +'<div style="font-weight:700;color:#ef6060;font-size:.85rem;white-space:nowrap;margin-left:8px;">'+R(valParcela(c))+(c.parcelas>1?' <span style="font-size:.68rem;color:#5a8a9f;">de '+R(c.val)+'</span>':'')+'</div>'
         +'</div>';
