@@ -1086,6 +1086,7 @@ var editId   = null;
 var APP_VERSION = 5;
 
 function checkAndMigrate(){
+  try{
   localStorage.setItem('desp_version', APP_VERSION);
 
   var catFixes = {
@@ -1103,6 +1104,7 @@ function checkAndMigrate(){
   var savedCats = localStorage.getItem('desp_cats3');
   if(savedCats){
     var arr = JSON.parse(savedCats);
+    if(!Array.isArray(arr)) arr = Object.values(arr||{});
     var changed = false;
     arr = arr.map(function(c){ if(catFixes[c]){changed=true;return catFixes[c];} return c; });
     if(changed){
@@ -1129,6 +1131,7 @@ function checkAndMigrate(){
   var savedNK = localStorage.getItem('nk_cats');
   if(savedNK){
     var nkArr = JSON.parse(savedNK);
+    if(!Array.isArray(nkArr)) nkArr = Object.values(nkArr||{});
     var nkChanged = false;
     nkArr = nkArr.map(function(c){ if(catFixes[c]){nkChanged=true;return catFixes[c];} return c; });
     if(nkChanged){
@@ -1136,6 +1139,8 @@ function checkAndMigrate(){
       localStorage.setItem('nk_cats', JSON.stringify(nkArr));
     }
   }
+
+  }catch(e){console.warn('checkAndMigrate error:',e);}
 }
 
 function load(){
