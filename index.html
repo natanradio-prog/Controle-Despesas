@@ -2257,7 +2257,7 @@ function setNubankFatura(y,m,v){
 function calcNubankTotal(y,m){
   // Período da fatura: dia 20 do mês anterior até dia 19 do mês atual
   var antM = m===1?12:m-1, antY = m===1?y-1:y;
-  var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-20';
+  var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
   var dtFim    = y+'-'+String(m).padStart(2,'0')+'-19';
 
   var total = 0;
@@ -2737,7 +2737,7 @@ function gerarRelNubank(){
     if(!c.date) return false;
     // Data de início da fatura: dia 20 do mês anterior
     var antM = fm===1?12:fm-1, antY = fm===1?fy-1:fy;
-    var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-20';
+    var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
     var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-19';
     return c.date >= dtInicio && c.date <= dtFim;
   }
