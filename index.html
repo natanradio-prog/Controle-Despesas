@@ -2706,14 +2706,50 @@ function gerarRelNubank(){
   var deY=parseInt(de[0]),deM=parseInt(de[1]);
   var ateY=parseInt(ate[0]),ateM=parseInt(ate[1]);
 
+  // Coleta todas as compras dos meses selecionados + mês anterior de cada (para capturar
+  // compras à vista com data 20+ do mês anterior que pertencem à fatura do mês seguinte)
   var todasCompras=[];
-  var y2=deY,m2=deM;
+  var vistos={};
+
+  // Função: dado um mês de fatura (y,m), retorna se uma compra pertence a ele
+  // Fatura de m/y: compras com data de 20/(m-1) até 19/m
+  function pertenceFatura(c, fy, fm){
+    if(!c.date) return false;
+    // Data de início da fatura: dia 20 do mês anterior
+    var antM = fm===1?12:fm-1, antY = fm===1?fy-1:fy;
+    var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-20';
+    var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-19';
+    return c.date >= dtInicio && c.date <= dtFim;
+  }
+
+  // Para o período selecionado, varre mês atual e mês anterior (onde ficam as compras de 20+)
+  var y2=deY, m2=deM;
   while(y2<ateY||(y2===ateY&&m2<=ateM)){
-    getNubankCompras(y2,m2).forEach(function(c){
-      if(nkRelCatsSel.indexOf(c.cat||'Outros')>-1){
-        todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
-      }
+    // Meses a pesquisar: mês atual e anterior (compras à vista de 20+ ficam no anterior)
+    var buscarMeses = [{y:y2,m:m2}];
+    var antM2 = m2===1?12:m2-1, antY2 = m2===1?y2-1:y2;
+    buscarMeses.push({y:antY2,m:antM2});
+
+    buscarMeses.forEach(function(bm){
+      getNubankCompras(bm.y,bm.m).forEach(function(c){
+        if(vistos[c.id]) return;
+        if(nkRelCatsSel.indexOf(c.cat||'Outros')===-1) return;
+        var inclui = false;
+        if(c.parcelas>1){
+          // Parceladas: inclui se este mês de fatura está dentro do range de parcelas
+          var offset=(y2-bm.y)*12+(m2-bm.m);
+          inclui = offset>=0 && offset<c.parcelas;
+        } else {
+          // À vista: inclui se a data pertence à fatura deste mês
+          inclui = pertenceFatura(c, y2, m2);
+        }
+        if(inclui){
+          vistos[c.id]=true;
+          todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
+        }
+      });
     });
+
     m2++; if(m2>12){m2=1;y2++;}
   }
 
