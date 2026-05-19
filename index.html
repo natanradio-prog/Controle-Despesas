@@ -3311,8 +3311,8 @@ function applyAllData(json){
     if(d.expenses)     expenses=d.expenses;
     if(d.notes)        notes=d.notes;
     if(d.receitas)     receitas=d.receitas;
-    if(d.cats)         cats=d.cats;
-    if(d.archivedCats) archivedCats=d.archivedCats;
+    if(d.cats)         cats=Array.isArray(d.cats)?d.cats:Object.values(d.cats||{});
+    if(d.archivedCats) archivedCats=Array.isArray(d.archivedCats)?d.archivedCats:Object.values(d.archivedCats||{});
     if(d.nk){Object.keys(d.nk).forEach(function(k){localStorage.setItem(k,JSON.stringify(d.nk[k]));});}
     persist();
     checkAndMigrate();
