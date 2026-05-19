@@ -2254,39 +2254,80 @@ function setNubankFatura(y,m,v){
   setRec(y,m,r);
 }
 
-function calcNubankTotal(y,m){
-  // Período da fatura: dia 20 do mês anterior até dia 19 do mês atual
+// ── Função central: retorna todas as compras de uma fatura (y,m) ─────────────
+// Regra única: fatura M/Y cobre compras com data entre 19/(M-1) e 19/M (inclusive)
+// Para parceladas: a parcela que cai nesta fatura é determinada pela data da compra original
+function comprasDaFatura(y, m){
   var antM = m===1?12:m-1, antY = m===1?y-1:y;
   var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
   var dtFim    = y+'-'+String(m).padStart(2,'0')+'-19';
 
-  var total = 0;
   var vistos = {};
-  // Varre mês anterior, atual e seguinte para capturar todos os lançamentos relevantes
-  for(var cy2=2025; cy2<=y+1; cy2++){
-    for(var cm2=1; cm2<=12; cm2++){
-      var lista = getNubankCompras(cy2,cm2);
+  var resultado = [];
+
+  for(var cy=2024; cy<=y+1; cy++){
+    for(var cm=1; cm<=12; cm++){
+      var lista = getNubankCompras(cy,cm);
       for(var ci=0; ci<lista.length; ci++){
-        var cc = lista[ci];
-        if(!cc.date || vistos[cc.id]) continue;
-        if(cc.parcelas>1){
-          // Parceladas: usa offset de meses desde o armazenamento
-          var off = (y-cy2)*12+(m-cm2);
-          if(off>=0 && off<cc.parcelas){
-            vistos[cc.id]=true;
-            total += Math.round(cc.val/cc.parcelas*100)/100;
+        var c = lista[ci];
+        if(!c.date || vistos[c.id]) continue;
+        var inclui = false;
+        var numParcela = 1; // qual parcela cai nesta fatura
+
+        if(c.parcelas>1){
+          // Para parceladas: a parcela 1 cai na fatura cujo período contém a data da compra.
+          // Parcela N cai N-1 meses depois.
+          // Calculamos em qual fatura a parcela 1 cai, depois vemos se esta fatura é N meses depois.
+          // Fatura da parcela 1: a fatura M0 tal que dtInicio(M0) <= c.date <= dtFim(M0)
+          // Para cada fatura possível, off = numero de faturas entre M0 e (y,m)
+          // off = (y - fatY0)*12 + (m - fatM0)
+          // Se off >= 0 e off < c.parcelas, então a parcela (off+1) cai nesta fatura
+          // Calculamos M0: fatura que contém c.date
+          var cd = c.date; // ex: "2026-03-15"
+          var cdY = parseInt(cd.substring(0,4));
+          var cdM = parseInt(cd.substring(5,7));
+          var cdD = parseInt(cd.substring(8,10));
+          // Se dia >= 20, parcela 1 está na fatura do mês seguinte ao da data
+          // Se dia <= 19, parcela 1 está na fatura do mesmo mês da data
+          // Na verdade: fatura M cobre dias 19/(M-1) a 19/M
+          // data com dia <= 19: pertence à fatura do mesmo mês
+          // data com dia >= 20: pertence à fatura do mês seguinte
+          var fatM0, fatY0;
+          if(cdD <= 19){
+            fatM0 = cdM; fatY0 = cdY;
+          } else {
+            fatM0 = cdM===12?1:cdM+1;
+            fatY0 = cdM===12?cdY+1:cdY;
+          }
+          var off = (y-fatY0)*12+(m-fatM0);
+          if(off>=0 && off<c.parcelas){
+            inclui = true;
+            numParcela = off+1;
           }
         } else {
-          // À vista: inclui se a data da compra está dentro do período da fatura
-          if(cc.date >= dtInicio && cc.date <= dtFim){
-            vistos[cc.id]=true;
-            total += cc.val;
-          }
+          // À vista: data dentro do período da fatura
+          inclui = (c.date >= dtInicio && c.date <= dtFim);
+        }
+
+        if(inclui){
+          vistos[c.id] = true;
+          var item = Object.assign({}, c, {_storY:cy, _storM:cm, _numParcela:numParcela});
+          resultado.push(item);
         }
       }
     }
   }
-  return total;
+  return resultado;
+}
+
+function calcNubankTotal(y,m){
+  var compras = comprasDaFatura(y,m);
+  var total = 0;
+  for(var i=0;i<compras.length;i++){
+    var c = compras[i];
+    total += c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
+  }
+  return Math.round(total*100)/100;
 }
 
 function getFuturoComprometido(){
@@ -2332,43 +2373,8 @@ function renderNubank(){
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
   document.getElementById('nubankAnoLabel').textContent = y;
 
-  // Coleta TODAS as compras com mês de armazenamento
-  var todasCompras = [];
-  var anos = [];
-  for(var y2=2025; y2<=y+1; y2++) anos.push(y2);
-  anos.forEach(function(sy){
-    var meses = [1,2,3,4,5,6,7,8,9,10,11,12];
-    meses.forEach(function(sm){
-      getNubankCompras(sy,sm).forEach(function(c){
-        todasCompras.push({c:c, storY:sy, storM:sm});
-      });
-    });
-  });
-
-
-
-  // Filtra as que aparecem neste mês (sem duplicatas por id)
-  var vistos = {};
-  var comprasDoMes = todasCompras.filter(function(item){
-    var c=item.c, storY=item.storY, storM=item.storM;
-    if(!c.date) return false;
-    if(vistos[c.id]) return false;
-    var aparece = false;
-    if(c.parcelas>1){
-      var offset = (y-storY)*12+(m-storM);
-      aparece = offset>=0 && offset<c.parcelas;
-    } else {
-      aparece = storY===y && storM===m;
-    }
-    if(aparece) vistos[c.id]=true;
-    return aparece;
-  }).map(function(item){
-    var cc=Object.assign({},item.c);
-    cc._storY=item.storY;
-    cc._storM=item.storM;
-    return cc;
-  });
-
+  // Usa a função central — mesma lógica do total calculado e do relatório
+  var comprasDoMes = comprasDaFatura(y,m);
   var comprasNativas = getNubankCompras(y,m);
 
   var totalCalc = calcNubankTotal(y,m);
@@ -2411,11 +2417,8 @@ function renderNubank(){
                    .sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
 
   function renderItem(c){
-    var storY2 = c._storY || (nkCurY||curY);
-    var storM2 = c._storM || (nkCurM||curM);
-    var offset = ((nkCurY||curY)-storY2)*12+((nkCurM||curM)-storM2);
     var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
-    var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
+    var parcNum = c.parcelas>1 ? (c._numParcela||1)+'/'+c.parcelas : '';
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
     var catLabel = c.cat ? '<span style="font-size:.58rem;background:rgba(84,110,122,.2);color:#90a4ae;padding:2px 6px;border-radius:8px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:block;text-align:right;">'+c.cat+'</span>' : '';
     var isNativa = comprasNativas.some(function(x){return x.id===c.id;});
@@ -2726,56 +2729,19 @@ function gerarRelNubank(){
   var deY=parseInt(de[0]),deM=parseInt(de[1]);
   var ateY=parseInt(ate[0]),ateM=parseInt(ate[1]);
 
-  // Coleta todas as compras dos meses selecionados + mês anterior de cada (para capturar
-  // compras à vista com data 20+ do mês anterior que pertencem à fatura do mês seguinte)
+  // Usa a função central — mesma lógica do total calculado e da tela
   var todasCompras=[];
-  var vistos={};
-
-  // Função: dado um mês de fatura (y,m), retorna se uma compra pertence a ele
-  // Fatura de m/y: compras com data de 20/(m-1) até 19/m
-  function pertenceFatura(c, fy, fm){
-    if(!c.date) return false;
-    // Data de início da fatura: dia 20 do mês anterior
-    var antM = fm===1?12:fm-1, antY = fm===1?fy-1:fy;
-    var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
-    var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-19';
-    return c.date >= dtInicio && c.date <= dtFim;
-  }
-
-  // Para o período selecionado, varre mês atual e mês anterior (onde ficam as compras de 20+)
+  var nkCatsRefNorm = getNKCats().map(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); });
   var y2=deY, m2=deM;
   while(y2<ateY||(y2===ateY&&m2<=ateM)){
-    // Meses a pesquisar: mês atual, anterior e seguinte
-    // (compras podem estar salvas em qualquer um dos três por imprecisão de lançamento)
-    var buscarMeses = [{y:y2,m:m2}];
-    var antM2 = m2===1?12:m2-1, antY2 = m2===1?y2-1:y2;
-    var proxM2 = m2===12?1:m2+1, proxY2 = m2===12?y2+1:y2;
-    buscarMeses.push({y:antY2,m:antM2});
-    buscarMeses.push({y:proxY2,m:proxM2});
-
-    buscarMeses.forEach(function(bm){
-      getNubankCompras(bm.y,bm.m).forEach(function(c){
-        if(vistos[c.id]) return;
-        // Normaliza acentos na comparação para não perder itens com categoria sem acento
-        var catNorm = (c.cat||'Outros').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-        var catMatch = nkRelCatsSel.some(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===catNorm; });
-        if(!catMatch) return;
-        var inclui = false;
-        if(c.parcelas>1){
-          // Parceladas: inclui se este mês de fatura está dentro do range de parcelas
-          var offset=(y2-bm.y)*12+(m2-bm.m);
-          inclui = offset>=0 && offset<c.parcelas;
-        } else {
-          // À vista: inclui se a data pertence à fatura deste mês
-          inclui = pertenceFatura(c, y2, m2);
-        }
-        if(inclui){
-          vistos[c.id]=true;
-          todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
-        }
-      });
+    var faturaCompras = comprasDaFatura(y2,m2);
+    faturaCompras.forEach(function(c){
+      // Filtro de categoria
+      var catNorm = (c.cat||'Outros').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      var catMatch = nkRelCatsSel.some(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===catNorm; });
+      if(!catMatch) return;
+      todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
     });
-
     m2++; if(m2>12){m2=1;y2++;}
   }
 
