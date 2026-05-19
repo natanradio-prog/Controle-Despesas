@@ -1086,8 +1086,7 @@ var editId   = null;
 var APP_VERSION = 5;
 
 function checkAndMigrate(){
-  try{
-  localStorage.setItem('desp_version', APP_VERSION);
+localStorage.setItem('desp_version', APP_VERSION);
 
   var catFixes = {
     'Mae':'Mãe','Cartao BB':'Cartão BB','Cartao Nubank':'Cartão Nubank',
@@ -1139,8 +1138,6 @@ function checkAndMigrate(){
       localStorage.setItem('nk_cats', JSON.stringify(nkArr));
     }
   }
-
-  }catch(e){console.warn('checkAndMigrate error:',e);}
 }
 
 function load(){
