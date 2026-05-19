@@ -2255,8 +2255,14 @@ function setNubankFatura(y,m,v){
 }
 
 function calcNubankTotal(y,m){
+  // Período da fatura: dia 20 do mês anterior até dia 19 do mês atual
+  var antM = m===1?12:m-1, antY = m===1?y-1:y;
+  var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-20';
+  var dtFim    = y+'-'+String(m).padStart(2,'0')+'-19';
+
   var total = 0;
   var vistos = {};
+  // Varre mês anterior, atual e seguinte para capturar todos os lançamentos relevantes
   for(var cy2=2025; cy2<=y+1; cy2++){
     for(var cm2=1; cm2<=12; cm2++){
       var lista = getNubankCompras(cy2,cm2);
@@ -2264,13 +2270,15 @@ function calcNubankTotal(y,m){
         var cc = lista[ci];
         if(!cc.date || vistos[cc.id]) continue;
         if(cc.parcelas>1){
+          // Parceladas: usa offset de meses desde o armazenamento
           var off = (y-cy2)*12+(m-cm2);
           if(off>=0 && off<cc.parcelas){
             vistos[cc.id]=true;
             total += Math.round(cc.val/cc.parcelas*100)/100;
           }
         } else {
-          if(cy2===y && cm2===m){
+          // À vista: inclui se a data da compra está dentro do período da fatura
+          if(cc.date >= dtInicio && cc.date <= dtFim){
             vistos[cc.id]=true;
             total += cc.val;
           }
