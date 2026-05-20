@@ -1654,7 +1654,8 @@ function openForm(){
   document.getElementById('btnSave').textContent='Salvar';
   document.getElementById('fDesc').value='';
   document.getElementById('fVal').value='';
-  document.getElementById('fDate').value=curY+'-'+String(curM).padStart(2,'0')+'-22';
+  var _td=new Date();
+  document.getElementById('fDate').value=_td.getFullYear()+'-'+String(_td.getMonth()+1).padStart(2,'0')+'-'+String(_td.getDate()).padStart(2,'0');
   document.getElementById('fNote').value='';
   buildCatSelect();
   document.getElementById('fNovaCatRow').style.display='none';
@@ -2686,7 +2687,15 @@ function openRelNubank(){
   }).join('');
   document.getElementById('nkRelDe').innerHTML=opts;
   document.getElementById('nkRelAte').innerHTML=opts;
-  document.getElementById('nkRelAte').selectedIndex=meses.length-1;
+  // Seleciona mês atual nos dois selects (De e Até)
+  var curKey = curY+'_'+curM;
+  var curIdx = meses.findIndex(function(x){ return x.y===curY && x.m===curM; });
+  if(curIdx >= 0){
+    document.getElementById('nkRelDe').selectedIndex = curIdx;
+    document.getElementById('nkRelAte').selectedIndex = curIdx;
+  } else {
+    document.getElementById('nkRelAte').selectedIndex = meses.length-1;
+  }
 
   // Categorias: constrói a partir dos dados reais — inclui tudo que foi lançado
   var catsSet = {};
@@ -2839,7 +2848,7 @@ function closeRelatorio(){
 }
 
 function buildRelMeses(){
-  relMesesSel = [1,2,3,4,5,6,7,8,9,10,11,12];
+  relMesesSel = [curM]; // abre com mês atual
   document.getElementById('relMesesGrid').innerHTML = MONTHS_PT.map(function(m,i){
     return '<button class="rel-month-btn sel" id="rm'+(i+1)+'" onclick="toggleRelMes('+(i+1)+')">'+m+'</button>';
   }).join('');
