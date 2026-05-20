@@ -1390,10 +1390,10 @@ function renderOutrasReceitas(rec){
     var wrap=document.createElement('div');
     wrap.className='outra-receita-row';
     wrap.style.cssText='background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;';
-    wrap.innerHTML='<span style="font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;background:#2a1a40;color:#b48aff;border:1px solid #6a3aaf;border-radius:4px;padding:1px 6px;display:inline-block;margin-bottom:6px;">eventual</span>'
+    wrap.innerHTML='<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span style="font-size:.52rem;background:rgba(180,138,255,.12);color:#b48aff;border:1px solid rgba(106,58,175,.4);border-radius:4px;padding:1px 6px;">eventual</span></div>'
       +'<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;">'
-      +'<input type="text" class="receita-input" style="font-family:\'DM Sans\',sans-serif;font-size:.83rem;color:var(--text);" placeholder="Descrição" value="'+o.desc+'" oninput="onOutraDesc(\''+o.id+'\',this.value)"/>'
-      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;color:#f5c400;font-weight:600;"/>'
+      +'<input type="text" class="receita-input" style="font-family:\'DM Sans\',sans-serif;font-size:.83rem;color:var(--muted);" placeholder="Descrição" value="'+o.desc+'" oninput="onOutraDesc(\''+o.id+'\',this.value)"/>'
+      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;color:var(--muted);font-weight:400;"/>'
       +'<button class="btn-del-receita" onclick="delOutraReceita(\''+o.id+'\')">&#x2715;</button>'
       +'</div>';
     list.appendChild(wrap);
