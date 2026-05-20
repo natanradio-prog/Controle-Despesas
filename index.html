@@ -2847,8 +2847,18 @@ function buildRelMeses(){
 }
 
 function buildRelCats(){
-  relCatsSel = cats.slice();
-  document.getElementById('relCatsGrid').innerHTML = cats.map(function(c,i){
+  // Usa union de DEFAULT_CATS + cats customizadas + categorias reais nos dados
+  var allCats = DEFAULT_CATS.slice();
+  (cats||[]).forEach(function(c){ if(allCats.indexOf(c)===-1) allCats.push(c); });
+  // Adiciona categorias que existem nos dados mas não estão nas listas
+  Object.keys(expenses||{}).forEach(function(y){
+    (expenses[y]||[]).forEach(function(e){
+      if(e.category && allCats.indexOf(e.category)===-1) allCats.push(e.category);
+    });
+  });
+  allCats.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+  relCatsSel = allCats.slice();
+  document.getElementById('relCatsGrid').innerHTML = allCats.map(function(c,i){
     return '<button class="rel-cat-btn sel" id="rc'+i+'" data-ci="'+i+'" onclick="toggleRelCat(\''+c.replace(/'/g,"\\'")+'\',' +i+')">'+c+'</button>';
   }).join('');
   document.getElementById('btnTodasCats').classList.add('sel');
