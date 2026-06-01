@@ -2227,15 +2227,21 @@ function calcLiquido(y,m){
   var bruto = rec.salario || 0;
   var liquido, dizimo;
 
+  // Créditos sempre do registro real (funciona em mês estimado e real)
+  var ccReal = getCC(y,m);
+  var totalCred = (ccReal.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
+
   if(rec._estimado){
-    // Estimativa: total já vem pronto em salarioLiquido — não aplica descontos
-    liquido = (rec.salarioLiquido != null) ? rec.salarioLiquido : bruto;
-    dizimo = liquido > 0 ? Math.round(liquido * 0.10 * 100) / 100 : null;
+    // Estimativa: salário base já vem pronto + créditos reais lançados
+    var salBase = (rec.salarioLiquido != null) ? rec.salarioLiquido : bruto;
+    liquido = salBase + totalCred;
+    var outrasRecEst = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+    var baseDizimoEst = salBase + totalCred + outrasRecEst;
+    dizimo = salBase > 0 ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
   } else {
     var cc = rec.cc || {};
     var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0)
       + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-    var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
     liquido = bruto - totalDesc + totalCred;
     var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
