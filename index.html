@@ -1491,19 +1491,21 @@ function updateReceitasUI(rec){
 function updateSaldo(){
   // Calcula receita liquida diretamente dos dados, sem depender do DOM
   var rec = getRec(curY,curM);
+  // cc sempre do registro real (nunca do estimado)
+  var cc = getCC(curY,curM);
+  var totalDesc = (cc.inss||0)+(cc.funpresp||0)+(cc.ir||0)
+    +(cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+  var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
   var liq;
   if(rec._estimado){
-    liq = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
+    // Estimado: usa salário estimado + créditos reais
+    var salBase = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
+    liq = salBase + totalCred;
   } else {
-    if(rec.salarioLiquido != null){
-      liq = rec.salarioLiquido;
-    } else {
-      var cc = rec.cc || {};
-      var totalDesc = (cc.inss||0)+(cc.funpresp||0)+(cc.ir||0)
-        +(cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-      var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
-      liq = (rec.salario||0) - totalDesc + totalCred;
-    }
+    var cc2 = rec.cc || {};
+    var totalDesc2 = (cc2.inss||0)+(cc2.funpresp||0)+(cc2.ir||0)
+      +(cc2.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+    liq = (rec.salario||0) - totalDesc2 + totalCred;
   }
   // Receitas = líquido + outras eventuais (sobra NÃO entra aqui)
   var receitaTotal = liq + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
@@ -2128,13 +2130,13 @@ function renderCreditosEventuais(cc){
     wrap.innerHTML=
       '<div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
       +'<input type="text" class="cc-input" style="flex:1;font-size:.83rem;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?c.bruto:'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?parseFloat(c.bruto).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
       +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
       +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
       +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
-      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?c.inss:'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
-      +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?c.ir:'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?parseFloat(c.inss).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?parseFloat(c.ir).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
       +'<div id="'+evId+'">'+(evHtml)+'</div>'
       +'<button class="btn-add-desconto" onclick="addCredEv(\''+c.id+'\')">+ Desconto eventual</button>'
       +'<div class="cc-divider"></div>'
