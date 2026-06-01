@@ -333,25 +333,26 @@
     <span style="font-size:.82rem;font-weight:600;color:var(--text);">Receitas <span id="badgeEstimado" style="display:none;font-size:.62rem;background:#2a3f1a;color:#a3d977;border:1px solid #4a7a2a;border-radius:6px;padding:1px 7px;margin-left:6px;font-style:normal;font-weight:400;">estimado</span></span>
     <div class="receitas-total" id="receitasTotal">-</div>
   </div>
+  <!-- Sobra do mês anterior — não é receita, só afeta saldo -->
+  <div id="sobraRow" style="display:none;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px solid var(--border);margin-bottom:8px;">
+    <span id="sobraRowDesc" style="font-size:.72rem;color:var(--muted);">Sobra anterior</span>
+    <span id="sobraRowVal" style="font-size:.8rem;color:var(--muted);font-weight:500;"></span>
+  </div>
   <div id="receitasList">
     <!-- Bloco Senado -->
     <div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
       <div class="salario-row" onclick="toggleContracheque()" style="font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-        Senado <span class="salario-chevron" id="salarioChevron">&#9660;</span>
+        Senado
       </div>
-      <div class="receita-row" style="margin-bottom:0;">
-        <div class="receita-label">Salário bruto</div>
+      <!-- Bloco Salário Mensal Bruto -->
+      <div class="receita-row" style="margin-bottom:0;cursor:pointer;" onclick="toggleContracheque()">
+        <div class="receita-label">Salário Mensal Bruto <span class="salario-chevron" id="salarioChevron" style="font-size:.65rem;color:var(--muted);">&#9660;</span></div>
         <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" style="color:#ef6060;" />
         <span style="width:20px"></span>
       </div>
-      <div style="height:1px;background:var(--border);margin:8px 0;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span class="receita-label">Salário líquido</span>
-        <span id="salarioLiquidoVis" style="font-weight:700;font-size:.92rem;color:#42a5f5;">-</span>
-      </div>
-      <!-- Contracheque expansível -->
+      <!-- Painel descontos do salário -->
       <div class="contracheque-panel" id="contrachequePanel">
-        <div class="cc-row" style="margin-top:10px;">
+        <div class="cc-row" style="margin-top:8px;">
           <div class="cc-label">PSSS</div>
           <input type="text" class="cc-input" id="ccINSS" placeholder="0,00" inputmode="decimal" oninput="onDescontoInputMask(this,'inss')" />
         </div>
@@ -365,15 +366,28 @@
         </div>
         <div id="descontosEventuais"></div>
         <button class="btn-add-desconto" onclick="addDescontoEventual()">+ Desconto eventual</button>
-        <div class="cc-divider"></div>
-        <div id="creditosEventuais"></div>
-        <button class="btn-add-desconto" onclick="addCreditoEventual()" style="border-color:var(--green);color:var(--green);">+ Crédito Senado</button>
-        <div class="cc-divider"></div>
-        <div class="cc-liquido">
-          <div class="cc-liquido-label">Salário líquido</div>
-          <div class="cc-liquido-val" id="salarioLiquido">-</div>
-        </div>
       </div>
+
+      <!-- Bloco Créditos Senado -->
+      <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleCreditosPanel()">
+        <div style="font-size:.74rem;color:var(--muted);">Outros créditos Senado <span id="creditosChevron" style="font-size:.65rem;">&#9660;</span></div>
+        <span id="creditosTotalVis" style="font-size:.8rem;color:var(--green);font-weight:600;"></span>
+      </div>
+      <!-- Painel créditos -->
+      <div class="contracheque-panel" id="creditosPanel">
+        <div id="creditosEventuais" style="margin-top:8px;"></div>
+        <button class="btn-add-desconto" onclick="addCreditoEventual()" style="border-color:var(--green);color:var(--green);">+ Crédito Senado</button>
+      </div>
+
+      <!-- Salário líquido sempre visível -->
+      <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="receita-label">Salário líquido</span>
+        <span id="salarioLiquidoVis" style="font-weight:700;font-size:.92rem;color:#42a5f5;">-</span>
+      </div>
+      <!-- id oculto para calcLiquido -->
+      <div id="salarioLiquido" style="display:none;"></div>
     </div>
   </div>
   <button class="btn-add-receita" onclick="addOutraReceita()">+ Outra receita</button>
@@ -1387,17 +1401,7 @@ function render(){
 function renderOutrasReceitas(rec){
   var list=document.getElementById('receitasList');
   list.querySelectorAll('.outra-receita-row').forEach(function(r){r.parentNode.removeChild(r);});
-  // Exibe sobra do mês anterior (separada — não é receita)
-  var sobraEl = list.querySelector('.sobra-row');
-  if(sobraEl) sobraEl.parentNode.removeChild(sobraEl);
-  if(rec.sobra && rec.sobra > 0){
-    var srow = document.createElement('div');
-    srow.className='outra-receita-row sobra-row';
-    srow.style.cssText='background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;opacity:.7;';
-    srow.innerHTML='<span style="font-size:.72rem;color:var(--muted);">'+(rec.sobraDesc||'Sobra anterior')+'</span>'
-      +'<span style="font-size:.8rem;color:var(--muted);font-weight:500;">+'+R(rec.sobra)+' <span style="font-size:.6rem;">(saldo)</span></span>';
-    list.appendChild(srow);
-  }
+
   (rec.outras||[]).forEach(function(o){
     var wrap=document.createElement('div');
     wrap.className='outra-receita-row';
@@ -1467,6 +1471,19 @@ function updateReceitasUI(rec){
   var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
   var total = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   document.getElementById('receitasTotal').textContent=total>0?R(total):'-';
+  // Exibe sobra do mês anterior logo abaixo do título
+  var sobraRow = document.getElementById('sobraRow');
+  var sobraRowDesc = document.getElementById('sobraRowDesc');
+  var sobraRowVal = document.getElementById('sobraRowVal');
+  if(sobraRow){
+    if(rec.sobra && rec.sobra > 0){
+      sobraRow.style.display='flex';
+      if(sobraRowDesc) sobraRowDesc.textContent=(rec.sobraDesc||'Sobra anterior')+' (saldo)';
+      if(sobraRowVal) sobraRowVal.textContent='+'+R(rec.sobra);
+    } else {
+      sobraRow.style.display='none';
+    }
+  }
   // Saldo calculado de forma independente
   updateSaldo();
 }
@@ -1484,7 +1501,7 @@ function updateSaldo(){
       var cc = rec.cc || {};
       var totalDesc = (cc.inss||0)+(cc.funpresp||0)+(cc.ir||0)
         +(cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-      var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+(c.val||0);},0);
+      var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
       liq = (rec.salario||0) - totalDesc + totalCred;
     }
   }
@@ -1963,6 +1980,14 @@ function toggleContracheque(){
   document.getElementById('salarioChevron').classList.toggle('open', ccPanelOpen);
 }
 
+var ccCreditosPanelOpen = false;
+function toggleCreditosPanel(){
+  ccCreditosPanelOpen = !ccCreditosPanelOpen;
+  document.getElementById('creditosPanel').classList.toggle('open', ccCreditosPanelOpen);
+  var chev = document.getElementById('creditosChevron');
+  if(chev) chev.classList.toggle('open', ccCreditosPanelOpen);
+}
+
 function getCC(y,m){
   var rec = getRec(y,m);
   return rec.cc || {inss:null,funpresp:null,ir:null,eventuais:[]};
@@ -2075,40 +2100,114 @@ function delEvDesc(id){
   calcLiquido(curY,curM);
 }
 
+function credLiquido(c){
+  var bruto = c.bruto||0;
+  var desc = (c.inss||0)+(c.ir||0)+(c.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+  return Math.round((bruto-desc)*100)/100;
+}
+
 function renderCreditosEventuais(cc){
   var div = document.getElementById('creditosEventuais');
   if(!div) return;
   div.innerHTML='';
   (cc.creditos||[]).forEach(function(c){
-    var row=document.createElement('div');
-    row.className='cc-row';
-    row.style.cssText='position:relative;';
-    row.innerHTML='<input type="text" class="cc-input" style="flex:1;margin-right:4px;" placeholder="Descrição" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)"/>'
-      +'<input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" style="color:var(--green);width:100px;" value="'+(c.val!=null?c.val:'')+'" oninput="onCredVal(\''+c.id+'\',this.value)"/>'
-      +'<button class="btn-del-receita" onclick="delCred(\''+c.id+'\')">&#x2715;</button>';
-    div.appendChild(row);
+    var liq = credLiquido(c);
+    var panelId = 'credPanel_'+c.id;
+    var evId = 'credEv_'+c.id;
+    var wrap = document.createElement('div');
+    wrap.style.cssText='background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;margin-bottom:6px;';
+    // Header do crédito
+    var evHtml = (c.eventuais||[]).map(function(e){
+      return '<div class="cc-row">'
+        +'<input type="text" class="cc-input" style="flex:1;" placeholder="Descrição" value="'+e.desc+'" oninput="onCredEvDesc(\''+c.id+'\',\''+e.id+'\',this.value)"/>'
+        +'<input type="text" class="cc-input" style="width:90px;" placeholder="0,00" inputmode="decimal" value="'+(e.val!=null?e.val:'')+'" oninput="onCredEvVal(\''+c.id+'\',\''+e.id+'\',this.value)"/>'
+        +'<button class="btn-del-receita" onclick="delCredEv(\''+c.id+'\',\''+e.id+'\')">&#x2715;</button>'
+        +'</div>';
+    }).join('');
+    wrap.innerHTML=
+      '<div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
+      +'<input type="text" class="cc-input" style="flex:1;font-size:.83rem;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?c.bruto:'')+'" oninput="onCredBruto(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
+      +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
+      +'</div>'
+      +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
+      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?c.inss:'')+'" oninput="onCredInss(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?c.ir:'')+'" oninput="onCredIr(\''+c.id+'\',this.value)"/></div>'
+      +'<div id="'+evId+'">'+(evHtml)+'</div>'
+      +'<button class="btn-add-desconto" onclick="addCredEv(\''+c.id+'\')">+ Desconto eventual</button>'
+      +'<div class="cc-divider"></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<span style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Líquido</span>'
+      +'<span style="font-size:.88rem;font-weight:700;color:var(--green);" id="credLiq_'+c.id+'">'+R(liq)+'</span>'
+      +'</div>'
+      +'</div>';
+    div.appendChild(wrap);
   });
+  // Atualiza total visível no header
+  var totalCred = (cc.creditos||[]).reduce(function(s,c){return credLiquido(c)+(s);},0);
+  var vis = document.getElementById('creditosTotalVis');
+  if(vis) vis.textContent = totalCred > 0 ? R(totalCred) : '';
+  // Abre o painel automaticamente se há créditos
+  if((cc.creditos||[]).length > 0 && !ccCreditosPanelOpen){
+    ccCreditosPanelOpen = true;
+    var panel = document.getElementById('creditosPanel');
+    var chev = document.getElementById('creditosChevron');
+    if(panel) panel.classList.add('open');
+    if(chev) chev.classList.add('open');
+  }
+}
+
+function toggleCredPanel(id){
+  var p = document.getElementById('credPanel_'+id);
+  if(p) p.classList.toggle('open');
+}
+
+function onCredDesc(id,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.desc=val;saveCC(curY,curM,cc);} }
+function onCredBruto(id,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.bruto=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);} recalcCred(id,cc); }
+function onCredInss(id,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.inss=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);} recalcCred(id,cc); }
+function onCredIr(id,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.ir=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);} recalcCred(id,cc); }
+
+function addCredEv(credId){
+  var cc=getCC(curY,curM);
+  var c=cc.creditos.find(function(x){return x.id===credId;});
+  if(!c) return;
+  if(!c.eventuais) c.eventuais=[];
+  c.eventuais.push({id:String(Date.now()),desc:'',val:null});
+  saveCC(curY,curM,cc);
+  renderCreditosEventuais(cc);
+  calcLiquido(curY,curM);
+}
+function onCredEvDesc(credId,evId,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===credId;}); if(c){var e=( c.eventuais||[]).find(function(x){return x.id===evId;}); if(e){e.desc=val;saveCC(curY,curM,cc);}} }
+function onCredEvVal(credId,evId,val){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===credId;}); if(c){var e=(c.eventuais||[]).find(function(x){return x.id===evId;}); if(e){e.val=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);}} recalcCred(credId,cc); }
+function delCredEv(credId,evId){ var cc=getCC(curY,curM); var c=cc.creditos.find(function(x){return x.id===credId;}); if(c){c.eventuais=(c.eventuais||[]).filter(function(x){return x.id!==evId;});saveCC(curY,curM,cc);renderCreditosEventuais(cc);calcLiquido(curY,curM);} }
+
+function recalcCred(id,cc){
+  var c=(cc.creditos||[]).find(function(x){return x.id===id;});
+  if(!c) return;
+  var liq=credLiquido(c);
+  var el=document.getElementById('credLiq_'+id);
+  if(el) el.textContent=R(liq);
+  var totalCred=(cc.creditos||[]).reduce(function(s,c){return credLiquido(c)+s;},0);
+  var vis=document.getElementById('creditosTotalVis');
+  if(vis) vis.textContent=totalCred>0?R(totalCred):'';
+  calcLiquido(curY,curM);
 }
 
 function addCreditoEventual(){
   var cc=getCC(curY,curM);
   if(!cc.creditos) cc.creditos=[];
-  cc.creditos.push({id:String(Date.now()),desc:'',val:null});
+  cc.creditos.push({id:String(Date.now()),desc:'',bruto:null,inss:null,ir:null,eventuais:[]});
   saveCC(curY,curM,cc);
   renderCreditosEventuais(cc);
-}
-
-function onCredDesc(id,val){
-  var cc=getCC(curY,curM);
-  var c=cc.creditos.find(function(x){return x.id===id;});
-  if(c){c.desc=val;saveCC(curY,curM,cc);}
-}
-
-function onCredVal(id,val){
-  var cc=getCC(curY,curM);
-  var c=cc.creditos.find(function(x){return x.id===id;});
-  if(c){c.val=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);}
-  calcLiquido(curY,curM);
+  // Abre o painel se ainda fechado
+  if(!ccCreditosPanelOpen){
+    ccCreditosPanelOpen=true;
+    var p=document.getElementById('creditosPanel');
+    var ch=document.getElementById('creditosChevron');
+    if(p) p.classList.add('open');
+    if(ch) ch.classList.add('open');
+  }
 }
 
 function delCred(id){
@@ -2132,7 +2231,7 @@ function calcLiquido(y,m){
     var cc = rec.cc || {};
     var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0)
       + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-    var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+(c.val||0);},0);
+    var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
     liquido = bruto - totalDesc + totalCred;
     var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
