@@ -1475,11 +1475,13 @@ function updateReceitasUI(rec){
   var sobraRow = document.getElementById('sobraRow');
   var sobraRowDesc = document.getElementById('sobraRowDesc');
   var sobraRowVal = document.getElementById('sobraRowVal');
+  // Busca sobra direto do receitas (rec passado pode ser cópia sem sobra)
+  var recReal = getRec(curY, curM);
   if(sobraRow){
-    if(rec.sobra && rec.sobra > 0){
+    if(recReal.sobra && recReal.sobra > 0){
       sobraRow.style.display='flex';
-      if(sobraRowDesc) sobraRowDesc.textContent=(rec.sobraDesc||'Sobra anterior')+' (saldo)';
-      if(sobraRowVal) sobraRowVal.textContent='+'+R(rec.sobra);
+      if(sobraRowDesc) sobraRowDesc.textContent=(recReal.sobraDesc||'Sobra anterior')+' (saldo)';
+      if(sobraRowVal) sobraRowVal.textContent='+'+R(recReal.sobra);
     } else {
       sobraRow.style.display='none';
     }
@@ -2127,13 +2129,13 @@ function renderCreditosEventuais(cc){
     wrap.innerHTML=
       '<div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
       +'<input type="text" class="cc-input" style="flex:1;font-size:.83rem;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?c.bruto:'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?c.bruto:'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this)" onclick="event.stopPropagation()"/>'
       +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
       +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
       +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
-      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?c.inss:'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
-      +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?c.ir:'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?c.inss:'')+'" oninput="onCredInssMask(\''+c.id+'\',this)"/></div>'
+      +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?c.ir:'')+'" oninput="onCredIrMask(\''+c.id+'\',this)"/></div>'
       +'<div id="'+evId+'">'+(evHtml)+'</div>'
       +'<button class="btn-add-desconto" onclick="addCredEv(\''+c.id+'\')">+ Desconto eventual</button>'
       +'<div class="cc-divider"></div>'
