@@ -1597,12 +1597,21 @@ function renderPendentesAnteriores(){
     return (a.date||'').localeCompare(b.date||'');
   });
 
+  var hoje = new Date(); hoje.setHours(0,0,0,0);
   document.getElementById('cardPendAntLista').innerHTML = lista.map(function(e){
-    var dtLabel = e.date ? fmtD(e.date) : '';
+    var dtLabel = '';
+    var venceLabel = '';
+    if(e.date){
+      dtLabel = fmtD(e.date);
+      var dv = new Date(e.date+'T00:00:00');
+      if(dv < hoje) venceLabel = 'Venceu '+dtLabel;
+      else if(dv.getTime()===hoje.getTime()) venceLabel = 'Vence hoje';
+      else venceLabel = 'Vence '+dtLabel;
+    }
     return '<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,160,96,.06);border-radius:8px;padding:8px 10px;cursor:pointer;" onclick="editExp(\''+e.id+'\')">'
       +'<div>'
       +'<div style="font-size:.78rem;font-weight:500;color:#e8f4f8;">'+e.desc+'</div>'
-      +'<div style="font-size:.68rem;color:#5a8a9f;">'+(dtLabel?'Venceu '+dtLabel:'')+(e.note?' · '+e.note:'')+'</div>'
+      +'<div style="font-size:.68rem;color:#5a8a9f;">'+(venceLabel?venceLabel:'')+(e.note?' · '+e.note:'')+'</div>'
       +'</div>'
       +'<div style="text-align:right;">'
       +'<div style="font-size:.78rem;font-weight:700;color:#ef6060;">'+R(e.amount)+'</div>'
