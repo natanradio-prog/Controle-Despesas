@@ -366,6 +366,9 @@
         <div id="descontosEventuais"></div>
         <button class="btn-add-desconto" onclick="addDescontoEventual()">+ Desconto eventual</button>
         <div class="cc-divider"></div>
+        <div id="creditosEventuais"></div>
+        <button class="btn-add-desconto" onclick="addCreditoEventual()" style="border-color:var(--green);color:var(--green);">+ Crédito Senado</button>
+        <div class="cc-divider"></div>
         <div class="cc-liquido">
           <div class="cc-liquido-label">Salário líquido</div>
           <div class="cc-liquido-val" id="salarioLiquido">-</div>
@@ -1086,7 +1089,7 @@ var editId   = null;
 var APP_VERSION = 5;
 
 function checkAndMigrate(){
-localStorage.setItem('desp_version', APP_VERSION);
+  localStorage.setItem('desp_version', APP_VERSION);
 
   var catFixes = {
     'Mae':'Mãe','Cartao BB':'Cartão BB','Cartao Nubank':'Cartão Nubank',
@@ -1103,7 +1106,6 @@ localStorage.setItem('desp_version', APP_VERSION);
   var savedCats = localStorage.getItem('desp_cats3');
   if(savedCats){
     var arr = JSON.parse(savedCats);
-    if(!Array.isArray(arr)) arr = Object.values(arr||{});
     var changed = false;
     arr = arr.map(function(c){ if(catFixes[c]){changed=true;return catFixes[c];} return c; });
     if(changed){
@@ -1130,7 +1132,6 @@ localStorage.setItem('desp_version', APP_VERSION);
   var savedNK = localStorage.getItem('nk_cats');
   if(savedNK){
     var nkArr = JSON.parse(savedNK);
-    if(!Array.isArray(nkArr)) nkArr = Object.values(nkArr||{});
     var nkChanged = false;
     nkArr = nkArr.map(function(c){ if(catFixes[c]){nkChanged=true;return catFixes[c];} return c; });
     if(nkChanged){
@@ -1386,14 +1387,25 @@ function render(){
 function renderOutrasReceitas(rec){
   var list=document.getElementById('receitasList');
   list.querySelectorAll('.outra-receita-row').forEach(function(r){r.parentNode.removeChild(r);});
+  // Exibe sobra do mês anterior (separada — não é receita)
+  var sobraEl = list.querySelector('.sobra-row');
+  if(sobraEl) sobraEl.parentNode.removeChild(sobraEl);
+  if(rec.sobra && rec.sobra > 0){
+    var srow = document.createElement('div');
+    srow.className='outra-receita-row sobra-row';
+    srow.style.cssText='background:var(--surface2);border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;opacity:.7;';
+    srow.innerHTML='<span style="font-size:.72rem;color:var(--muted);">'+(rec.sobraDesc||'Sobra anterior')+'</span>'
+      +'<span style="font-size:.8rem;color:var(--muted);font-weight:500;">+'+R(rec.sobra)+' <span style="font-size:.6rem;">(saldo)</span></span>';
+    list.appendChild(srow);
+  }
   (rec.outras||[]).forEach(function(o){
     var wrap=document.createElement('div');
     wrap.className='outra-receita-row';
     wrap.style.cssText='background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:8px;';
-    wrap.innerHTML='<div style="font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span style="font-size:.52rem;background:rgba(180,138,255,.12);color:#b48aff;border:1px solid rgba(106,58,175,.4);border-radius:4px;padding:1px 6px;">eventual</span></div>'
+    wrap.innerHTML='<span style="font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;background:#2a1a40;color:#b48aff;border:1px solid #6a3aaf;border-radius:4px;padding:1px 6px;display:inline-block;margin-bottom:6px;">eventual</span>'
       +'<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;">'
-      +'<input type="text" class="receita-input" style="font-family:\'DM Sans\',sans-serif;font-size:.83rem;color:var(--muted);" placeholder="Descrição" value="'+o.desc+'" oninput="onOutraDesc(\''+o.id+'\',this.value)"/>'
-      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;color:var(--muted);font-weight:400;"/>'
+      +'<input type="text" class="receita-input" style="font-family:\'DM Sans\',sans-serif;font-size:.83rem;color:var(--text);" placeholder="Descrição" value="'+o.desc+'" oninput="onOutraDesc(\''+o.id+'\',this.value)"/>'
+      +'<input type="number" class="receita-input" placeholder="0,00" step="0.01" min="0" inputmode="decimal" value="'+(o.val!=null?o.val:'')+'" oninput="onOutraVal(\''+o.id+'\',this.value)" style="width:110px;color:#f5c400;font-weight:600;"/>'
       +'<button class="btn-del-receita" onclick="delOutraReceita(\''+o.id+'\')">&#x2715;</button>'
       +'</div>';
     list.appendChild(wrap);
@@ -1472,10 +1484,14 @@ function updateSaldo(){
       var cc = rec.cc || {};
       var totalDesc = (cc.inss||0)+(cc.funpresp||0)+(cc.ir||0)
         +(cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-      liq = (rec.salario||0) - totalDesc;
+      var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+(c.val||0);},0);
+      liq = (rec.salario||0) - totalDesc + totalCred;
     }
   }
+  // Receitas = líquido + outras eventuais (sobra NÃO entra aqui)
   var receitaTotal = liq + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  // Sobra do mês anterior agrega ao saldo mas não é receita
+  var sobra = rec.sobra || 0;
 
   // Despesas: soma pago + agendado
   var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
@@ -1483,8 +1499,8 @@ function updateSaldo(){
   var pagoAgendado = known.reduce(function(s,e){ return s+e.amount; },0); // desconta tudo: pago+agendado+pendente
 
   var saldoEl = document.getElementById('saldoDisp');
-  if(receitaTotal > 0){
-    var saldo = receitaTotal - pagoAgendado;
+  if(receitaTotal > 0 || sobra > 0){
+    var saldo = receitaTotal + sobra - pagoAgendado;
     saldoEl.textContent = R(saldo)+(saldo<0?' \u26A0':'');
     saldoEl.style.color = saldo>=0?'var(--green)':'var(--red)';
     saldoEl.style.fontWeight = '700';
@@ -1530,8 +1546,9 @@ function transferirSobra(){
   var proxM = curM === 12 ? 1 : curM + 1;
   var proxY = curM === 12 ? curY + 1 : curY;
   var proxRec = getRealRec(proxY, proxM);
-  if(!proxRec.outras) proxRec.outras = [];
-  proxRec.outras.push({id: String(Date.now()), desc: 'Sobra de '+MONTHS_PT[curM-1], val: Math.round(saldo*100)/100});
+  // Sobra fica em campo separado — não é receita, não entra no dízimo
+  proxRec.sobra = Math.round(saldo*100)/100;
+  proxRec.sobraDesc = 'Sobra de '+MONTHS_PT[curM-1];
   setRec(proxY, proxM, proxRec);
 
   // Marca como transferido
@@ -1654,8 +1671,7 @@ function openForm(){
   document.getElementById('btnSave').textContent='Salvar';
   document.getElementById('fDesc').value='';
   document.getElementById('fVal').value='';
-  var _td=new Date();
-  document.getElementById('fDate').value=_td.getFullYear()+'-'+String(_td.getMonth()+1).padStart(2,'0')+'-'+String(_td.getDate()).padStart(2,'0');
+  document.getElementById('fDate').value=curY+'-'+String(curM).padStart(2,'0')+'-22';
   document.getElementById('fNote').value='';
   buildCatSelect();
   document.getElementById('fNovaCatRow').style.display='none';
@@ -2026,6 +2042,7 @@ function addDescontoEventual(){
   cc.eventuais.push({id:String(Date.now()),desc:'',val:null});
   saveCC(curY,curM,cc);
   renderDescontosEventuais(cc);
+  renderCreditosEventuais(cc);
 }
 
 function onEvDesc(id,val){
@@ -2049,6 +2066,50 @@ function delEvDesc(id){
   calcLiquido(curY,curM);
 }
 
+function renderCreditosEventuais(cc){
+  var div = document.getElementById('creditosEventuais');
+  if(!div) return;
+  div.innerHTML='';
+  (cc.creditos||[]).forEach(function(c){
+    var row=document.createElement('div');
+    row.className='cc-row';
+    row.style.cssText='position:relative;';
+    row.innerHTML='<input type="text" class="cc-input" style="flex:1;margin-right:4px;" placeholder="Descrição" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)"/>'
+      +'<input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" style="color:var(--green);width:100px;" value="'+(c.val!=null?c.val:'')+'" oninput="onCredVal(\''+c.id+'\',this.value)"/>'
+      +'<button class="btn-del-receita" onclick="delCred(\''+c.id+'\')">&#x2715;</button>';
+    div.appendChild(row);
+  });
+}
+
+function addCreditoEventual(){
+  var cc=getCC(curY,curM);
+  if(!cc.creditos) cc.creditos=[];
+  cc.creditos.push({id:String(Date.now()),desc:'',val:null});
+  saveCC(curY,curM,cc);
+  renderCreditosEventuais(cc);
+}
+
+function onCredDesc(id,val){
+  var cc=getCC(curY,curM);
+  var c=cc.creditos.find(function(x){return x.id===id;});
+  if(c){c.desc=val;saveCC(curY,curM,cc);}
+}
+
+function onCredVal(id,val){
+  var cc=getCC(curY,curM);
+  var c=cc.creditos.find(function(x){return x.id===id;});
+  if(c){c.val=val!==''?parseFloat(val):null;saveCC(curY,curM,cc);}
+  calcLiquido(curY,curM);
+}
+
+function delCred(id){
+  var cc=getCC(curY,curM);
+  cc.creditos=cc.creditos.filter(function(x){return x.id!==id;});
+  saveCC(curY,curM,cc);
+  renderCreditosEventuais(cc);
+  calcLiquido(curY,curM);
+}
+
 function calcLiquido(y,m){
   var rec = getRec(y,m);
   var bruto = rec.salario || 0;
@@ -2062,9 +2123,10 @@ function calcLiquido(y,m){
     var cc = rec.cc || {};
     var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0)
       + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-    liquido = bruto - totalDesc;
+    var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+(c.val||0);},0);
+    liquido = bruto - totalDesc + totalCred;
     var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-    var baseDizimo = (bruto + outrasRec) - totalDesc;
+    var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
     dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
   }
 
@@ -2257,80 +2319,39 @@ function setNubankFatura(y,m,v){
   setRec(y,m,r);
 }
 
-// ── Função central: retorna todas as compras de uma fatura (y,m) ─────────────
-// Regra única: fatura M/Y cobre compras com data entre 19/(M-1) e 19/M (inclusive)
-// Para parceladas: a parcela que cai nesta fatura é determinada pela data da compra original
-function comprasDaFatura(y, m){
+function calcNubankTotal(y,m){
+  // Período da fatura: dia 20 do mês anterior até dia 19 do mês atual
   var antM = m===1?12:m-1, antY = m===1?y-1:y;
   var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
   var dtFim    = y+'-'+String(m).padStart(2,'0')+'-19';
 
+  var total = 0;
   var vistos = {};
-  var resultado = [];
-
-  for(var cy=2024; cy<=y+1; cy++){
-    for(var cm=1; cm<=12; cm++){
-      var lista = getNubankCompras(cy,cm);
+  // Varre mês anterior, atual e seguinte para capturar todos os lançamentos relevantes
+  for(var cy2=2025; cy2<=y+1; cy2++){
+    for(var cm2=1; cm2<=12; cm2++){
+      var lista = getNubankCompras(cy2,cm2);
       for(var ci=0; ci<lista.length; ci++){
-        var c = lista[ci];
-        if(!c.date || vistos[c.id]) continue;
-        var inclui = false;
-        var numParcela = 1; // qual parcela cai nesta fatura
-
-        if(c.parcelas>1){
-          // Para parceladas: a parcela 1 cai na fatura cujo período contém a data da compra.
-          // Parcela N cai N-1 meses depois.
-          // Calculamos em qual fatura a parcela 1 cai, depois vemos se esta fatura é N meses depois.
-          // Fatura da parcela 1: a fatura M0 tal que dtInicio(M0) <= c.date <= dtFim(M0)
-          // Para cada fatura possível, off = numero de faturas entre M0 e (y,m)
-          // off = (y - fatY0)*12 + (m - fatM0)
-          // Se off >= 0 e off < c.parcelas, então a parcela (off+1) cai nesta fatura
-          // Calculamos M0: fatura que contém c.date
-          var cd = c.date; // ex: "2026-03-15"
-          var cdY = parseInt(cd.substring(0,4));
-          var cdM = parseInt(cd.substring(5,7));
-          var cdD = parseInt(cd.substring(8,10));
-          // Se dia >= 20, parcela 1 está na fatura do mês seguinte ao da data
-          // Se dia <= 19, parcela 1 está na fatura do mesmo mês da data
-          // Na verdade: fatura M cobre dias 19/(M-1) a 19/M
-          // data com dia <= 19: pertence à fatura do mesmo mês
-          // data com dia >= 20: pertence à fatura do mês seguinte
-          var fatM0, fatY0;
-          if(cdD <= 19){
-            fatM0 = cdM; fatY0 = cdY;
-          } else {
-            fatM0 = cdM===12?1:cdM+1;
-            fatY0 = cdM===12?cdY+1:cdY;
-          }
-          var off = (y-fatY0)*12+(m-fatM0);
-          if(off>=0 && off<c.parcelas){
-            inclui = true;
-            numParcela = off+1;
+        var cc = lista[ci];
+        if(!cc.date || vistos[cc.id]) continue;
+        if(cc.parcelas>1){
+          // Parceladas: usa offset de meses desde o armazenamento
+          var off = (y-cy2)*12+(m-cm2);
+          if(off>=0 && off<cc.parcelas){
+            vistos[cc.id]=true;
+            total += Math.round(cc.val/cc.parcelas*100)/100;
           }
         } else {
-          // À vista: data dentro do período da fatura
-          inclui = (c.date >= dtInicio && c.date <= dtFim);
-        }
-
-        if(inclui){
-          vistos[c.id] = true;
-          var item = Object.assign({}, c, {_storY:cy, _storM:cm, _numParcela:numParcela});
-          resultado.push(item);
+          // À vista: inclui se a data da compra está dentro do período da fatura
+          if(cc.date >= dtInicio && cc.date <= dtFim){
+            vistos[cc.id]=true;
+            total += cc.val;
+          }
         }
       }
     }
   }
-  return resultado;
-}
-
-function calcNubankTotal(y,m){
-  var compras = comprasDaFatura(y,m);
-  var total = 0;
-  for(var i=0;i<compras.length;i++){
-    var c = compras[i];
-    total += c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
-  }
-  return Math.round(total*100)/100;
+  return total;
 }
 
 function getFuturoComprometido(){
@@ -2376,8 +2397,43 @@ function renderNubank(){
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
   document.getElementById('nubankAnoLabel').textContent = y;
 
-  // Usa a função central — mesma lógica do total calculado e do relatório
-  var comprasDoMes = comprasDaFatura(y,m);
+  // Coleta TODAS as compras com mês de armazenamento
+  var todasCompras = [];
+  var anos = [];
+  for(var y2=2025; y2<=y+1; y2++) anos.push(y2);
+  anos.forEach(function(sy){
+    var meses = [1,2,3,4,5,6,7,8,9,10,11,12];
+    meses.forEach(function(sm){
+      getNubankCompras(sy,sm).forEach(function(c){
+        todasCompras.push({c:c, storY:sy, storM:sm});
+      });
+    });
+  });
+
+
+
+  // Filtra as que aparecem neste mês (sem duplicatas por id)
+  var vistos = {};
+  var comprasDoMes = todasCompras.filter(function(item){
+    var c=item.c, storY=item.storY, storM=item.storM;
+    if(!c.date) return false;
+    if(vistos[c.id]) return false;
+    var aparece = false;
+    if(c.parcelas>1){
+      var offset = (y-storY)*12+(m-storM);
+      aparece = offset>=0 && offset<c.parcelas;
+    } else {
+      aparece = storY===y && storM===m;
+    }
+    if(aparece) vistos[c.id]=true;
+    return aparece;
+  }).map(function(item){
+    var cc=Object.assign({},item.c);
+    cc._storY=item.storY;
+    cc._storM=item.storM;
+    return cc;
+  });
+
   var comprasNativas = getNubankCompras(y,m);
 
   var totalCalc = calcNubankTotal(y,m);
@@ -2420,8 +2476,11 @@ function renderNubank(){
                    .sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
 
   function renderItem(c){
+    var storY2 = c._storY || (nkCurY||curY);
+    var storM2 = c._storM || (nkCurM||curM);
+    var offset = ((nkCurY||curY)-storY2)*12+((nkCurM||curM)-storM2);
     var valorParcela = c.parcelas>1 ? Math.round(c.val/c.parcelas*100)/100 : c.val;
-    var parcNum = c.parcelas>1 ? (c._numParcela||1)+'/'+c.parcelas : '';
+    var parcNum = c.parcelas>1 ? (offset+1)+'/'+c.parcelas : '';
     var parcLabel = c.parcelas>1 ? '<span class="ci-parc">'+parcNum+' · '+R(valorParcela)+'</span>' : '';
     var catLabel = c.cat ? '<span style="font-size:.58rem;background:rgba(84,110,122,.2);color:#90a4ae;padding:2px 6px;border-radius:8px;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;display:block;text-align:right;">'+c.cat+'</span>' : '';
     var isNativa = comprasNativas.some(function(x){return x.id===c.id;});
@@ -2687,15 +2746,7 @@ function openRelNubank(){
   }).join('');
   document.getElementById('nkRelDe').innerHTML=opts;
   document.getElementById('nkRelAte').innerHTML=opts;
-  // Seleciona mês atual nos dois selects (De e Até)
-  var curKey = curY+'_'+curM;
-  var curIdx = meses.findIndex(function(x){ return x.y===curY && x.m===curM; });
-  if(curIdx >= 0){
-    document.getElementById('nkRelDe').selectedIndex = curIdx;
-    document.getElementById('nkRelAte').selectedIndex = curIdx;
-  } else {
-    document.getElementById('nkRelAte').selectedIndex = meses.length-1;
-  }
+  document.getElementById('nkRelAte').selectedIndex=meses.length-1;
 
   // Categorias: constrói a partir dos dados reais — inclui tudo que foi lançado
   var catsSet = {};
@@ -2740,19 +2791,56 @@ function gerarRelNubank(){
   var deY=parseInt(de[0]),deM=parseInt(de[1]);
   var ateY=parseInt(ate[0]),ateM=parseInt(ate[1]);
 
-  // Usa a função central — mesma lógica do total calculado e da tela
+  // Coleta todas as compras dos meses selecionados + mês anterior de cada (para capturar
+  // compras à vista com data 20+ do mês anterior que pertencem à fatura do mês seguinte)
   var todasCompras=[];
-  var nkCatsRefNorm = getNKCats().map(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); });
+  var vistos={};
+
+  // Função: dado um mês de fatura (y,m), retorna se uma compra pertence a ele
+  // Fatura de m/y: compras com data de 20/(m-1) até 19/m
+  function pertenceFatura(c, fy, fm){
+    if(!c.date) return false;
+    // Data de início da fatura: dia 20 do mês anterior
+    var antM = fm===1?12:fm-1, antY = fm===1?fy-1:fy;
+    var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
+    var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-19';
+    return c.date >= dtInicio && c.date <= dtFim;
+  }
+
+  // Para o período selecionado, varre mês atual e mês anterior (onde ficam as compras de 20+)
   var y2=deY, m2=deM;
   while(y2<ateY||(y2===ateY&&m2<=ateM)){
-    var faturaCompras = comprasDaFatura(y2,m2);
-    faturaCompras.forEach(function(c){
-      // Filtro de categoria
-      var catNorm = (c.cat||'Outros').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-      var catMatch = nkRelCatsSel.some(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===catNorm; });
-      if(!catMatch) return;
-      todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
+    // Meses a pesquisar: mês atual, anterior e seguinte
+    // (compras podem estar salvas em qualquer um dos três por imprecisão de lançamento)
+    var buscarMeses = [{y:y2,m:m2}];
+    var antM2 = m2===1?12:m2-1, antY2 = m2===1?y2-1:y2;
+    var proxM2 = m2===12?1:m2+1, proxY2 = m2===12?y2+1:y2;
+    buscarMeses.push({y:antY2,m:antM2});
+    buscarMeses.push({y:proxY2,m:proxM2});
+
+    buscarMeses.forEach(function(bm){
+      getNubankCompras(bm.y,bm.m).forEach(function(c){
+        if(vistos[c.id]) return;
+        // Normaliza acentos na comparação para não perder itens com categoria sem acento
+        var catNorm = (c.cat||'Outros').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+        var catMatch = nkRelCatsSel.some(function(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()===catNorm; });
+        if(!catMatch) return;
+        var inclui = false;
+        if(c.parcelas>1){
+          // Parceladas: inclui se este mês de fatura está dentro do range de parcelas
+          var offset=(y2-bm.y)*12+(m2-bm.m);
+          inclui = offset>=0 && offset<c.parcelas;
+        } else {
+          // À vista: inclui se a data pertence à fatura deste mês
+          inclui = pertenceFatura(c, y2, m2);
+        }
+        if(inclui){
+          vistos[c.id]=true;
+          todasCompras.push(Object.assign({},c,{_y:y2,_m:m2}));
+        }
+      });
     });
+
     m2++; if(m2>12){m2=1;y2++;}
   }
 
@@ -2848,7 +2936,7 @@ function closeRelatorio(){
 }
 
 function buildRelMeses(){
-  relMesesSel = [curM]; // abre com mês atual
+  relMesesSel = [1,2,3,4,5,6,7,8,9,10,11,12];
   document.getElementById('relMesesGrid').innerHTML = MONTHS_PT.map(function(m,i){
     return '<button class="rel-month-btn sel" id="rm'+(i+1)+'" onclick="toggleRelMes('+(i+1)+')">'+m+'</button>';
   }).join('');
@@ -2856,18 +2944,8 @@ function buildRelMeses(){
 }
 
 function buildRelCats(){
-  // Usa union de DEFAULT_CATS + cats customizadas + categorias reais nos dados
-  var allCats = DEFAULT_CATS.slice();
-  (cats||[]).forEach(function(c){ if(allCats.indexOf(c)===-1) allCats.push(c); });
-  // Adiciona categorias que existem nos dados mas não estão nas listas
-  Object.keys(expenses||{}).forEach(function(y){
-    (expenses[y]||[]).forEach(function(e){
-      if(e.category && allCats.indexOf(e.category)===-1) allCats.push(e.category);
-    });
-  });
-  allCats.sort(function(a,b){return a.localeCompare(b,'pt-BR');});
-  relCatsSel = allCats.slice();
-  document.getElementById('relCatsGrid').innerHTML = allCats.map(function(c,i){
+  relCatsSel = cats.slice();
+  document.getElementById('relCatsGrid').innerHTML = cats.map(function(c,i){
     return '<button class="rel-cat-btn sel" id="rc'+i+'" data-ci="'+i+'" onclick="toggleRelCat(\''+c.replace(/'/g,"\\'")+'\',' +i+')">'+c+'</button>';
   }).join('');
   document.getElementById('btnTodasCats').classList.add('sel');
@@ -3330,8 +3408,8 @@ function applyAllData(json){
     if(d.expenses)     expenses=d.expenses;
     if(d.notes)        notes=d.notes;
     if(d.receitas)     receitas=d.receitas;
-    if(d.cats)         cats=Array.isArray(d.cats)?d.cats:Object.values(d.cats||{});
-    if(d.archivedCats) archivedCats=Array.isArray(d.archivedCats)?d.archivedCats:Object.values(d.archivedCats||{});
+    if(d.cats)         cats=d.cats;
+    if(d.archivedCats) archivedCats=d.archivedCats;
     if(d.nk){Object.keys(d.nk).forEach(function(k){localStorage.setItem(k,JSON.stringify(d.nk[k]));});}
     persist();
     checkAndMigrate();
