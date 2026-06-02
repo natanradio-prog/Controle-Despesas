@@ -2221,18 +2221,27 @@ function addCreditoEventual(){
 function delCred(id){
   // Busca descrição do crédito para exibir na confirmação
   var cc0=getCC(curY,curM);
-  var cred=( cc0.creditos||[]).find(function(x){return x.id===id;});
+  var cred=(cc0.creditos||[]).find(function(x){return x.id===id;});
   var nome=cred&&cred.desc?cred.desc:'este crédito';
   if(!confirm('Remover "'+nome+'"?\nEsta ação não pode ser desfeita.')) return;
 
+  // Remove o crédito de TODOS os meses — quando um novo mês tem o salário lançado,
+  // o cc é copiado do mês anterior com os mesmos ids. Se excluir só do mês atual,
+  // o crédito "ressuscita" ao navegar para outro mês que tem a cópia.
+  Object.keys(receitas).forEach(function(key){
+    var r=receitas[key];
+    if(r&&r.cc&&Array.isArray(r.cc.creditos)){
+      r.cc.creditos=r.cc.creditos.filter(function(x){return x.id!==id;});
+    }
+  });
+  persist();
+
+  // Re-renderiza o mês corrente
   var cc=getCC(curY,curM);
-  cc.creditos=cc.creditos.filter(function(x){return x.id!==id;});
-  saveCC(curY,curM,cc);
   renderCreditosEventuais(cc);
   calcLiquido(curY,curM);
 
   // Força sincronização imediata com o Drive (sem debounce)
-  // para garantir que a exclusão seja persistida antes de qualquer navegação
   if(gAccessToken&&gdriveReady){
     clearTimeout(syncTimeout);
     saveToDrive();
