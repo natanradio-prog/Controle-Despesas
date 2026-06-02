@@ -2121,10 +2121,12 @@ function renderCreditosEventuais(cc){
         +'</div>';
     }).join('');
     wrap.innerHTML=
-      '<div style="display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
-      +'<input type="text" class="cc-input" style="flex:1;font-size:.83rem;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'<input type="text" class="cc-input" style="width:100px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?parseFloat(c.bruto).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
+      '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
+      +'<div class="receita-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
+      +'<input type="text" class="receita-input" style="font-size:.9rem;color:var(--text);font-weight:600;background:transparent;border:none;padding:0;width:100%;cursor:text;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'</div>'
+      +'<input type="text" class="receita-input" style="width:110px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?parseFloat(c.bruto).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
+      +'<span style="font-size:.65rem;color:var(--muted);padding:0 2px;" id="credChev_'+c.id+'">&#9660;</span>'
       +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
       +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
