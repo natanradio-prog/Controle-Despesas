@@ -2131,6 +2131,7 @@ function credGet(y,m){
 
 // Salva os créditos do mês — escrita única, sempre via getRealRec
 function credSave(y,m,arr){
+  console.log('[credSave] salvando em', y, m, 'creditos:', JSON.stringify(arr));
   var rec = getRealRec(y,m);
   rec.creditos = arr;
   setRec(y,m,rec);  // setRec chama persist()
@@ -3468,7 +3469,6 @@ var CLIENT_ID = '901113028963-h32lerf3on87vu2qf5i0m6ajsqak1fq7.apps.googleuserco
 var SCOPES    = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 var FILE_NAME = 'despesas_app_data.json';
 var gdriveReady=false, gAccessToken=null, gFileId=null, syncTimeout=null;
-var gPageJustLoaded=true; // true até o primeiro loadFromDrive completar
 
 // ══ BACKUP ══
 
@@ -3591,6 +3591,11 @@ function getAllData(){
 function applyAllData(json){
   try{
     var d=JSON.parse(json);
+    console.log('[applyAllData] carregando do Drive - receitas keys:', Object.keys(d.receitas||{}));
+    Object.keys(d.receitas||{}).forEach(function(k){
+      var r=d.receitas[k];
+      if(r&&r.creditos&&r.creditos.length) console.log('[applyAllData]', k, 'tem creditos:', JSON.stringify(r.creditos));
+    });
     if(d.expenses)     expenses=d.expenses;
     if(d.notes)        notes=d.notes;
     if(d.receitas)     receitas=d.receitas;
@@ -3706,10 +3711,6 @@ function saveToDrive(){
 
 function loadFromDrive(){
   if(!gAccessToken||!gdriveReady) return;
-  // Só carrega do Drive se a página acabou de abrir.
-  // Se já houve interação (gPageJustLoaded=false), o localStorage é mais recente
-  // e sobrescrever causaria perda de dados (race condition com saveToDrive).
-  if(!gPageJustLoaded){ updateSyncStatus('synced'); return; }
   updateSyncStatus('syncing');
   findOrCreateFile(function(fid){
     gapi.client.request({
@@ -3719,7 +3720,6 @@ function loadFromDrive(){
     }).then(function(r){
       if(r.body&&r.body.length>2) applyAllData(r.body);
       else updateSyncStatus('synced');
-      gPageJustLoaded=false; // a partir daqui, não recarrega mais do Drive automaticamente
       // Backup diário após carregar
       setTimeout(salvarBackupDiarioDrive, 3000);
     },function(err){
@@ -3743,7 +3743,6 @@ window.addEventListener('load',function(){
 var _origPersist=persist;
 persist=function(){
   _origPersist();
-  gPageJustLoaded=false; // houve modificação — não permite mais loadFromDrive sobrescrever
   if(gAccessToken&&gdriveReady){
     clearTimeout(syncTimeout);
     syncTimeout=setTimeout(saveToDrive,2000);
