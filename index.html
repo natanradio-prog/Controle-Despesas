@@ -1464,15 +1464,16 @@ function updateReceitasUI(rec){
   var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
   var total = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   document.getElementById('receitasTotal').textContent=total>0?R(total):'-';
-  // Exibe sobra do mês anterior logo abaixo do título
+  // Sobra: busca SEMPRE do registro real — rec pode ser estimado (sem sobra)
+  var recReal = receitas[recKey(curY,curM)] || {};
   var sobraRow = document.getElementById('sobraRow');
   var sobraRowDesc = document.getElementById('sobraRowDesc');
   var sobraRowVal = document.getElementById('sobraRowVal');
   if(sobraRow){
-    if(rec.sobra && rec.sobra > 0){
+    if(recReal.sobra && recReal.sobra > 0){
       sobraRow.style.display='flex';
-      if(sobraRowDesc) sobraRowDesc.textContent=(rec.sobraDesc||'Sobra anterior')+' (saldo)';
-      if(sobraRowVal) sobraRowVal.textContent='+'+R(rec.sobra);
+      if(sobraRowDesc) sobraRowDesc.textContent=(recReal.sobraDesc||'Sobra anterior')+' (saldo)';
+      if(sobraRowVal) sobraRowVal.textContent='+'+R(recReal.sobra);
     } else {
       sobraRow.style.display='none';
     }
@@ -1502,8 +1503,9 @@ function updateSaldo(){
   }
   // Receitas = líquido + outras eventuais (sobra NÃO entra aqui)
   var receitaTotal = liq + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-  // Sobra do mês anterior agrega ao saldo mas não é receita
-  var sobra = rec.sobra || 0;
+  // Sobra do mês anterior: sempre do registro real (getRec pode retornar estimativa sem sobra)
+  var recReal = receitas[recKey(curY,curM)] || {};
+  var sobra = recReal.sobra || 0;
 
   // Despesas: soma pago + agendado
   var me = getMonthExp(curY,curM).filter(function(e){ return e.category!=='Dizimo'; });
@@ -2040,6 +2042,7 @@ function renderContracheque(y,m){
   });
 
   if(!rec._estimado) renderDescontosEventuais(cc);
+  renderCreditosEventuais(cc);
   calcLiquido(y,m);
   var elVis = document.getElementById('salarioLiquidoVis');
   var elIn = document.getElementById('salarioLiquido');
@@ -2111,7 +2114,7 @@ function renderCreditosEventuais(cc){
     var panelId = 'credPanel_'+c.id;
     var evId = 'credEv_'+c.id;
     var wrap = document.createElement('div');
-    wrap.style.cssText='background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;margin-bottom:6px;';
+    wrap.style.cssText='margin-bottom:6px;';
     // Header do crédito
     var evHtml = (c.eventuais||[]).map(function(e){
       return '<div class="cc-row">'
@@ -2121,22 +2124,20 @@ function renderCreditosEventuais(cc){
         +'</div>';
     }).join('');
     wrap.innerHTML=
-      '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
-      +'<div class="receita-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-      +'<input type="text" class="receita-input" style="font-size:.9rem;color:var(--text);font-weight:600;background:transparent;border:none;padding:0;width:100%;cursor:text;" placeholder="Descrição do crédito" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'</div>'
+      '<div class="receita-row" style="margin-bottom:0;cursor:pointer;" onclick="toggleCredPanel(\''+c.id+'\')">'
+      +'<div class="receita-label">'+(c.desc||'Novo crédito')+' <span id="credChev_'+c.id+'" style="font-size:.65rem;color:var(--muted);">&#9660;</span></div>'
       +'<input type="text" class="receita-input" style="width:110px;color:#ef6060;" placeholder="0,00" inputmode="decimal" value="'+(c.bruto!=null?parseFloat(c.bruto).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredBrutoMask(\''+c.id+'\',this.value)" onclick="event.stopPropagation()"/>'
-      +'<span style="font-size:.65rem;color:var(--muted);padding:0 2px;" id="credChev_'+c.id+'">&#9660;</span>'
-      +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
+      +'<span style="width:20px"></span>'
       +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
-      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?parseFloat(c.inss).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">Descrição</div><input type="text" class="cc-input" style="flex:1;width:auto;" placeholder="Ex: 13° Salário" value="'+c.desc+'" oninput="onCredDesc(\''+c.id+'\',this.value)"/></div>'
+      +'<div class="cc-row"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?parseFloat(c.inss).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
       +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?parseFloat(c.ir).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
       +'<div id="'+evId+'">'+(evHtml)+'</div>'
       +'<button class="btn-add-desconto" onclick="addCredEv(\''+c.id+'\')">+ Desconto eventual</button>'
       +'<div class="cc-divider"></div>'
       +'<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<span style="font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Líquido</span>'
+      +'<button class="btn-del-receita" style="font-size:.7rem;color:var(--muted);" onclick="delCred(\''+c.id+'\')">&#x2715; Remover crédito</button>'
       +'<span style="font-size:.88rem;font-weight:700;color:var(--green);" id="credLiq_'+c.id+'">'+R(liq)+'</span>'
       +'</div>'
       +'</div>';
@@ -2151,7 +2152,21 @@ function toggleCredPanel(id){
   if(p) p.classList.toggle('open');
 }
 
-function onCredDesc(id,val){ var cc=getCC(curY,curM); if(!cc.creditos)cc.creditos=[]; var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.desc=val;saveCC(curY,curM,cc);} }
+function onCredDesc(id,val){
+  var cc=getCC(curY,curM);
+  if(!cc.creditos)cc.creditos=[];
+  var c=cc.creditos.find(function(x){return x.id===id;});
+  if(c){
+    c.desc=val;
+    saveCC(curY,curM,cc);
+    // Atualiza o texto do header sem re-renderizar tudo
+    var wrap = document.getElementById('credPanel_'+id);
+    if(wrap && wrap.previousElementSibling){
+      var label = wrap.previousElementSibling.querySelector('.receita-label');
+      if(label) label.textContent = val || 'Novo crédito';
+    }
+  }
+}
 function parseBRL(s){ return parseFloat((s||'').replace(/\./g,'').replace(',','.')) || 0; }
 function onCredBrutoMask(id,val){ var v=parseBRL(val); var cc=getCC(curY,curM); if(!cc.creditos)cc.creditos=[]; var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.bruto=v>0?v:null;saveCC(curY,curM,cc);recalcCred(id,cc);} }
 function onCredInssMask(id,val){ var v=parseBRL(val); var cc=getCC(curY,curM); if(!cc.creditos)cc.creditos=[]; var c=cc.creditos.find(function(x){return x.id===id;}); if(c){c.inss=v>0?v:null;saveCC(curY,curM,cc);recalcCred(id,cc);} }
