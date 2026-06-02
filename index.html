@@ -1428,7 +1428,16 @@ function onSalarioMask(el){
     var antM = curM-1, antY = curY;
     if(antM < 1){ antM = 12; antY--; }
     var antRec = receitas[recKey(antY,antM)];
-    if(antRec && antRec.cc) rec.cc = JSON.parse(JSON.stringify(antRec.cc));
+    if(antRec && antRec.cc){
+      var antCC=antRec.cc;
+      rec.cc={
+        inss:antCC.inss||null,
+        funpresp:antCC.funpresp||null,
+        ir:antCC.ir||null,
+        eventuais:JSON.parse(JSON.stringify(antCC.eventuais||[])),
+        creditos:[]
+      };
+    }
   }
   setRec(curY,curM,rec);
   // Remove badge estimado pois o usuário lançou o salário
