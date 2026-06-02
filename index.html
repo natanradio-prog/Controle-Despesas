@@ -368,16 +368,21 @@
         <button class="btn-add-desconto" onclick="addDescontoEventual()">+ Desconto eventual</button>
       </div>
 
-      <!-- Bloco Créditos Senado -->
+      <!-- Botão + Crédito Senado — sempre visível, logo abaixo do bloco salário -->
       <div style="height:1px;background:var(--border);margin:8px 0;"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleCreditosPanel()">
-        <div style="font-size:.74rem;color:var(--muted);">Outros créditos Senado <span id="creditosChevron" style="font-size:.65rem;">&#9660;</span></div>
-        <span id="creditosTotalVis" style="font-size:.8rem;color:var(--green);font-weight:600;"></span>
+      <button class="btn-add-desconto" id="btnAddCredito" onclick="addCreditoEventual()" style="border-color:var(--green);color:var(--green);">+ Crédito Senado</button>
+
+      <!-- Bloco Créditos Senado — só aparece quando há créditos -->
+      <div id="creditosBlocoHeader" style="display:none;">
+        <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="toggleCreditosPanel()">
+          <div style="font-size:.74rem;color:var(--muted);">Outros créditos Senado <span id="creditosChevron" style="font-size:.65rem;">&#9660;</span></div>
+          <span id="creditosTotalVis" style="font-size:.8rem;color:var(--green);font-weight:600;"></span>
+        </div>
       </div>
       <!-- Painel créditos -->
       <div class="contracheque-panel" id="creditosPanel">
         <div id="creditosEventuais" style="margin-top:8px;"></div>
-        <button class="btn-add-desconto" onclick="addCreditoEventual()" style="border-color:var(--green);color:var(--green);">+ Crédito Senado</button>
       </div>
 
       <!-- Salário líquido sempre visível -->
@@ -2151,13 +2156,25 @@ function renderCreditosEventuais(cc){
   var totalCred = (cc.creditos||[]).reduce(function(s,c){return credLiquido(c)+(s);},0);
   var vis = document.getElementById('creditosTotalVis');
   if(vis) vis.textContent = totalCred > 0 ? R(totalCred) : '';
+  // Mostra/esconde o bloco header conforme existam créditos
+  var blocoHeader = document.getElementById('creditosBlocoHeader');
+  var temCreditos = (cc.creditos||[]).length > 0;
+  if(blocoHeader) blocoHeader.style.display = temCreditos ? '' : 'none';
   // Abre o painel automaticamente se há créditos
-  if((cc.creditos||[]).length > 0 && !ccCreditosPanelOpen){
+  if(temCreditos && !ccCreditosPanelOpen){
     ccCreditosPanelOpen = true;
     var panel = document.getElementById('creditosPanel');
     var chev = document.getElementById('creditosChevron');
     if(panel) panel.classList.add('open');
     if(chev) chev.classList.add('open');
+  }
+  // Fecha o painel se não há mais créditos
+  if(!temCreditos && ccCreditosPanelOpen){
+    ccCreditosPanelOpen = false;
+    var panelC = document.getElementById('creditosPanel');
+    var chevC = document.getElementById('creditosChevron');
+    if(panelC) panelC.classList.remove('open');
+    if(chevC) chevC.classList.remove('open');
   }
 }
 
@@ -2201,10 +2218,10 @@ function recalcCred(id,cc){
 function addCreditoEventual(){
   var cc=getCC(curY,curM);
   if(!cc.creditos) cc.creditos=[];
-  cc.creditos.push({id:String(Date.now()),desc:'',bruto:null,inss:null,ir:null,eventuais:[]});
+  var newCred = {id:String(Date.now()),desc:'',bruto:null,inss:null,ir:null,eventuais:[]};
+  cc.creditos.push(newCred);
   saveCC(curY,curM,cc);
-  renderCreditosEventuais(cc);
-  // Abre o painel se ainda fechado
+  // Garante painel aberto antes de renderizar
   if(!ccCreditosPanelOpen){
     ccCreditosPanelOpen=true;
     var p=document.getElementById('creditosPanel');
@@ -2212,6 +2229,19 @@ function addCreditoEventual(){
     if(p) p.classList.add('open');
     if(ch) ch.classList.add('open');
   }
+  renderCreditosEventuais(cc);
+  // Foca no input de descrição do novo crédito e garante painel expandido
+  setTimeout(function(){
+    var allWraps = document.getElementById('creditosEventuais').children;
+    if(allWraps.length > 0){
+      var lastWrap = allWraps[allWraps.length-1];
+      // Garante que o painel de descontos do crédito nasce aberto
+      var credPanel = lastWrap.querySelector('.contracheque-panel');
+      if(credPanel) credPanel.classList.add('open');
+      var firstInput = lastWrap.querySelector('input[type=text]');
+      if(firstInput) firstInput.focus();
+    }
+  }, 50);
 }
 
 function delCred(id){
