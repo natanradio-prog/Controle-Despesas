@@ -407,17 +407,19 @@
 <!-- Saldo disponível -->
 <div id="saldoCard" style="background:#131f2e;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
   <span style="font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);">Saldo disponível</span>
-  <span id="saldoDisp" class="sv muted">Lance as receitas para ver o saldo</span>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button id="btnTransferirSobra" onclick="abrirConfirmSobra()" style="display:none;background:none;border:1px solid #1a6040;border-radius:6px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:600;padding:4px 9px;letter-spacing:.03em;white-space:nowrap;">Transferir →</button>
+    <span id="saldoDisp" class="sv muted">Lance as receitas para ver o saldo</span>
+  </div>
 </div>
 
-<!-- Sugestão de sobra -->
-<div id="sobraCard" style="display:none;background:#0d2a1a;border:1px solid #1a6040;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-  <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#26c6a0;margin-bottom:6px;">💰 Sobra do mês</div>
+<!-- Confirmação de transferência (aparece ao clicar em Transferir) -->
+<div id="sobraCard" style="display:none;background:#0d2a1a;border:1px solid #1a6040;border-radius:10px;padding:11px 14px;margin-bottom:12px;">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-    <div style="font-size:.83rem;color:#a0d8c0;">Transferir <strong id="sobraValor"></strong> como receita extra em <strong id="sobraProxMes"></strong>?</div>
+    <div style="font-size:.8rem;color:#a0d8c0;">Transferir <strong id="sobraValor" style="color:#26c6a0;"></strong> para <strong id="sobraProxMes" style="color:#26c6a0;"></strong>?</div>
     <div style="display:flex;gap:6px;flex-shrink:0;">
-      <button onclick="transferirSobra()" style="background:#1a6040;border:1px solid #26c6a0;border-radius:8px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:6px 12px;white-space:nowrap;">Sim</button>
-      <button onclick="descartarSobra()" style="background:#0d2a1a;border:1px solid #1a6040;border-radius:8px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:6px 10px;">Não</button>
+      <button onclick="transferirSobra()" style="background:#1a6040;border:1px solid #26c6a0;border-radius:7px;color:#26c6a0;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;padding:5px 13px;">Sim</button>
+      <button onclick="fecharConfirmSobra()" style="background:none;border:1px solid #1a6040;border-radius:7px;color:#5a8a9f;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.72rem;padding:5px 10px;">Não</button>
     </div>
   </div>
 </div>
@@ -1519,44 +1521,48 @@ function updateSaldo(){
     saldoEl.style.color = saldo>=0?'var(--green)':'var(--red)';
     saldoEl.style.fontWeight = '700';
     saldoEl.style.fontSize = '.92rem';
-    checkSobra(saldo);
+    // Mostra botão Transferir apenas se saldo positivo
+    var btnT = document.getElementById('btnTransferirSobra');
+    if(btnT) btnT.style.display = saldo > 0 ? 'inline-block' : 'none';
   } else {
     saldoEl.textContent = '\u2013';
     saldoEl.style.color = 'var(--muted)';
     saldoEl.style.fontWeight = '400';
     saldoEl.style.fontSize = '.85rem';
+    var btnT2 = document.getElementById('btnTransferirSobra');
+    if(btnT2) btnT2.style.display = 'none';
     document.getElementById('sobraCard').style.display='none';
   }
 }
 
 
-function checkSobra(saldo){
-  var card = document.getElementById('sobraCard');
-  if(saldo <= 0){ card.style.display='none'; return; }
+function abrirConfirmSobra(){
+  // Lê saldo atual do DOM
+  var saldoEl = document.getElementById('saldoDisp');
+  var saldoTxt = saldoEl.textContent.replace(' \u26A0','').replace('R$\u00a0','').replace(/\./g,'').replace(',','.');
+  var saldo = parseFloat(saldoTxt) || 0;
+  if(saldo <= 0) return;
 
-  // Verifica se já foi descartado ou transferido neste mês
-  var key = 'sobra_'+curY+'_'+curM;
-  if(localStorage.getItem(key)) { card.style.display='none'; return; }
-
-  // Calcula próximo mês
   var proxM = curM === 12 ? 1 : curM + 1;
   var proxY = curM === 12 ? curY + 1 : curY;
   var proxLabel = MONTHS_PT[proxM-1] + (proxY !== curY ? ' '+proxY : '');
 
   document.getElementById('sobraValor').textContent = R(saldo);
   document.getElementById('sobraProxMes').textContent = proxLabel;
-  card.style.display='block';
+  document.getElementById('sobraCard').style.display = 'block';
+}
+
+function fecharConfirmSobra(){
+  document.getElementById('sobraCard').style.display = 'none';
 }
 
 function transferirSobra(){
-  // Lê o saldo já calculado e exibido na tela
+  // Lê saldo do DOM (já preenchido por abrirConfirmSobra)
   var saldoEl = document.getElementById('saldoDisp');
   var saldoTxt = saldoEl.textContent.replace(' \u26A0','').replace('R$\u00a0','').replace(/\./g,'').replace(',','.');
   var saldo = parseFloat(saldoTxt) || 0;
-
   if(saldo <= 0) return;
 
-  // Lança no próximo mês como outra receita (usa getRealRec para não promover estimativa)
   var proxM = curM === 12 ? 1 : curM + 1;
   var proxY = curM === 12 ? curY + 1 : curY;
   var proxRec = getRealRec(proxY, proxM);
@@ -1565,14 +1571,11 @@ function transferirSobra(){
   proxRec.sobraDesc = 'Sobra de '+MONTHS_PT[curM-1];
   setRec(proxY, proxM, proxRec);
 
-  // Marca como transferido
-  localStorage.setItem('sobra_'+curY+'_'+curM, '1');
-  document.getElementById('sobraCard').style.display='none';
+  document.getElementById('sobraCard').style.display = 'none';
   showToast('Transferido para '+MONTHS_PT[proxM-1]+' \u2713');
 }
 
 function descartarSobra(){
-  localStorage.setItem('sobra_'+curY+'_'+curM, 'skip');
   document.getElementById('sobraCard').style.display='none';
 }
 
