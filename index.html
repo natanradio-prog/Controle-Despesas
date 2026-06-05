@@ -890,7 +890,6 @@ function persist(){
   localStorage.setItem('desp_rec3',   JSON.stringify(receitas));
   localStorage.setItem('desp_cats3',  JSON.stringify(cats));
   localStorage.setItem('desp_arch3',  JSON.stringify(archivedCats));
-  saveToDrive();
 }
 
 function getYearExp(y){return expenses[y]||[];}
@@ -1684,18 +1683,18 @@ function calcLiquido(y,m){
     liquido = salBase + totalCred;
     var outrasRecEst = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimoEst = salBase + totalCred + outrasRecEst;
-    dizimo = salBase > 0 ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
+    dizimo = (salBase > 0 || totalCred > 0) ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
   } else {
     var cc = rec.cc || {};
     var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0) + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
     liquido = bruto - totalDesc + totalCred;
     var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
-    dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
+    dizimo = (bruto > 0 || totalCred > 0) ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
   }
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
-  if(bruto > 0){
+  if(bruto > 0 || totalCred > 0){
     el.textContent = R(liquido); el.style.color = liquido >= 0 ? 'var(--green)' : 'var(--red)';
     if(elVis){ elVis.textContent = R(liquido); elVis.style.color = liquido>=0?'var(--green)':'var(--red)'; }
     rec.salarioLiquido = liquido;
