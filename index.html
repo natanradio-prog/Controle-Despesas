@@ -272,6 +272,10 @@
         <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" style="color:#ef6060;" />
         <span style="width:20px"></span>
       </div>
+      <div id="sfLiqRow" style="display:none;justify-content:space-between;align-items:center;padding:2px 0 4px 0;">
+        <span style="font-size:.65rem;color:var(--muted);padding-left:2px;">líquido SF</span>
+        <span id="sfLiqVal" style="font-size:.78rem;font-weight:600;color:var(--green);"></span>
+      </div>
       <div class="contracheque-panel" id="contrachequePanel">
         <div class="cc-row" style="margin-top:8px;">
           <div class="cc-label">PSSS</div>
@@ -1616,6 +1620,10 @@ function renderCreditosEventuais(cc){
       +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
       +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
       +'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:1px 0 3px 0;">'
+      +'<span style="font-size:.6rem;color:var(--muted);">líquido</span>'
+      +'<span id="credLiqHdr_'+c.id+'" style="font-size:.78rem;font-weight:600;color:'+(liq>=0?'var(--green)':'var(--red)')+';">'+R(liq)+'</span>'
+      +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
       +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?parseFloat(c.inss).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
       +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?parseFloat(c.ir).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
@@ -1658,6 +1666,9 @@ function recalcCred(id,cc){
   if(!c) return;
   var liq=credLiquido(c);
   var el=document.getElementById('credLiq_'+id); if(el) el.textContent=R(liq);
+  // Atualiza líquido no header do crédito (fora do painel colapsável)
+  var hdr=document.getElementById('credLiqHdr_'+id);
+  if(hdr){ hdr.textContent=R(liq); hdr.style.color=liq>=0?'var(--green)':'var(--red)'; }
   var totalCred=(cc.creditos||[]).reduce(function(s,c){return credLiquido(c)+s;},0);
   var vis=document.getElementById('creditosTotalVis'); if(vis) vis.textContent=totalCred>0?R(totalCred):'';
   calcLiquido(curY,curM);
@@ -1683,24 +1694,33 @@ function calcLiquido(y,m){
     liquido = salBase + totalCred;
     var outrasRecEst = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimoEst = salBase + totalCred + outrasRecEst;
-    dizimo = (salBase > 0 || totalCred > 0) ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
+    dizimo = salBase > 0 ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
   } else {
     var cc = rec.cc || {};
     var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0) + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
     liquido = bruto - totalDesc + totalCred;
     var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
     var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
-    dizimo = (bruto > 0 || totalCred > 0) ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
+    dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
   }
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
-  if(bruto > 0 || totalCred > 0){
+  // Líquido SF = bruto - descontos (sem créditos de outros créditos)
+  var cc2sf = getCC(y,m);
+  var totalDescSF = (cc2sf.inss||0)+(cc2sf.funpresp||0)+(cc2sf.ir||0)+(cc2sf.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+  var liqSF = bruto - totalDescSF;
+  var sfLiqRow = document.getElementById('sfLiqRow');
+  var sfLiqVal = document.getElementById('sfLiqVal');
+  if(bruto > 0){
     el.textContent = R(liquido); el.style.color = liquido >= 0 ? 'var(--green)' : 'var(--red)';
     if(elVis){ elVis.textContent = R(liquido); elVis.style.color = liquido>=0?'var(--green)':'var(--red)'; }
     rec.salarioLiquido = liquido;
+    if(sfLiqRow){ sfLiqRow.style.display='flex'; }
+    if(sfLiqVal){ sfLiqVal.textContent=R(liqSF); sfLiqVal.style.color=liqSF>=0?'var(--green)':'var(--red)'; }
   } else {
     el.textContent = '-'; if(elVis){ elVis.textContent = '-'; elVis.style.color = 'var(--muted)'; }
     rec.salarioLiquido = null;
+    if(sfLiqRow) sfLiqRow.style.display='none';
   }
   rec.dizimo = dizimo;
   if(!rec._estimado){ setRec(y,m,rec); }
