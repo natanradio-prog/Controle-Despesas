@@ -890,6 +890,7 @@ function persist(){
   localStorage.setItem('desp_rec3',   JSON.stringify(receitas));
   localStorage.setItem('desp_cats3',  JSON.stringify(cats));
   localStorage.setItem('desp_arch3',  JSON.stringify(archivedCats));
+  saveToDrive();
 }
 
 function getYearExp(y){return expenses[y]||[];}
