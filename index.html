@@ -82,13 +82,15 @@
   .btn-new{width:100%;background:var(--accent);border:none;border-radius:12px;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;padding:13px;margin-top:12px;transition:all .2s;box-shadow:0 4px 14px rgba(99,102,241,.3);}
   .btn-new:hover{background:var(--accent2);}
   .btn-new:active{transform:scale(.98);}
-  .dizimo-card{background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:1px solid #d8b4fe;border-radius:12px;padding:13px 14px;margin-top:14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
-  .dizimo-info{flex:1;}
-  .dizimo-info label{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#7c3aed;display:block;margin-bottom:2px;}
-  .dizimo-vals{display:flex;gap:16px;align-items:baseline;}
-  .dizimo-mes{font-weight:700;font-size:1rem;color:#4c1d95;}
-  .dizimo-acum{font-size:.75rem;color:#7c3aed;}
-  .dizimo-acum span{font-weight:700;}
+  .dizimo-card{background:linear-gradient(135deg,#1a0f2e,#1e1040);border:1px solid #7c3aed44;border-radius:12px;padding:14px 16px;margin-top:14px;box-shadow:var(--shadow);}
+  .dizimo-title{font-size:.6rem;text-transform:uppercase;letter-spacing:.09em;color:#a78bfa;margin-bottom:10px;}
+  .dizimo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .dizimo-col{display:flex;flex-direction:column;gap:4px;}
+  .dizimo-col-label{font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;}
+  .dizimo-col-val{font-size:.92rem;font-weight:700;color:#e9d5ff;}
+  .dizimo-col-val.vermelho{color:#f87171;}
+  .dizimo-col-val.verde{color:#4ade80;}
+  .dizimo-pago-input{background:rgba(124,58,237,.15);border:1px solid #7c3aed55;border-radius:6px;color:#e9d5ff;font-size:.85rem;padding:5px 8px;width:100%;box-sizing:border-box;text-align:right;outline:none;}
   .overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
   .overlay.open{display:flex;}
   .sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 18px 44px;width:100%;max-width:520px;animation:slideUp .26s ease;max-height:92vh;overflow-y:auto;}
@@ -272,10 +274,6 @@
         <input type="text" class="receita-input" id="salarioInput" placeholder="0,00" inputmode="decimal" oninput="onSalarioMask(this)" onclick="event.stopPropagation()" style="color:#ef6060;" />
         <span style="width:20px"></span>
       </div>
-      <div id="sfLiqRow" style="display:none;justify-content:space-between;align-items:center;padding:2px 0 4px 0;">
-        <span style="font-size:.65rem;color:var(--muted);padding-left:2px;">líquido SF</span>
-        <span id="sfLiqVal" style="font-size:.78rem;font-weight:600;color:var(--green);"></span>
-      </div>
       <div class="contracheque-panel" id="contrachequePanel">
         <div class="cc-row" style="margin-top:8px;">
           <div class="cc-label">PSSS</div>
@@ -371,11 +369,19 @@
 <div class="expense-list" id="expenseList"></div>
 
 <div class="dizimo-card" id="dizimoCard" style="display:none">
-  <div class="dizimo-info">
-    <label>Dízimo acumulado</label>
-    <div class="dizimo-vals">
-      <div class="dizimo-mes" id="dizimoMes">-</div>
-      <div class="dizimo-acum">total <span id="dizimoAcum">-</span></div>
+  <div class="dizimo-title">Dízimo</div>
+  <div class="dizimo-grid">
+    <div class="dizimo-col">
+      <span class="dizimo-col-label">Este mês</span>
+      <span class="dizimo-col-val" id="dizimoMes">-</span>
+    </div>
+    <div class="dizimo-col">
+      <span class="dizimo-col-label">Pago este mês</span>
+      <input class="dizimo-pago-input" id="dizimoPagoInput" type="text" inputmode="decimal" placeholder="0,00" oninput="onDizimoPago(this.value)" onclick="this.select()"/>
+    </div>
+    <div class="dizimo-col">
+      <span class="dizimo-col-label">Saldo devedor</span>
+      <span class="dizimo-col-val vermelho" id="dizimoSaldo">-</span>
     </div>
   </div>
 </div>
@@ -1620,10 +1626,6 @@ function renderCreditosEventuais(cc){
       +'<span style="font-size:.65rem;color:var(--muted);" id="credChev_'+c.id+'">&#9660;</span>'
       +'<button class="btn-del-receita" onclick="event.stopPropagation();delCred(\''+c.id+'\')">&#x2715;</button>'
       +'</div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center;padding:1px 0 3px 0;">'
-      +'<span style="font-size:.6rem;color:var(--muted);">líquido</span>'
-      +'<span id="credLiqHdr_'+c.id+'" style="font-size:.78rem;font-weight:600;color:'+(liq>=0?'var(--green)':'var(--red)')+';">'+R(liq)+'</span>'
-      +'</div>'
       +'<div class="contracheque-panel open" id="'+panelId+'" style="padding-left:4px;">'
       +'<div class="cc-row" style="margin-top:6px;"><div class="cc-label">PSSS</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.inss!=null?parseFloat(c.inss).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredInssMask(\''+c.id+'\',this.value)"/></div>'
       +'<div class="cc-row"><div class="cc-label">IR</div><input type="text" class="cc-input" placeholder="0,00" inputmode="decimal" value="'+(c.ir!=null?parseFloat(c.ir).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'')+'" oninput="onCredIrMask(\''+c.id+'\',this.value)"/></div>'
@@ -1666,9 +1668,6 @@ function recalcCred(id,cc){
   if(!c) return;
   var liq=credLiquido(c);
   var el=document.getElementById('credLiq_'+id); if(el) el.textContent=R(liq);
-  // Atualiza líquido no header do crédito (fora do painel colapsável)
-  var hdr=document.getElementById('credLiqHdr_'+id);
-  if(hdr){ hdr.textContent=R(liq); hdr.style.color=liq>=0?'var(--green)':'var(--red)'; }
   var totalCred=(cc.creditos||[]).reduce(function(s,c){return credLiquido(c)+s;},0);
   var vis=document.getElementById('creditosTotalVis'); if(vis) vis.textContent=totalCred>0?R(totalCred):'';
   calcLiquido(curY,curM);
@@ -1705,22 +1704,13 @@ function calcLiquido(y,m){
   }
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
-  // Líquido SF = bruto - descontos (sem créditos de outros créditos)
-  var cc2sf = getCC(y,m);
-  var totalDescSF = (cc2sf.inss||0)+(cc2sf.funpresp||0)+(cc2sf.ir||0)+(cc2sf.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-  var liqSF = bruto - totalDescSF;
-  var sfLiqRow = document.getElementById('sfLiqRow');
-  var sfLiqVal = document.getElementById('sfLiqVal');
   if(bruto > 0){
     el.textContent = R(liquido); el.style.color = liquido >= 0 ? 'var(--green)' : 'var(--red)';
     if(elVis){ elVis.textContent = R(liquido); elVis.style.color = liquido>=0?'var(--green)':'var(--red)'; }
     rec.salarioLiquido = liquido;
-    if(sfLiqRow){ sfLiqRow.style.display='flex'; }
-    if(sfLiqVal){ sfLiqVal.textContent=R(liqSF); sfLiqVal.style.color=liqSF>=0?'var(--green)':'var(--red)'; }
   } else {
     el.textContent = '-'; if(elVis){ elVis.textContent = '-'; elVis.style.color = 'var(--muted)'; }
     rec.salarioLiquido = null;
-    if(sfLiqRow) sfLiqRow.style.display='none';
   }
   rec.dizimo = dizimo;
   if(!rec._estimado){ setRec(y,m,rec); }
@@ -1747,13 +1737,49 @@ function dizimoAcumTotal(){
   return total;
 }
 
+// Valor pago de dízimo num mês (gravado em rec.dizimoPago)
+function getDizimoPago(y,m){
+  var rec = receitas[recKey(y,m)];
+  return (rec && rec.dizimoPago) ? rec.dizimoPago : 0;
+}
+
+// Saldo devedor = R$98.157,54 (jan/2025) + todos os dízimos calculados − todos os pagos
+var DIZIMO_SALDO_INICIAL = 98157.54;
+function dizimoSaldoDevedor(){
+  var devido = DIZIMO_SALDO_INICIAL;
+  var pago   = 0;
+  [2025,2026,2027].forEach(function(y){
+    for(var m=1;m<=12;m++){
+      var dm = calcDizimoMes(y,m);
+      if(dm != null) devido += dm;
+      pago += getDizimoPago(y,m);
+    }
+  });
+  return Math.round((devido - pago)*100)/100;
+}
+
+function onDizimoPago(val){
+  var v = parseBRL(val);
+  if(!receitas[recKey(curY,curM)]) receitas[recKey(curY,curM)] = getRec(curY,curM);
+  var rec = receitas[recKey(curY,curM)];
+  rec.dizimoPago = v > 0 ? v : null;
+  setRec(curY,curM,rec);
+  var saldo = dizimoSaldoDevedor();
+  var el = document.getElementById('dizimoSaldo');
+  if(el){ el.textContent=R(saldo); el.className='dizimo-col-val '+(saldo>0?'vermelho':'verde'); }
+}
+
 function updateDizimoCard(){
-  var dm = calcDizimoMes(curY,curM);
-  var da = dizimoAcumTotal();
-  var card = document.getElementById('dizimoCard');
-  card.style.display = 'flex';
-  document.getElementById('dizimoMes').textContent  = dm!=null ? R(dm) : 'preencha o contracheque';
-  document.getElementById('dizimoAcum').textContent = da>0 ? R(da) : '-';
+  var dm    = calcDizimoMes(curY,curM);
+  var pago  = getDizimoPago(curY,curM);
+  var saldo = dizimoSaldoDevedor();
+  var card  = document.getElementById('dizimoCard');
+  card.style.display = 'block';
+  document.getElementById('dizimoMes').textContent = dm!=null ? R(dm) : '–';
+  var inp = document.getElementById('dizimoPagoInput');
+  if(inp) inp.value = pago>0 ? pago.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+  var elSaldo = document.getElementById('dizimoSaldo');
+  if(elSaldo){ elSaldo.textContent=R(saldo); elSaldo.className='dizimo-col-val '+(saldo>0?'vermelho':'verde'); }
 }
 
 // ══ CARTÃO NUBANK ══
