@@ -649,7 +649,7 @@
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
 <script>
 // ══ CONSTANTS ══
 var MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -2306,6 +2306,7 @@ function updateSyncStatus(st){
 }
 
 function gapiLoaded(){
+  if(typeof gapi === 'undefined'){ setTimeout(gapiLoaded, 200); return; }
   gapi.load('client',function(){
     gapi.client.init({}).then(function(){
       gdriveReady=true;
@@ -2313,6 +2314,7 @@ function gapiLoaded(){
       var exp=parseInt(localStorage.getItem('g_token_exp')||'0');
       if(token && Date.now()<exp){
         gAccessToken=token;
+        updateSyncDot();
         loadFromDrive();
       }
     });
@@ -2320,6 +2322,11 @@ function gapiLoaded(){
 }
 
 function driveLogin(){
+  if(typeof google === 'undefined' || !google.accounts){
+    showToast('Aguardando Google... tente novamente');
+    setTimeout(gapiLoaded, 500);
+    return;
+  }
   var client=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID,
     scope:SCOPES,
@@ -2328,6 +2335,7 @@ function driveLogin(){
       gAccessToken=resp.access_token;
       localStorage.setItem('g_access_token',gAccessToken);
       localStorage.setItem('g_token_exp',String(Date.now()+3500000));
+      updateSyncDot();
       loadFromDrive();
     }
   });
@@ -2465,6 +2473,9 @@ function init(){
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// Inicia polling do gapi após DOM pronto
+document.addEventListener('DOMContentLoaded', function(){ setTimeout(gapiLoaded, 300); });
 
 // ─── Drive button ───────────────────────────────────────────────────────────
 function handleGdriveBtn(){
