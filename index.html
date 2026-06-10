@@ -257,7 +257,7 @@
 
 <div class="receitas-section">
   <div class="receitas-header">
-    <span style="font-size:.82rem;font-weight:600;color:var(--text);">Receitas <span id="badgeEstimado" style="display:none;font-size:.62rem;background:#2a3f1a;color:#a3d977;border:1px solid #4a7a2a;border-radius:6px;padding:1px 7px;margin-left:6px;font-style:normal;font-weight:400;">estimado</span></span>
+    <span style="font-size:.82rem;font-weight:600;color:var(--text);">Receitas</span>
     <div class="receitas-total" id="receitasTotal">-</div>
   </div>
   <div id="sobraRow" style="display:none;justify-content:space-between;align-items:center;padding:6px 2px;border-bottom:1px solid var(--border);margin-bottom:8px;">
@@ -909,22 +909,7 @@ function noteKey(y,m){return y+'-'+m;}
 function recKey(y,m){return y+'-'+m;}
 
 function getRec(y,m){
-  var rec = receitas[recKey(y,m)];
-  if(rec && (rec.salario || rec.salarioLiquido)) return rec;
-  if(rec && rec.outras && rec.outras.length > 0) return rec;
-  var bkM = m, bkY = y;
-  for(var i = 0; i < 12; i++){
-    bkM--; if(bkM < 1){ bkM = 12; bkY--; }
-    var ant = receitas[recKey(bkY,bkM)];
-    if(ant && (ant.salario || ant.salarioLiquido)){
-      var liq = (ant.salarioLiquido != null) ? ant.salarioLiquido : ant.salario;
-      var outrasTotal = (ant.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-      var totalEfetivo = liq + outrasTotal;
-      return { salario: totalEfetivo, salarioLiquido: totalEfetivo, outras: [], _estimado: true };
-    }
-  }
-  if(rec) return rec;
-  return {salario:null,outras:[]};
+  return receitas[recKey(y,m)] || {salario:null,outras:[]};
 }
 
 function getRealRec(y,m){return receitas[recKey(y,m)]||{salario:null,outras:[]};}
@@ -995,8 +980,6 @@ function render(){
   renderPendentesAnteriores();
   document.getElementById('notesField').value=notes[noteKey(curY,curM)]||'';
   var rec=getRec(curY,curM);
-  var badge=document.getElementById('badgeEstimado');
-  if(badge) badge.style.display=rec._estimado?'inline':'none';
   renderContracheque(curY,curM);
   renderOutrasReceitas(rec);
 
@@ -1111,8 +1094,12 @@ function delOutraReceita(id){
 }
 
 function updateReceitasUI(rec){
+  var _real = receitas[recKey(curY,curM)] || {};
+  var cc = getCC(curY,curM);
+  var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
   var salEfetivo = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
-  var total = salEfetivo + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var outrasReais = (_real.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var total = salEfetivo + totalCred + outrasReais;
   document.getElementById('receitasTotal').textContent=total>0?R(total):'-';
   // ── CORREÇÃO: lê sobra SEMPRE do registro real, não do obj rec (pode ser estimado) ──
   var _recReal = receitas[recKey(curY,curM)] || {};
@@ -1135,17 +1122,13 @@ function updateSaldo(){
   var rec = getRec(curY,curM);
   var cc = getCC(curY,curM);
   var totalCred = (cc.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
-  var liq;
-  if(rec._estimado){
-    var salBase = (rec.salarioLiquido != null) ? rec.salarioLiquido : (rec.salario||0);
-    liq = salBase + totalCred;
-  } else {
-    var cc2 = rec.cc || {};
-    var totalDesc2 = (cc2.inss||0)+(cc2.funpresp||0)+(cc2.ir||0)
-      +(cc2.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-    liq = (rec.salario||0) - totalDesc2 + totalCred;
-  }
-  var receitaTotal = liq + (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var cc2 = rec.cc || {};
+  var totalDesc2 = (cc2.inss||0)+(cc2.funpresp||0)+(cc2.ir||0)
+    +(cc2.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+  var liq = (rec.salario||0) - totalDesc2 + totalCred;
+  var _realRec = receitas[recKey(curY,curM)] || {};
+  var outrasReais = (_realRec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var receitaTotal = liq + outrasReais;
   // ── CORREÇÃO: sobra lida do registro real ──
   var _recReal = receitas[recKey(curY,curM)] || {};
   var sobra = _recReal.sobra || 0;
@@ -1547,15 +1530,7 @@ function onDescontoInputMask(el, field){
 // ── CORREÇÃO: renderContracheque chama renderCreditosEventuais ──
 function renderContracheque(y,m){
   var rec = getRec(y,m);
-  var cc;
-  if(rec._estimado){
-    var antM = m-1, antY = y;
-    if(antM < 1){ antM = 12; antY--; }
-    var antRec = receitas[recKey(antY,antM)];
-    cc = (antRec && antRec.cc) ? antRec.cc : {inss:null,funpresp:null,ir:null,eventuais:[]};
-  } else {
-    cc = getCC(y,m);
-  }
+  var cc = getCC(y,m);
   var si = document.getElementById('salarioInput');
   si.value = rec.salario != null ? rec.salario.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
   var fields = {ccINSS: cc.inss, ccIR: cc.ir, ccFunpresp: cc.funpresp};
@@ -1563,13 +1538,8 @@ function renderContracheque(y,m){
     var el = document.getElementById(id);
     if(el){ var v = fields[id]; el.value = v != null ? v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : ''; }
   });
-  if(!rec._estimado){
-    renderDescontosEventuais(cc);
-    renderCreditosEventuais(cc);
-  } else {
-    renderDescontosEventuais(cc);
-    renderCreditosEventuais(getCC(y,m));
-  }
+  renderDescontosEventuais(cc);
+  renderCreditosEventuais(cc);
   calcLiquido(y,m);
   var elVis = document.getElementById('salarioLiquidoVis');
   var elIn = document.getElementById('salarioLiquido');
@@ -1689,20 +1659,12 @@ function calcLiquido(y,m){
   var liquido, dizimo;
   var ccReal = getCC(y,m);
   var totalCred = (ccReal.creditos||[]).reduce(function(s,c){return s+credLiquido(c);},0);
-  if(rec._estimado){
-    var salBase = (rec.salarioLiquido != null) ? rec.salarioLiquido : bruto;
-    liquido = salBase + totalCred;
-    var outrasRecEst = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-    var baseDizimoEst = salBase + totalCred + outrasRecEst;
-    dizimo = salBase > 0 ? Math.round(baseDizimoEst * 0.10 * 100) / 100 : null;
-  } else {
-    var cc = rec.cc || {};
-    var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0) + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
-    liquido = bruto - totalDesc + totalCred;
-    var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-    var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
-    dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
-  }
+  var cc = rec.cc || {};
+  var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0) + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
+  liquido = bruto - totalDesc + totalCred;
+  var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+  var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
+  dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
   if(bruto > 0){
@@ -1714,7 +1676,7 @@ function calcLiquido(y,m){
     rec.salarioLiquido = null;
   }
   rec.dizimo = dizimo;
-  if(!rec._estimado){ setRec(y,m,rec); }
+  setRec(y,m,rec);
   if(y===curY && m===curM) updateDizimoCard();
   updateReceitasUI(rec);
 }
