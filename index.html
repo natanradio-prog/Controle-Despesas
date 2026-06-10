@@ -1565,10 +1565,10 @@ function renderContracheque(y,m){
   });
   if(!rec._estimado){
     renderDescontosEventuais(cc);
-    renderCreditosEventuais(cc);  // ← CORREÇÃO: sempre renderiza créditos
+    renderCreditosEventuais(cc);
   } else {
-    var ccReal = getCC(y,m);
-    if((ccReal.creditos||[]).length > 0) renderCreditosEventuais(ccReal);
+    renderDescontosEventuais(cc);
+    renderCreditosEventuais(getCC(y,m));
   }
   calcLiquido(y,m);
   var elVis = document.getElementById('salarioLiquidoVis');
