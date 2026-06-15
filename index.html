@@ -1662,9 +1662,15 @@ function calcLiquido(y,m){
   var cc = rec.cc || {};
   var totalDesc = (cc.inss||0) + (cc.funpresp||0) + (cc.ir||0) + (cc.eventuais||[]).reduce(function(s,e){return s+(e.val||0);},0);
   liquido = bruto - totalDesc + totalCred;
-  var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
-  var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
-  dizimo = baseDizimo > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
+var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
+
+// Base correta do dízimo = receitas do mês (SEM sobra):
+// salário líquido SF + créditos Senado líquidos + outras eventuais
+var salarioLiquidoSF = bruto - totalDesc;
+var baseDizimo = salarioLiquidoSF + totalCred + outrasRec;
+
+dizimo = baseDizimo > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
+
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
   if(bruto > 0){
