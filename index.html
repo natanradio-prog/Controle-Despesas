@@ -1664,7 +1664,7 @@ function calcLiquido(y,m){
   liquido = bruto - totalDesc + totalCred;
   var outrasRec = (rec.outras||[]).reduce(function(s,o){return s+(o.val||0);},0);
   var baseDizimo = (bruto + outrasRec + totalCred) - totalDesc;
-  dizimo = bruto > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
+  dizimo = baseDizimo > 0 ? Math.round(baseDizimo * 0.10 * 100) / 100 : null;
   var el = document.getElementById('salarioLiquido');
   var elVis = document.getElementById('salarioLiquidoVis');
   if(bruto > 0){
