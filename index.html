@@ -1805,7 +1805,7 @@ function setNubankFatura(y,m,v){ var r=getRealRec(y,m); r.nubankFatura=v; setRec
 function calcNubankTotal(y,m){
   var antM = m===1?12:m-1, antY = m===1?y-1:y;
   var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
-  var dtFim    = y+'-'+String(m).padStart(2,'0')+'-19';
+  var dtFim    = y+'-'+String(m).padStart(2,'0')+'-18';
   var total = 0; var vistos = {};
   for(var cy2=2025; cy2<=y+1; cy2++){
     for(var cm2=1; cm2<=12; cm2++){
@@ -2131,7 +2131,7 @@ function gerarRelNubank(){
     if(!c.date) return false;
     var antM = fm===1?12:fm-1, antY = fm===1?fy-1:fy;
     var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
-    var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-19';
+    var dtFim    = fy+'-'+String(fm).padStart(2,'0')+'-18';
     return c.date >= dtInicio && c.date <= dtFim;
   }
   var y2=deY, m2=deM;
