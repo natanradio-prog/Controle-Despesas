@@ -487,6 +487,26 @@
     </div>
     <button onclick="nkNavMes(1)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;padding:5px 14px;font-size:1rem;">&#8250;</button>
   </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;">
+      <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:5px;">Fechamento</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:.72rem;color:var(--muted);">Dia</span>
+        <input type="number" id="nkFechamentoInput" min="1" max="31" inputmode="numeric"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;padding:5px 8px;width:60px;text-align:center;outline:none;"
+          oninput="onNkFechamentoChange(this.value)" />
+      </div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;">
+      <div style="font-size:.58rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:5px;">Vencimento</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:.72rem;color:var(--muted);">Dia</span>
+        <input type="number" id="nkVencimentoInput" min="1" max="31" inputmode="numeric"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;padding:5px 8px;width:60px;text-align:center;outline:none;"
+          oninput="onNkVencimentoChange(this.value)" />
+      </div>
+    </div>
+  </div>
   <div class="nubank-header">
     <div class="nubank-vals">
       <div class="nubank-val-item">
@@ -517,6 +537,7 @@
   <button class="btn-save" onclick="openNovaCompra()" style="background:#c0392b;box-shadow:0 4px 14px rgba(192,57,43,.4);margin-top:8px;">+ Nova compra</button>
  </div>
 </div>
+
 
 <!-- Overlay Nova Compra Nubank -->
 <div class="overlay" id="overlayNovaCompra" onclick="overlayClick(event,'overlayNovaCompra')">
@@ -1749,11 +1770,56 @@ function updateDizimoCard(){
   var elSaldo = document.getElementById('dizimoSaldo');
   if(elSaldo){ elSaldo.textContent=R(saldo); elSaldo.className='dizimo-col-val '+(saldo>0?'vermelho':'verde'); }
 }
-
 // ══ CARTÃO NUBANK ══
+// ── Fechamento e vencimento Nubank por mês ──────────────────────────────────
+function getNkFechamento(y, m) {
+  var rec = getRealRec(y, m);
+  return rec.nkFechamento != null ? rec.nkFechamento : 19;
+}
+
+function getNkVencimento(y, m) {
+  var rec = getRealRec(y, m);
+  return rec.nkVencimento != null ? rec.nkVencimento : 26;
+}
+
+function onNkFechamentoChange(val) {
+  var v = parseInt(val);
+  if(isNaN(v) || v < 1 || v > 31) return;
+  var y = nkCurY || curY, m = nkCurM || curM;
+  var rec = getRealRec(y, m);
+  rec.nkFechamento = v;
+  setRec(y, m, rec);
+  renderNubank();
+}
+
+function onNkVencimentoChange(val) {
+  var v = parseInt(val);
+  if(isNaN(v) || v < 1 || v > 31) return;
+  var y = nkCurY || curY, m = nkCurM || curM;
+  var rec = getRealRec(y, m);
+  rec.nkVencimento = v;
+  setRec(y, m, rec);
+  atualizarVencimentoNasDespesas(y, m, v);
+  renderNubank();
+}
+
+function atualizarVencimentoNasDespesas(y, m, dia) {
+  var arr = expenses[y] || [];
+  var changed = false;
+  arr.forEach(function(e, i) {
+    if(e.month === m && (e.category === 'Cartão Nubank' || e.category === 'Cartao Nubank')) {
+      var novaData = y + '-' + String(m).padStart(2,'0') + '-' + String(dia).padStart(2,'0');
+      arr[i].date = novaData;
+      changed = true;
+    }
+  });
+  if(changed) { expenses[y] = arr; persist(); render(); }
+}
+
 var NK_CATS_DEFAULT = ['Assinaturas','Calçados','Combustível','Educação','Eletrônicos','Festas','Hotel','Manutenção Casa','Medicamentos','Outros','Padaria','Presentes','Restaurante','Roupas','Saúde','Supermercado','Utilidade Doméstica','Viagem'];
 function getNKCats(){ var c=JSON.parse(localStorage.getItem('nk_cats')||JSON.stringify(NK_CATS_DEFAULT)); return c.slice().sort(function(a,b){return a.localeCompare(b,'pt-BR');}); }
 function setNKCats(arr){ localStorage.setItem('nk_cats',JSON.stringify(arr)); }
+
 
 function atualizarFaturaInfo(){
   var date = document.getElementById('ncDate').value;
@@ -1763,11 +1829,14 @@ function atualizarFaturaInfo(){
   document.getElementById('ncFaturaInfo').style.display='';
 }
 
-function mesFaturaNubank(dateStr){
+function mesFaturaNubank(dateStr, refY, refM){
   if(!dateStr) return {y:curY, m:curM};
   var p = dateStr.split('-');
   var y = parseInt(p[0]), m = parseInt(p[1]), d = parseInt(p[2]);
-  if(d >= 19){ m = m + 1; if(m > 12){ m = 1; y++; } }
+  var _refY = refY || nkCurY || curY;
+  var _refM = refM || nkCurM || curM;
+  var fechamento = getNkFechamento(_refY, _refM);
+  if(d >= fechamento){ m = m + 1; if(m > 12){ m = 1; y++; } }
   return {y:y, m:m};
 }
 
@@ -1804,8 +1873,11 @@ function setNubankFatura(y,m,v){ var r=getRealRec(y,m); r.nubankFatura=v; setRec
 
 function calcNubankTotal(y,m){
   var antM = m===1?12:m-1, antY = m===1?y-1:y;
-  var dtInicio = antY+'-'+String(antM).padStart(2,'0')+'-19';
-  var dtFim    = y+'-'+String(m).padStart(2,'0')+'-18';
+  var fechamento = getNkFechamento(y, m);
+  var diaFimNum  = fechamento - 1;
+  var dtInicio   = antY+'-'+String(antM).padStart(2,'0')+'-'+String(fechamento).padStart(2,'0');
+  var dtFim      = y+'-'+String(m).padStart(2,'0')+'-'+String(diaFimNum).padStart(2,'0');
+
   var total = 0; var vistos = {};
   for(var cy2=2025; cy2<=y+1; cy2++){
     for(var cm2=1; cm2<=12; cm2++){
@@ -1871,6 +1943,12 @@ function renderNubank(){
   var y = nkCurY||curY; var m = nkCurM||curM;
   document.getElementById('nubankMesLabel').textContent = MONTHS_PT[m-1];
   document.getElementById('nubankAnoLabel').textContent = y;
+  // Preenche campos de fechamento e vencimento
+  var _fi = document.getElementById('nkFechamentoInput');
+  var _vi = document.getElementById('nkVencimentoInput');
+  if(_fi) _fi.value = getNkFechamento(y, m);
+  if(_vi) _vi.value = getNkVencimento(y, m);
+
 
   var todasCompras = [];
   var anos = [];
