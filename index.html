@@ -1927,7 +1927,7 @@ function atualizarNubankNoMes(y, m){
   if(valor !== arr[idx].amount){ arr[idx].amount = valor; expenses[y] = arr; persist(); }
 }
 
-function closeNubank(){ document.getElementById('overlayNubank').classList.remove('open'); nubankExpId = null; }
+function closeNubank(){ document.getElementById('overlayNubank').classList.remove('open'); nubankExpId = null; render(); }
 
 function nkNavMes(delta){
   nkCurM += delta;
